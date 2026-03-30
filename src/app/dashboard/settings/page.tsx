@@ -472,25 +472,29 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Save Button */}
-      <div className="flex items-center gap-3">
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold px-8"
-        >
-          {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : saved ? (
-            <Check className="h-4 w-4 mr-2" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
+      {/* Sticky Save Button Container */}
+      <div className="sticky bottom-6 left-0 right-0 z-10 flex justify-end">
+        <div className="bg-card/80 backdrop-blur-xl border border-border/50 p-4 rounded-2xl shadow-2xl shadow-emerald-500/10 flex items-center gap-4">
+          {saved && (
+            <span className="text-sm font-medium text-emerald-400 animate-in fade-in slide-in-from-right-2">
+              Settings updated successfully
+            </span>
           )}
-          {saving ? "Saving..." : saved ? "Saved!" : "Save Settings"}
-        </Button>
-        {saved && (
-          <span className="text-sm text-emerald-400">Settings updated successfully</span>
-        )}
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold px-8 h-12 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+          >
+            {saving ? (
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            ) : saved ? (
+              <Check className="h-5 w-5 mr-2" />
+            ) : (
+              <Save className="h-5 w-5 mr-2" />
+            )}
+            {saving ? "Saving..." : saved ? "Saved!" : "Save Settings"}
+          </Button>
+        </div>
       </div>
     </div>
   );
