@@ -103,14 +103,22 @@ export interface AuditResult {
   comparisons: unknown[];
 }
 
+export interface AttachmentMetadata {
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  signed_url?: string;
+}
+
 export interface InboxMessage {
   id: string;
-  user_id: string;
   from_email: string;
   to_email: string;
   subject: string;
-  text_body: string;
-  html_body: string;
+  text_body?: string;
+  html_body?: string;
+  has_attachments: boolean;
+  attachments: AttachmentMetadata[];
   created_at: string;
 }
 

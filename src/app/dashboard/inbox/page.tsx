@@ -153,18 +153,42 @@ export default function InboxPage() {
             </div>
 
             <div className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10">
-              {/* If we have HTML, render it in an iframe. Otherwise, text. */}
+              {/* Attachments Section */}
+              {selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
+                <div className="mb-6 space-y-2">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <Maximize2 className="h-4 w-4" /> {/* Using Maximize2 as a placeholder for Paperclip if not available */}
+                    Attachments ({selectedMessage.attachments.length})
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMessage.attachments.map((att, idx) => (
+                      <a 
+                        key={idx}
+                        href={att.signed_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-medium hover:bg-accent transition-colors"
+                      >
+                        <span className="truncate max-w-[150px]">{att.filename}</span>
+                        <span className="text-muted-foreground">({(att.size_bytes / 1024).toFixed(0)} KB)</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Email Content */}
               {selectedMessage.html_body ? (
-                <div className="h-full min-h-[500px] w-full bg-white rounded-md border border-border overflow-hidden">
+                <div className="h-full min-h-[600px] w-full bg-white rounded-md border border-border shadow-sm overflow-hidden">
                   <iframe 
                     srcDoc={selectedMessage.html_body} 
-                    className="w-full h-full"
+                    className="w-full h-full border-none"
                     title="Email Content"
                     sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"
                   />
                 </div>
               ) : (
-                <div className="bg-background rounded-md border border-border p-6 shadow-inner min-h-[300px]">
+                <div className="bg-background rounded-md border border-border p-6 shadow-sm min-h-[400px]">
                   <pre 
                     className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed"
                     dangerouslySetInnerHTML={{ 
