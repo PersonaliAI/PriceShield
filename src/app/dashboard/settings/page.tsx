@@ -368,20 +368,30 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">Get alerts via WhatsApp messages</p>
                 </div>
               </div>
-              <button
-                onClick={() => toggleChannel("whatsapp")}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
-                  alertChannels.includes("whatsapp")
-                    ? "bg-emerald-500"
-                    : "bg-muted"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    alertChannels.includes("whatsapp") ? "translate-x-5" : ""
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://wa.me/15556359583"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 transition-colors text-xs font-semibold"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Open Chat
+                </a>
+                <button
+                  onClick={() => toggleChannel("whatsapp")}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                    alertChannels.includes("whatsapp")
+                      ? "bg-emerald-500"
+                      : "bg-muted"
                   }`}
-                />
-              </button>
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                      alertChannels.includes("whatsapp") ? "translate-x-5" : ""
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             {alertChannels.includes("whatsapp") && (
