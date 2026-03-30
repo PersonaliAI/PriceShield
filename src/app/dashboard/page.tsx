@@ -8,8 +8,9 @@ import {
   Building2,
   ArrowUpRight,
   ArrowDownRight,
-  Loader2,
   RefreshCw,
+  MessageSquare,
+  Search,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +55,11 @@ export default function DashboardPage() {
   const [trendVendor, setTrendVendor] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // AI CFO Chat State
+  const [cfoQuestion, setCfoQuestion] = useState("");
+  const [cfoAnswer, setCfoAnswer] = useState<string | null>(null);
+  const [isAskingCFO, setIsAskingCFO] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -197,6 +203,59 @@ export default function DashboardPage() {
           <RefreshCw className="mr-2 h-3 w-3" /> Refresh
         </Button>
       </div>
+      
+      {/* AI CFO Bar */}
+      <Card className="bg-emerald-500/5 border-emerald-500/20 overflow-hidden">
+        <CardContent className="p-0">
+          <form onSubmit={handleAskCFO} className="flex items-center p-2 gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/50" />
+              <input
+                type="text"
+                value={cfoQuestion}
+                onChange={(e) => setCfoQuestion(e.target.value)}
+                placeholder="Ask your AI CFO: 'What's my biggest price hike?' or 'Compare Sysco prices...'"
+                className="w-full bg-background/50 border-0 focus:ring-0 pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground/60 rounded-xl"
+              />
+            </div>
+            <Button 
+              type="submit"
+              disabled={isAskingCFO || !cfoQuestion.trim()}
+              className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold px-6 rounded-xl shadow-lg shadow-emerald-500/20"
+            >
+              {isAskingCFO ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <MessageSquare className="h-4 w-4 mr-2" />
+              )}
+              {isAskingCFO ? "Analyzing..." : "Ask AI CFO"}
+            </Button>
+          </form>
+          {cfoAnswer && (
+            <div className="px-6 py-4 bg-background/30 border-t border-emerald-500/10 animate-in fade-in slide-in-from-top-2">
+              <div className="flex gap-4">
+                <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                  <Shield className="h-4 w-4 text-background" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">AI CFO Analysis</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                    {cfoAnswer}
+                  </p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setCfoAnswer(null)}
+                    className="text-xs h-7 px-2 hover:bg-emerald-500/10 hover:text-emerald-400"
+                  >
+                    Clear Chat
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -159,10 +159,11 @@ export const api = {
   getInboxMessages: (token: string) =>
     request<InboxMessage[]>(`/api/inbox`, { token }),
 
-  // Telegram
-  disconnectTelegram: (token: string) =>
-    request<{ status: string }>(`/webhook/telegram/disconnect`, {
+  // AI CFO
+  askAICFO: (token: string, question: string) =>
+    request<{ answer: string }>(`/api/ai-cfo/ask`, {
       token,
       method: "POST",
+      body: JSON.stringify({ question }),
     }),
 };
