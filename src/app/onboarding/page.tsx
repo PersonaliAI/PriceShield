@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Upload, FileText, CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
@@ -71,8 +71,7 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <Shield className="h-8 w-8 text-emerald-400" />
-            <span className="text-xl font-bold">PriceShield</span>
+            <img src="/logo.png" alt="PriceShield Logo" className="h-10 w-auto" />
           </Link>
           <h1 className="text-3xl font-bold mb-2">Get Your Free Price Audit</h1>
           <p className="text-muted-foreground">Upload a few invoices and see how much you&apos;ve been overcharged</p>

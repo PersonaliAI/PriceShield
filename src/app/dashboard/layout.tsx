@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, LayoutDashboard, FileText, Settings, LogOut, Mail } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -28,9 +28,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r border-border/40 bg-card/30 backdrop-blur">
-          <div className="flex items-center gap-2 px-6 h-16 border-b border-border/40">
-            <Shield className="h-6 w-6 text-emerald-400" />
-            <span className="text-lg font-bold tracking-tight">PriceShield</span>
+          <div className="flex items-center gap-2 px-6 h-20 border-b border-border/40">
+            <img src="/logo.png" alt="PriceShield Logo" className="h-10 w-auto" />
+            <span className="hidden">PriceShield</span>
           </div>
 
           <nav className="flex-1 px-3 py-4 space-y-1">
@@ -72,8 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Mobile header */}
           <header className="md:hidden flex items-center justify-between px-6 h-14 border-b border-border/40">
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-emerald-400" />
-              <span className="font-bold">PriceShield</span>
+              <img src="/logo.png" alt="PriceShield Logo" className="h-6 w-auto" />
             </div>
             <button
               onClick={handleSignOut}

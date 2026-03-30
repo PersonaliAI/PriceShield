@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, TrendingUp, Bell, MessageSquare, ArrowRight, Check } from "lucide-react";
+import { TrendingUp, Bell, MessageSquare, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import Link from "next/link";
 /* ─── Feature cards ─── */
 const features = [
   {
-    icon: Shield,
+    icon: TrendingUp,
     title: "AI-Powered Extraction",
     desc: "Forward invoices. Gemini Vision AI extracts every line item — vendor, SKU, price, quantity — automatically.",
   },
@@ -82,8 +82,8 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-emerald-400" />
-            <span className="text-lg font-bold tracking-tight">PriceShield</span>
+            <img src="/logo.png" alt="PriceShield Logo" className="h-8 w-auto" />
+            <span className="hidden">PriceShield</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
@@ -253,8 +253,7 @@ export default function LandingPage() {
       <footer className="border-t border-border/40 py-12">
         <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-emerald-400" />
-            <span className="font-semibold">PriceShield</span>
+            <img src="/logo.png" alt="PriceShield Logo" className="h-6 w-auto" />
           </div>
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} PriceShield. All rights reserved.

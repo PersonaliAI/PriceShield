@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description:
     "Zero-friction B2B invoice monitoring. Detect stealth supplier price hikes automatically via AI-powered PDF extraction and real-time alerts.",
   keywords: ["invoice monitoring", "price tracking", "supplier management", "B2B SaaS"],
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

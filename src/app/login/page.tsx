@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -81,7 +81,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md bg-card/80 backdrop-blur border-border/50">
         <CardHeader className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center justify-center gap-2 mb-2">
-            <Shield className="h-8 w-8 text-emerald-400" />
+            <img src="/logo.png" alt="PriceShield Logo" className="h-12 w-auto" />
           </Link>
           <CardTitle className="text-2xl">{isSignUp ? "Create Account" : "Welcome back"}</CardTitle>
           <CardDescription>
