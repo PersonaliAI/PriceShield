@@ -152,18 +152,28 @@ export default function InboxPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-auto p-6 bg-muted/10">
+            <div className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10">
               {/* If we have HTML, render it in an iframe. Otherwise, text. */}
               {selectedMessage.html_body ? (
-                <iframe 
-                  srcDoc={selectedMessage.html_body} 
-                  className="w-full min-h-[400px] h-full bg-white rounded-md border border-border"
-                  sandbox="" // Restrict scripts for security
-                />
+                <div className="h-full min-h-[500px] w-full bg-white rounded-md border border-border overflow-hidden">
+                  <iframe 
+                    srcDoc={selectedMessage.html_body} 
+                    className="w-full h-full"
+                    title="Email Content"
+                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+                  />
+                </div>
               ) : (
-                <pre className="whitespace-pre-wrap font-sans text-sm text-foreground">
-                  {selectedMessage.text_body || "No email body provided."}
-                </pre>
+                <div className="bg-background rounded-md border border-border p-6 shadow-inner min-h-[300px]">
+                  <pre 
+                    className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed"
+                    dangerouslySetInnerHTML={{ 
+                      __html: (selectedMessage.text_body || "No email body provided.")
+                        .replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m] as string))
+                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300 break-all">$1</a>')
+                    }}
+                  />
+                </div>
               )}
             </div>
           </Card>
