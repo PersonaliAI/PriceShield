@@ -130,7 +130,7 @@ export default function InboxPage() {
       {/* Message Viewer Modal */}
       {selectedMessage && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center">
-          <Card className="w-full max-w-3xl max-h-full flex flex-col bg-card border-border shadow-2xl relative">
+          <Card className="w-full max-w-5xl h-[90vh] flex flex-col bg-card border-border shadow-2xl relative">
             <Button 
               variant="ghost" 
               size="icon" 
