@@ -158,4 +158,11 @@ export const api = {
   // Inbox
   getInboxMessages: (token: string) =>
     request<InboxMessage[]>(`/api/inbox`, { token }),
+
+  // Telegram
+  disconnectTelegram: (token: string) =>
+    request<{ status: string }>(`/webhook/telegram/disconnect`, {
+      token,
+      method: "POST",
+    }),
 };

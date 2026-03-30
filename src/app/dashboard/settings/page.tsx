@@ -61,6 +61,25 @@ export default function SettingsPage() {
     fetchSettings();
   }, [fetchSettings]);
 
+  const handleDisconnectTelegram = async () => {
+    if (!confirm("Are you sure you want to disconnect Telegram? You will stop receiving alerts there.")) return;
+    
+    setSaving(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await api.disconnectTelegram(token);
+      await fetchSettings(); // Refresh to show "Not linked"
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to disconnect Telegram";
+      setError(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
@@ -280,9 +299,19 @@ export default function SettingsPage() {
               </div>
               <div className="flex items-center gap-2">
                 {settings?.telegram_linked ? (
-                  <Badge className="bg-emerald-500/10 text-emerald-400 border-0">
-                    <Check className="h-3 w-3 mr-1" /> Linked
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-500/10 text-emerald-400 border-0">
+                      <Check className="h-3 w-3 mr-1" /> Linked
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleDisconnectTelegram}
+                      className="h-7 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[10px] uppercase tracking-wider font-bold"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
                 ) : (
                   <Badge variant="secondary" className="border-0">Not linked</Badge>
                 )}
