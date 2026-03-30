@@ -11,6 +11,8 @@ import {
   RefreshCw,
   MessageSquare,
   Search,
+  Loader2,
+  Shield,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -137,6 +139,24 @@ export default function DashboardPage() {
     },
     [getToken]
   );
+
+  const handleAskCFO = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cfoQuestion.trim() || isAskingCFO) return;
+
+    setIsAskingCFO(true);
+    setCfoAnswer(null);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await api.askAICFO(token, cfoQuestion);
+      setCfoAnswer(res.answer);
+    } catch (err) {
+      setCfoAnswer("Sorry, I couldn't process your request right now.");
+    } finally {
+      setIsAskingCFO(false);
+    }
+  };
 
   const kpis = [
     {
