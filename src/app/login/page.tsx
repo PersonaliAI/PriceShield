@@ -81,7 +81,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md bg-card/80 backdrop-blur border-border/50">
         <CardHeader className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center justify-center gap-2 mb-2">
-            <img src="/logo.png" alt="PriceShield Logo" className="h-12 w-auto" />
+            <img src="/logo.svg" alt="PriceShield Logo" className="h-12 w-auto" />
           </Link>
           <CardTitle className="text-2xl">{isSignUp ? "Create Account" : "Welcome back"}</CardTitle>
           <CardDescription>

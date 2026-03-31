@@ -82,7 +82,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="PriceShield Logo" className="h-8 w-auto" />
+            <img src="/logo.svg" alt="PriceShield Logo" className="h-8 w-auto" />
             <span className="hidden">PriceShield</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
@@ -253,7 +253,7 @@ export default function LandingPage() {
       <footer className="border-t border-border/40 py-12">
         <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="PriceShield Logo" className="h-6 w-auto" />
+            <img src="/logo.svg" alt="PriceShield Logo" className="h-6 w-auto" />
           </div>
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} PriceShield. All rights reserved.

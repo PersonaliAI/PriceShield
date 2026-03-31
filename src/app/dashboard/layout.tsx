@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r border-border/40 bg-card/30 backdrop-blur">
           <div className="flex items-center gap-2 px-6 h-20 border-b border-border/40">
-            <img src="/logo.png" alt="PriceShield Logo" className="h-10 w-auto" />
+            <img src="/logo.svg" alt="PriceShield Logo" className="h-10 w-auto" />
             <span className="hidden">PriceShield</span>
           </div>
 
@@ -72,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Mobile header */}
           <header className="md:hidden flex items-center justify-between px-6 h-14 border-b border-border/40">
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="PriceShield Logo" className="h-6 w-auto" />
+              <img src="/logo.svg" alt="PriceShield Logo" className="h-6 w-auto" />
             </div>
             <button
               onClick={handleSignOut}
