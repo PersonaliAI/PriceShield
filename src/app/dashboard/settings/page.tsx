@@ -151,6 +151,8 @@ export default function SettingsPage() {
     );
   }
 
+  const isFree = settings?.tier === "free";
+
   return (
     <div className="space-y-8 max-w-3xl">
       {/* Header */}
@@ -259,14 +261,21 @@ export default function SettingsPage() {
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addEmail()}
+                onKeyDown={(e) => e.key === "Enter" && !isFree && addEmail()}
                 placeholder="supplier@vendor.com"
-                className="flex-1 rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
+                disabled={isFree}
+                className="flex-1 rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <Button onClick={addEmail} type="button" variant="outline" className="h-[42px]">
+              <Button onClick={addEmail} type="button" variant="outline" className="h-[42px]" disabled={isFree}>
                 <Plus className="h-4 w-4 mr-1" /> Add
               </Button>
             </div>
+            {isFree && (
+              <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                Auto-forwarding requires Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -316,12 +325,13 @@ export default function SettingsPage() {
                   <Badge variant="secondary" className="border-0">Not linked</Badge>
                 )}
                 <button
-                  onClick={() => toggleChannel("telegram")}
+                  onClick={() => !isFree && toggleChannel("telegram")}
+                  disabled={isFree}
                   className={`relative w-11 h-6 rounded-full transition-colors ${
                     alertChannels.includes("telegram")
                       ? "bg-emerald-500"
                       : "bg-muted"
-                  }`}
+                  } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span
                     className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
@@ -332,7 +342,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {!settings?.telegram_linked && (
+            {!settings?.telegram_linked && !isFree && (
               <div className="flex items-center gap-2">
                 <div className="flex-1 rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground font-mono truncate">
                   {telegramDeepLink || "Sign in to get your link"}
@@ -356,6 +366,12 @@ export default function SettingsPage() {
                 </a>
               </div>
             )}
+            {isFree && (
+              <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                Telegram alerts require Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
+              </p>
+            )}
           </div>
 
           {/* WhatsApp */}
@@ -378,12 +394,13 @@ export default function SettingsPage() {
                   <ExternalLink className="h-3.5 w-3.5" /> Open Chat
                 </a>
                 <button
-                  onClick={() => toggleChannel("whatsapp")}
+                  onClick={() => !isFree && toggleChannel("whatsapp")}
+                  disabled={isFree}
                   className={`relative w-11 h-6 rounded-full transition-colors ${
                     alertChannels.includes("whatsapp")
                       ? "bg-emerald-500"
                       : "bg-muted"
-                  }`}
+                  } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span
                     className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
@@ -394,7 +411,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {alertChannels.includes("whatsapp") && (
+            {alertChannels.includes("whatsapp") && !isFree && (
               <div className="space-y-1.5">
                 <label className="text-xs font-medium" htmlFor="whatsapp-number">
                   WhatsApp Number (with country code)
@@ -408,6 +425,12 @@ export default function SettingsPage() {
                   className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
                 />
               </div>
+            )}
+            {isFree && (
+              <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                WhatsApp alerts require Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
+              </p>
             )}
           </div>
 

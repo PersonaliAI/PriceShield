@@ -6,9 +6,10 @@ import { Upload, FileText, CheckCircle, ArrowRight, Loader2, AlertCircle } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
-import { api, AuditResult } from "@/lib/api";
+import { api, AuditResult, UserSettings } from "@/lib/api";
 import ProtectedRoute from "@/components/protected-route";
 import Link from "next/link";
+import { useEffect } from "react";
 
 const STEPS = [
   { title: "Upload Invoices", desc: "Upload your last 3 supplier invoices (PDF)" },
@@ -24,18 +25,50 @@ export default function OnboardingPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const token = await getToken();
+        if (token) {
+          const s = await api.getSettings(token);
+          setSettings(s);
+        }
+      } catch (err) {
+        console.error("Failed to load settings in onboarding:", err);
+      }
+    };
+    loadSettings();
+  }, [getToken]);
+
+  const isFree = settings?.tier === "free";
+  const uploadsRemaining = isFree ? Math.max(0, 5 - (settings?.manual_uploads_count || 0)) : null;
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files).filter(
         (f) => f.type === "application/pdf"
       );
-      setFiles((prev) => [...prev, ...newFiles].slice(0, 5));
+      setFiles((prev) => {
+        const total = [...prev, ...newFiles];
+        const limit = isFree && uploadsRemaining !== null ? uploadsRemaining : 5;
+        if (total.length > limit) {
+          setError(isFree 
+            ? `Free tier limit: You can only upload ${uploadsRemaining} more invoice(s).`
+            : `Please select up to 5 invoices at a time.`
+          );
+          return total.slice(0, limit);
+        }
+        setError("");
+        return total;
+      });
     }
-  }, []);
+  }, [isFree, uploadsRemaining]);
 
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
+    if (error && error.includes("limit")) setError("");
   };
 
   const handleSubmit = async () => {
@@ -132,8 +165,15 @@ export default function OnboardingPage() {
                     multiple
                     className="hidden"
                     onChange={handleFileChange}
+                    disabled={isFree && uploadsRemaining !== null && uploadsRemaining <= 0}
                   />
                 </label>
+
+                {isFree && uploadsRemaining !== null && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    Free tier: <strong className="text-emerald-400">{uploadsRemaining}</strong> manual uploads remaining.
+                  </p>
+                )}
 
                 {/* File list */}
                 {files.length > 0 && (

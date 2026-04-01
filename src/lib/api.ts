@@ -8,6 +8,8 @@ export interface UserSettings {
   whatsapp_number: string | null;
   onesignal_player_id: string | null;
   alert_channels: string[];
+  tier: string;
+  manual_uploads_count: number;
 }
 
 export interface SettingsUpdate {
@@ -172,5 +174,13 @@ export const api = {
       token,
       method: "POST",
       body: JSON.stringify({ question }),
+    }),
+
+  // Subscriptions
+  getCheckoutUrl: (token: string, tier: string) =>
+    request<{ url: string }>(`/api/subscriptions/checkout`, {
+      token,
+      method: "POST",
+      body: JSON.stringify({ tier }),
     }),
 };

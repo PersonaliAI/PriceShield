@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, FileText, Settings, LogOut, Mail } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, Mail, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/onboarding", icon: FileText, label: "Upload Invoices" },
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox" },
+  { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
