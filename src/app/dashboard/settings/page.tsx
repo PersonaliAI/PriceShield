@@ -41,6 +41,7 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [copiedInbox, setCopiedInbox] = useState(false);
+  const [success, setSuccess] = useState("");
   const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
 
   // Form state
@@ -50,9 +51,12 @@ export default function SettingsPage() {
   const [alertChannels, setAlertChannels] = useState<string[]>(["push", "email"]);
   
   // Reporting Preferences
+  const [alertEmail, setAlertEmail] = useState("");
   const [reportDaily, setReportDaily] = useState(false);
   const [reportWeekly, setReportWeekly] = useState(true);
   const [reportMonthly, setReportMonthly] = useState(true);
+  
+  const [triggeringReport, setTriggeringReport] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -63,6 +67,7 @@ export default function SettingsPage() {
       setWhatsappNumber(data.whatsapp_number || "");
       setForwardingEmails(data.forwarding_emails || []);
       setAlertChannels(data.alert_channels || ["push", "email"]);
+      setAlertEmail(data.alert_email || "");
       setReportDaily(data.report_daily);
       setReportWeekly(data.report_weekly);
       setReportMonthly(data.report_monthly);
@@ -108,6 +113,7 @@ export default function SettingsPage() {
         whatsapp_number: whatsappNumber || null,
         forwarding_emails: forwardingEmails,
         alert_channels: alertChannels,
+        alert_email: alertEmail || null,
         report_daily: reportDaily,
         report_weekly: reportWeekly,
         report_monthly: reportMonthly,
@@ -130,6 +136,20 @@ export default function SettingsPage() {
         ? prev.filter((c) => c !== channel)
         : [...prev, channel]
     );
+  };
+
+  const handleTestReport = async (cycle: string) => {
+    if (!token || !settings) return;
+    setTriggeringReport(cycle);
+    try {
+      await api.triggerTestReport(token, cycle, settings.uid);
+      setSuccess(`Test ${cycle} report sent successfully!`);
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(`Failed to send test report: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setTriggeringReport(null);
+    }
   };
 
   const addEmail = () => {
@@ -181,6 +201,13 @@ export default function SettingsPage() {
           Configure your alert channels and email forwarding
         </p>
       </div>
+
+      {success && (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-start gap-3">
+          <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-emerald-400">{success}</p>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-4 flex items-start gap-3">
@@ -454,7 +481,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Email Alerts */}
-          <div className="rounded-lg border border-border/50 p-4">
+          <div className="rounded-lg border border-border/50 p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-blue-400" />
@@ -478,6 +505,19 @@ export default function SettingsPage() {
                 />
               </button>
             </div>
+            
+            {alertChannels.includes("email") && (
+              <div className="pt-2 border-t border-border/30">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Target Email (Optional override)</p>
+                <input
+                  type="email"
+                  value={alertEmail}
+                  onChange={(e) => setAlertEmail(e.target.value)}
+                  placeholder={settings?.email || "Enter alert email"}
+                  className="w-full bg-muted/20 border border-border/50 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            )}
           </div>
 
           {/* Browser Notifications */}
@@ -528,7 +568,16 @@ export default function SettingsPage() {
           {/* Daily Report */}
           <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Daily Summary</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">Daily Summary</p>
+                <button
+                  onClick={() => handleTestReport("daily")}
+                  disabled={triggeringReport === "daily"}
+                  className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
+                >
+                  {triggeringReport === "daily" ? "Sending..." : "Test"}
+                </button>
+              </div>
               <p className="text-xs text-muted-foreground">Every morning at 8:00 AM</p>
             </div>
             <button
@@ -548,7 +597,16 @@ export default function SettingsPage() {
           {/* Weekly Report */}
           <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Weekly Digest</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">Weekly Digest</p>
+                <button
+                  onClick={() => handleTestReport("weekly")}
+                  disabled={triggeringReport === "weekly"}
+                  className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
+                >
+                  {triggeringReport === "weekly" ? "Sending..." : "Test"}
+                </button>
+              </div>
               <p className="text-xs text-muted-foreground">Every Monday morning</p>
             </div>
             <button
@@ -568,7 +626,16 @@ export default function SettingsPage() {
           {/* Monthly Report */}
           <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Monthly Insight</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">Monthly Insight</p>
+                <button
+                  onClick={() => handleTestReport("monthly")}
+                  disabled={triggeringReport === "monthly"}
+                  className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
+                >
+                  {triggeringReport === "monthly" ? "Sending..." : "Test"}
+                </button>
+              </div>
               <p className="text-xs text-muted-foreground">First day of each month</p>
             </div>
             <button

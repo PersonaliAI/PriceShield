@@ -11,6 +11,7 @@ export interface UserSettings {
   tier: string;
   invoices_uploaded: number;
   manual_uploads_count: number;
+  alert_email: string | null;
   report_daily: boolean;
   report_weekly: boolean;
   report_monthly: boolean;
@@ -35,6 +36,7 @@ export interface SettingsUpdate {
   onesignal_player_id?: string | null;
   alert_channels?: string[];
   report_daily?: boolean;
+  alert_email?: string | null;
   report_weekly?: boolean;
   report_monthly?: boolean;
 }
