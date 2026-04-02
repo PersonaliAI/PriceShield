@@ -13,10 +13,11 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
 import { api, UserSettings } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -139,9 +140,12 @@ export default function AICFOPage() {
               <p className="text-sm text-muted-foreground">
                 Get high-level diagnostics on your supplier contracts, detected margin leaks, and complex financial analysis in real-time.
               </p>
-              <Button asChild className="w-full bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-11 py-0">
-                <a href="/dashboard/billing">Upgrade to Pro Shield</a>
-              </Button>
+              <a 
+                href="/dashboard/billing" 
+                className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-11")}
+              >
+                Upgrade to Pro Shield
+              </a>
             </div>
           </div>
         )}
