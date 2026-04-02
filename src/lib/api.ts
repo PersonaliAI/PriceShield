@@ -8,6 +8,9 @@ export interface UserSettings {
   whatsapp_number: string | null;
   onesignal_player_id: string | null;
   alert_channels: string[];
+  email_notifications_enabled: boolean;
+  reporting_enabled: boolean;
+  notification_email: string | null;
   tier: string;
   manual_uploads_count: number;
   locations: Location[];
@@ -30,6 +33,9 @@ export interface SettingsUpdate {
   whatsapp_number?: string | null;
   onesignal_player_id?: string | null;
   alert_channels?: string[];
+  email_notifications_enabled?: boolean;
+  reporting_enabled?: boolean;
+  notification_email?: string | null;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
