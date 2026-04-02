@@ -244,4 +244,10 @@ export const api = {
       token,
       method: "DELETE",
     }),
+
+  triggerTestReport: (token: string, cycle: string, userId: string) =>
+    request<{ status: string; message?: string }>(
+      `/reports/cron/${cycle}?test_uid=${userId}`,
+      { token }
+    ),
 };

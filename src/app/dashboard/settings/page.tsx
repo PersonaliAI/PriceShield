@@ -139,10 +139,11 @@ export default function SettingsPage() {
   };
 
   const handleTestReport = async (cycle: string) => {
-    if (!token || !settings) return;
+    const token = await getToken();
+    if (!token || !settings || !user?.uid) return;
     setTriggeringReport(cycle);
     try {
-      await api.triggerTestReport(token, cycle, settings.uid);
+      await api.triggerTestReport(token, cycle, user.uid);
       setSuccess(`Test ${cycle} report sent successfully!`);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
