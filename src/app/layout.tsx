@@ -10,10 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PriceShield — Detect Supplier Price Creep",
+  title: "PriceShield | Intelligent Financial Monitoring",
   description:
-    "Zero-friction B2B invoice monitoring. Detect stealth supplier price hikes automatically via AI-powered PDF extraction and real-time alerts.",
-  keywords: ["invoice monitoring", "price tracking", "supplier management", "B2B SaaS"],
+    "Automate your B2B financial intelligence. PriceShield detects stealth price hikes in supplier invoices using AI-driven extraction and multi-channel alerts.",
+  keywords: ["invoice monitoring", "price tracking", "supplier management", "AI financial intelligence"],
   icons: {
     icon: "/logo.png",
   },
