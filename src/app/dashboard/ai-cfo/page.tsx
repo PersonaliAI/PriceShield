@@ -8,13 +8,16 @@ import {
   Bot, 
   User, 
   Sparkles,
-  Info
+  Info,
+  ChevronRight,
+  TrendingUp,
+  AlertTriangle,
+  History
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { api, UserSettings } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -34,6 +37,7 @@ export default function AICFOPage() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load history & settings
   useEffect(() => {
@@ -59,17 +63,20 @@ export default function AICFOPage() {
   }, [getToken]);
 
   // Scroll to bottom when messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, isLoading]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading || settings?.tier === "free") return;
+  const handleSendMessage = async (e?: React.FormEvent, customInput?: string) => {
+    if (e) e.preventDefault();
+    const finalInput = customInput || input;
+    if (!finalInput.trim() || isLoading || settings?.tier === "free") return;
 
-    const userMessage: ChatMessage = { role: "user", content: input };
+    const userMessage: ChatMessage = { role: "user", content: finalInput };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -78,7 +85,7 @@ export default function AICFOPage() {
       const token = await getToken();
       if (!token) return;
       
-      const res = await api.askAICFO(token, input);
+      const res = await api.askAICFO(token, finalInput);
       const assistantMessage: ChatMessage = { 
         role: "assistant", 
         content: res.answer 
@@ -97,9 +104,12 @@ export default function AICFOPage() {
 
   if (isInitialLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 space-y-4">
-        <Loader2 className="h-8 w-8 text-emerald-400 animate-spin" />
-        <p className="text-muted-foreground">Initializing AI CFO…</p>
+      <div className="flex flex-col items-center justify-center h-[80vh] space-y-6">
+        <div className="relative">
+          <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full scale-150 animate-pulse"></div>
+          <Shield className="h-12 w-12 text-emerald-400 relative z-10 animate-bounce" />
+        </div>
+        <p className="text-muted-foreground font-medium tracking-wide">Initializing CFO Intelligence…</p>
       </div>
     );
   }
@@ -107,174 +117,204 @@ export default function AICFOPage() {
   const isFreeTier = settings?.tier === "free";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-            <Shield className="h-6 w-6 text-emerald-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">AI CFO Diagnostics</h1>
-            <p className="text-sm text-muted-foreground">Conversational pricing analysis & financial strategy</p>
-          </div>
-        </div>
-        
-        {isFreeTier && (
-          <div className="bg-rose-500/10 border border-rose-500/20 px-4 py-2 rounded-xl flex items-center gap-2">
-            <Info className="h-4 w-4 text-rose-400" />
-            <span className="text-xs font-medium text-rose-400">Upgrade to Pro to use AI CFO Chat</span>
-          </div>
-        )}
-      </div>
-
-      {/* Chat Area */}
-      <Card className="flex-1 flex flex-col bg-card/30 border-border/40 overflow-hidden relative backdrop-blur-sm">
-        {isFreeTier && (
-          <div className="absolute inset-0 z-20 bg-background/40 backdrop-blur-[2px] flex items-center justify-center p-8">
-            <div className="bg-background/95 border border-border/60 p-8 rounded-2xl shadow-2xl max-w-sm text-center space-y-4 animate-in fade-in zoom-in duration-300">
-              <div className="mx-auto h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                <Sparkles className="h-8 w-8 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold">Unlock AI CFO Intelligence</h3>
-              <p className="text-sm text-muted-foreground">
-                Get high-level diagnostics on your supplier contracts, detected margin leaks, and complex financial analysis in real-time.
-              </p>
-              <a 
-                href="/dashboard/billing" 
-                className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-11")}
-              >
-                Upgrade to Pro Shield
-              </a>
-            </div>
-          </div>
-        )}
-
-        <CardContent 
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth custom-scrollbar"
-        >
+    <div className="relative flex flex-col h-[calc(100vh-100px)] overflow-hidden">
+      {/* Centered Scrollable Area */}
+      <div className="flex-1 overflow-y-auto pt-4 pb-32 scroll-smooth custom-scrollbar">
+        <div className="max-w-3xl mx-auto px-4 w-full">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center space-y-6 text-center opacity-70 mt-12">
-              <div className="h-20 w-20 rounded-3xl bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 animate-pulse">
-                <Bot className="h-10 w-10 text-emerald-500/40" />
+            <div className="flex flex-col items-center justify-center pt-20 space-y-10 animate-in fade-in duration-700">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="h-20 w-20 rounded-[2rem] bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 shadow-2xl shadow-emerald-500/5">
+                  <Shield className="h-10 w-10 text-emerald-400" />
+                </div>
+                <div className="text-center">
+                  <h1 className="text-3xl font-bold tracking-tight mb-2">AI CFO Diagnostics</h1>
+                  <p className="text-muted-foreground max-w-sm mx-auto text-sm leading-relaxed">
+                    Analyzing your pricing data for margin leaks, stealth hikes, and contract optimization.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <h2 className="text-xl font-semibold">Your Financial Second Brain</h2>
-                <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                  Ask me about price hikes, vendor reliability, or to calculate complex financial models like CAGR or margin leak across locations.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 {[
-                  "Which item had the biggest price jump this month?",
-                  "Compare Sysco vs GFS pricing on Chicken.",
-                  "Calculate my total margin lost since Jan.",
-                  "What&apos;s my average price variance across all vendors?"
-                ].map((q) => (
+                  { label: "Price Audit", text: "Which item had the biggest price jump this month?", icon: TrendingUp },
+                  { label: "Vendor Compare", text: "Compare Sysco vs GFS pricing on Chicken.", icon: History },
+                  { label: "Margin Leak", text: "Calculate my total margin lost since January.", icon: AlertTriangle },
+                  { label: "Analysis", text: "What's my average price variance across all vendors?", icon: Sparkles }
+                ].map((item) => (
                   <button
-                    key={q}
-                    onClick={() => !isFreeTier && setInput(q)}
-                    className="text-xs p-3 rounded-xl border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors text-left"
+                    key={item.text}
+                    onClick={() => handleSendMessage(undefined, item.text)}
+                    className="group flex flex-col items-start p-4 rounded-2xl border border-border/40 bg-card/40 hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all text-left space-y-2 active:scale-[0.98]"
                   >
-                    &quot;{q}&quot;
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400/70 group-hover:text-emerald-400">
+                      <item.icon className="h-3 w-3" />
+                      {item.label}
+                    </div>
+                    <p className="text-sm font-medium pr-8 leading-snug">
+                      &quot;{item.text}&quot;
+                    </p>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            messages.map((msg, i) => (
-              <div 
-                key={i} 
-                className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {msg.role === "assistant" && (
-                  <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
-                    <Shield className="h-4 w-4 text-background" />
-                  </div>
-                )}
+            <div className="space-y-12">
+              {messages.map((msg, i) => (
                 <div 
-                  className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
-                    msg.role === "user" 
-                      ? "bg-emerald-500 text-background font-medium shadow-md"
-                      : "bg-muted/40 border border-border/40 text-foreground"
-                  }`}
+                  key={i} 
+                  className={cn(
+                    "flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500",
+                    msg.role === "user" ? "items-end" : "items-start"
+                  )}
                 >
-                  <div className="markdown-content prose prose-sm prose-invert max-w-none">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkMath]} 
-                      rehypePlugins={[rehypeKatex]}
-                      components={{
-                        b: ({...props}) => <b className="font-bold text-emerald-400" {...props} />,
-                        strong: ({...props}) => <strong className="font-bold text-emerald-400" {...props} />,
-                        p: ({...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
+                  <div className={cn(
+                    "flex max-w-[85%] sm:max-w-[75%] gap-4",
+                    msg.role === "user" ? "flex-row-reverse" : "flex-row"
+                  )}>
+                    {msg.role === "assistant" && (
+                      <div className="mt-1 flex-shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-500/5">
+                          <Shield className="h-4 w-4 text-emerald-400" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className={cn(
+                      "rounded-3xl px-5 py-4 text-[15px] leading-relaxed",
+                      msg.role === "user" 
+                        ? "bg-emerald-500 text-background font-medium shadow-xl shadow-emerald-500/10 rounded-tr-none"
+                        : "bg-muted/10 border border-border/30 text-foreground shadow-sm rounded-tl-none"
+                    )}>
+                      <div className="markdown-content prose prose-sm prose-invert max-w-none prose-p:leading-relaxed">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkMath]} 
+                          rehypePlugins={[rehypeKatex]}
+                          components={{
+                            b: ({...props}) => <b className="font-bold text-emerald-400" {...props} />,
+                            strong: ({...props}) => <strong className="font-bold text-emerald-400" {...props} />,
+                            p: ({...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                            ul: ({...props}) => <ul className="list-disc pl-5 space-y-2 mb-4" {...props} />,
+                            li: ({...props}) => <li className="marker:text-emerald-500" {...props} />,
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+
+                    {msg.role === "user" && (
+                      <div className="mt-1 flex-shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-border/20 border border-border/40 flex items-center justify-center overflow-hidden">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                {msg.role === "user" && (
-                  <div className="h-8 w-8 rounded-lg bg-border flex items-center justify-center shrink-0">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            ))
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
           )}
+          
           {isLoading && (
-            <div className="flex gap-4 justify-start animate-in fade-in slide-in-from-bottom-2">
-              <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
-                <Loader2 className="h-4 w-4 text-background animate-spin" />
+            <div className="flex justify-start items-center gap-4 mt-8 animate-pulse">
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <Loader2 className="h-4 w-4 text-emerald-400 animate-spin" />
               </div>
-              <div className="max-w-[85%] bg-muted/20 rounded-2xl p-4 flex gap-1.5 items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/50 animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/50 animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/50 animate-bounce"></span>
+              <div className="flex gap-1.5 px-4 py-3 rounded-2xl bg-muted/10 border border-border/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"></span>
               </div>
             </div>
           )}
-        </CardContent>
-
-        {/* Input area */}
-        <div className="p-4 border-t border-border/40 bg-card/50 backdrop-blur-md">
-          <form onSubmit={handleSendMessage} className="flex gap-3">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isLoading || isFreeTier}
-              placeholder={isFreeTier ? "Upgrade to chat with AI CFO..." : "Ask your AI assistant anything..."}
-              className="flex-1 bg-background/50 border border-border/60 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-muted-foreground/50 disabled:opacity-50"
-            />
-            <Button 
-              type="submit" 
-              disabled={!input.trim() || isLoading || isFreeTier}
-              className="h-auto px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-background font-bold shadow-lg shadow-emerald-500/20 disabled:scale-95 transition-transform"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
         </div>
-      </Card>
+      </div>
+
+      {/* Subscription Guard Overlay */}
+      {isFreeTier && (
+        <div className="absolute inset-0 z-30 bg-background/60 backdrop-blur-md flex items-center justify-center p-6 border-t border-border/10">
+          <div className="bg-background/95 border border-border/40 p-10 rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] max-w-sm text-center space-y-6 animate-in fade-in zoom-in duration-500">
+            <div className="mx-auto h-20 w-20 rounded-[2rem] bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <Sparkles className="h-10 w-10 text-emerald-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold tracking-tight">Pro CFO Intelligence</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Analyze supplier contracts, detect margin leaks, and forecast pricing trends with your conversational AI assistant.
+              </p>
+            </div>
+            <a 
+              href="/dashboard/billing" 
+              className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-12 rounded-2xl transition-all shadow-lg shadow-emerald-500/20")}
+            >
+              Upgrade to Pro Shield
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Centered Floating Input Area */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
+        <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-emerald-500/0 rounded-[2rem] blur opacity-40 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+            <form 
+              onSubmit={handleSendMessage}
+              className="relative flex items-center bg-card/60 backdrop-blur-2xl border border-border/40 rounded-[2rem] shadow-2xl overflow-hidden p-1.5 pl-6"
+            >
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isLoading || isFreeTier}
+                placeholder={isFreeTier ? "Upgrade for CFO access..." : "Ask your financial assistant anything..."}
+                className="flex-1 bg-transparent py-3.5 text-sm focus:outline-none placeholder:text-muted-foreground/30 disabled:opacity-50"
+              />
+              <button 
+                type="submit" 
+                disabled={!input.trim() || isLoading || isFreeTier}
+                className={cn(
+                  "p-3 rounded-full transition-all duration-300",
+                  input.trim() && !isLoading 
+                    ? "bg-emerald-500 text-background shadow-lg shadow-emerald-500/20 scale-100" 
+                    : "bg-muted/10 text-muted-foreground/30 scale-90"
+                )}
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
+          <p className="mt-2 text-[10px] text-center text-muted-foreground/40 font-medium tracking-wide">
+            Powered by PriceShield Financial Intelligence Engine v2.0
+          </p>
+        </div>
+      </div>
       
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
+          width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: oklch(0.26 0.01 260);
+          background: rgba(255, 255, 255, 0.05);
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: oklch(0.35 0.01 260);
+          background: rgba(16, 185, 129, 0.2);
         }
         .markdown-content b, .markdown-content strong {
-          color: oklch(0.696 0.17 162.48);
+          color: #34d399; /* emerald-400 */
           font-weight: 700;
+        }
+        .markdown-content pre {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 1rem;
+          border-radius: 1rem;
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
       `}</style>
     </div>
