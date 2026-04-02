@@ -52,6 +52,8 @@ export default function SettingsPage() {
   const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(true);
   const [monthlyReportEnabled, setMonthlyReportEnabled] = useState(true);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
+  const [profileEmail, setProfileEmail] = useState("");
+  const [testing, setTesting] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -66,6 +68,7 @@ export default function SettingsPage() {
       setWeeklyReportEnabled(data.weekly_report_enabled ?? true);
       setMonthlyReportEnabled(data.monthly_report_enabled ?? true);
       setEmailNotificationsEnabled(data.email_notifications_enabled ?? true);
+      setProfileEmail(data.email || "");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -112,6 +115,7 @@ export default function SettingsPage() {
         weekly_report_enabled: weeklyReportEnabled,
         monthly_report_enabled: monthlyReportEnabled,
         email_notifications_enabled: emailNotificationsEnabled,
+        email: profileEmail || null,
       };
 
       await api.updateSettings(token, update);
@@ -131,6 +135,26 @@ export default function SettingsPage() {
         ? prev.filter((c) => c !== channel)
         : [...prev, channel]
     );
+  };
+
+  const handleTestReport = async (period: string) => {
+    setTesting(period);
+    setError("");
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await api.debugReport(token, period);
+      if (res.status === "sent") {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } else if (res.status === "no_data") {
+        setError(res.message || "No activity found to report.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Test failed");
+    } finally {
+      setTesting(null);
+    }
   };
 
   const addEmail = () => {
@@ -500,60 +524,101 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="rounded-lg border border-border/50 p-4 flex flex-col justify-between gap-4">
-            <div>
-              <p className="font-semibold text-sm">Daily Audit</p>
-              <p className="text-xs text-muted-foreground">Every 24 hours of activity</p>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-semibold text-sm">Daily Audit</p>
+                <p className="text-xs text-muted-foreground">Every 24 hours</p>
+              </div>
+              <button
+                onClick={() => setDailyReportEnabled(!dailyReportEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  dailyReportEnabled ? "bg-emerald-500" : "bg-muted"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${dailyReportEnabled ? "translate-x-5" : ""}`} />
+              </button>
             </div>
-            <button
-              onClick={() => setDailyReportEnabled(!dailyReportEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                dailyReportEnabled ? "bg-emerald-500" : "bg-muted"
-              }`}
+            <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 text-[10px] uppercase font-bold"
+                onClick={() => handleTestReport("daily")}
+                disabled={testing === "daily"}
             >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${dailyReportEnabled ? "translate-x-5" : ""}`} />
-            </button>
+              {testing === "daily" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
+              Test Now
+            </Button>
           </div>
           
           <div className="rounded-lg border border-border/50 p-4 flex flex-col justify-between gap-4 font-bold border-emerald-500/30 bg-emerald-500/5">
-            <div>
-              <div className="flex items-center justify-between mb-1">
+            <div className="flex items-start justify-between">
+              <div>
                 <p className="font-semibold text-sm">Weekly Summary</p>
-                <Badge className="bg-emerald-500 text-background text-[10px] py-0 px-1.5 h-4 border-0">RECOMMENDED</Badge>
+                <p className="text-xs text-emerald-400/80">Every 7 days</p>
               </div>
-              <p className="text-xs text-emerald-400/80">Deep dive into 7-day trends</p>
+              <button
+                onClick={() => setWeeklyReportEnabled(!weeklyReportEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  weeklyReportEnabled ? "bg-emerald-500" : "bg-muted"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${weeklyReportEnabled ? "translate-x-5" : ""}`} />
+              </button>
             </div>
-            <button
-              onClick={() => setWeeklyReportEnabled(!weeklyReportEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                weeklyReportEnabled ? "bg-emerald-500" : "bg-muted"
-              }`}
+            <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 text-[10px] uppercase font-bold border-emerald-500/30 hover:bg-emerald-500/10"
+                onClick={() => handleTestReport("weekly")}
+                disabled={testing === "weekly"}
             >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${weeklyReportEnabled ? "translate-x-5" : ""}`} />
-            </button>
+              {testing === "weekly" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
+              Test Now
+            </Button>
           </div>
 
           <div className="rounded-lg border border-border/50 p-4 flex flex-col justify-between gap-4">
-            <div>
-              <p className="font-semibold text-sm">Monthly Audit</p>
-              <p className="text-xs text-muted-foreground">Full financial month review</p>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-semibold text-sm">Monthly Audit</p>
+                <p className="text-xs text-muted-foreground">Every 30 days</p>
+              </div>
+              <button
+                onClick={() => setMonthlyReportEnabled(!monthlyReportEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  monthlyReportEnabled ? "bg-emerald-500" : "bg-muted"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${monthlyReportEnabled ? "translate-x-5" : ""}`} />
+              </button>
             </div>
-            <button
-              onClick={() => setMonthlyReportEnabled(!monthlyReportEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                monthlyReportEnabled ? "bg-emerald-500" : "bg-muted"
-              }`}
+            <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 text-[10px] uppercase font-bold"
+                onClick={() => handleTestReport("monthly")}
+                disabled={testing === "monthly"}
             >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${monthlyReportEnabled ? "translate-x-5" : ""}`} />
-            </button>
+              {testing === "monthly" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
+              Test Now
+            </Button>
           </div>
         </CardContent>
-        <div className="px-6 pb-6 mt-2">
+        <div className="px-6 pb-6 mt-2 space-y-4">
            <div className="rounded-xl bg-muted/20 border border-border/50 p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-blue-400" />
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-medium">Email Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive rich HTML reports in your inbox</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input 
+                      type="email"
+                      value={profileEmail}
+                      onChange={(e) => setProfileEmail(e.target.value)}
+                      placeholder="alerts@email.com"
+                      className="bg-transparent border-none p-0 text-xs text-muted-foreground focus:ring-0 w-48 font-medium underline underline-offset-4 decoration-border/50"
+                    />
+                  </div>
                 </div>
               </div>
               <button
