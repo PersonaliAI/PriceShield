@@ -20,6 +20,15 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { api, AuditResult, UserSettings } from "@/lib/api";
 import ProtectedRoute from "@/components/protected-route";
@@ -47,6 +56,8 @@ export default function OnboardingPage() {
   const [addrStreet, setAddrStreet] = useState("");
   const [addrCity, setAddrCity] = useState("");
   const [addrZip, setAddrZip] = useState("");
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -107,7 +118,6 @@ export default function OnboardingPage() {
       // Save Address if provided/missing
       const selectedLoc = settings?.locations.find(l => l.id === selectedLocationId);
       if (selectedLoc && !selectedLoc.address && addrStreet && addrCity) {
-        setSavingAddress(true);
         const fullAddr = [addrStreet, addrCity, addrZip].filter(Boolean).join(", ");
         await api.updateLocation(token, selectedLocationId, {
           name: selectedLoc.name,
@@ -121,7 +131,8 @@ export default function OnboardingPage() {
       setCurrentStep(2);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Audit failed";
-      setError(msg);
+      setErrorMessage(msg);
+      setShowErrorDialog(true);
       setCurrentStep(0);
     } finally {
       setIsProcessing(false);
@@ -368,7 +379,47 @@ export default function OnboardingPage() {
             </>
           )}
         </Card>
-      </div>
-    </ProtectedRoute>
+
+      {/* Error Details Dialog */}
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-500">
+              <AlertTriangle className="h-5 w-5" /> Audit Failed
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-foreground/80">
+              We couldn&apos;t process your historical audit for the following reason:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 my-2">
+            <p className="text-sm font-mono text-rose-400 break-words">
+              {errorMessage}
+            </p>
+          </div>
+
+          <p className="text-xs text-muted-foreground px-1">
+            Common reasons include blurry scans, incorrect file formats, or exceeding your plan&apos;s location limits.
+          </p>
+
+          <DialogFooter className="mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowErrorDialog(false)}
+              className="border-border/50"
+            >
+              Close
+            </Button>
+            <Button 
+              onClick={() => setShowErrorDialog(false)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-background"
+            >
+              Try Again
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  </ProtectedRoute>
   );
 }
