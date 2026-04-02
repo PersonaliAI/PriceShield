@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, FileText, Settings, LogOut, Mail, CreditCard } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, Mail, CreditCard, MapPin, Shield } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -8,8 +8,10 @@ import ProtectedRoute from "@/components/protected-route";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/dashboard/ai-cfo", icon: Shield, label: "AI CFO" },
   { href: "/onboarding", icon: FileText, label: "Upload Invoices" },
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox" },
+  { href: "/dashboard/locations", icon: MapPin, label: "Locations" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];

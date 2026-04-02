@@ -6,14 +6,15 @@ import {
   TrendingUp,
   AlertTriangle,
   Building2,
-  ArrowUpRight,
-  ArrowDownRight,
   RefreshCw,
   MessageSquare,
   Search,
   Loader2,
   Shield,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,7 +43,7 @@ import {
   AreaChart,
 } from "recharts";
 import { useAuth } from "@/lib/auth-context";
-import { api, DashboardSummary, InvoiceRow, PriceTrendPoint } from "@/lib/api";
+import { api, DashboardSummary, InvoiceRow, PriceTrendPoint, UserSettings } from "@/lib/api";
 
 export default function DashboardPage() {
   const { getToken } = useAuth();
@@ -55,6 +56,7 @@ export default function DashboardPage() {
   const [selectedVendor, setSelectedVendor] = useState("All Vendors");
   const [trendItem, setTrendItem] = useState<string>("");
   const [trendVendor, setTrendVendor] = useState<string>("");
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -79,6 +81,9 @@ export default function DashboardPage() {
       setSummary(summaryData);
       setVendors(vendorsData.vendors);
       setInvoices(invoicesData.rows);
+      
+      const s = await api.getSettings(token);
+      setSettings(s);
 
       // Auto-select first item for trend chart
       if (invoicesData.rows.length > 0) {
@@ -151,7 +156,7 @@ export default function DashboardPage() {
       if (!token) return;
       const res = await api.askAICFO(token, cfoQuestion);
       setCfoAnswer(res.answer);
-    } catch (err) {
+    } catch {
       setCfoAnswer("Sorry, I couldn't process your request right now.");
     } finally {
       setIsAskingCFO(false);
@@ -225,7 +230,15 @@ export default function DashboardPage() {
       </div>
       
       {/* AI CFO Bar */}
-      <Card className="bg-emerald-500/5 border-emerald-500/20 overflow-hidden">
+      <Card className={`bg-emerald-500/5 border-emerald-500/20 overflow-hidden relative ${settings?.tier === "free" ? "opacity-75" : ""}`}>
+        {settings?.tier === "free" && (
+          <div className="absolute inset-0 z-10 bg-background/40 backdrop-blur-[1px] flex items-center justify-center p-4">
+            <div className="bg-background/90 border border-border px-4 py-2 rounded-xl shadow-xl flex items-center gap-3">
+              <Shield className="h-5 w-5 text-emerald-400" />
+              <p className="text-sm font-medium">AI CFO Chat is a Pro feature. <a href="/dashboard/billing" className="text-emerald-400 hover:underline">Upgrade to unlock</a></p>
+            </div>
+          </div>
+        )}
         <CardContent className="p-0">
           <form onSubmit={handleAskCFO} className="flex items-center p-2 gap-2">
             <div className="flex-1 relative">
@@ -234,13 +247,14 @@ export default function DashboardPage() {
                 type="text"
                 value={cfoQuestion}
                 onChange={(e) => setCfoQuestion(e.target.value)}
+                disabled={settings?.tier === "free"}
                 placeholder="Ask your AI CFO: 'What's my biggest price hike?' or 'Compare Sysco prices...'"
                 className="w-full bg-background/50 border-0 focus:ring-0 pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground/60 rounded-xl"
               />
             </div>
             <Button 
               type="submit"
-              disabled={isAskingCFO || !cfoQuestion.trim()}
+              disabled={isAskingCFO || !cfoQuestion.trim() || settings?.tier === "free"}
               className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold px-6 rounded-xl shadow-lg shadow-emerald-500/20"
             >
               {isAskingCFO ? (
@@ -259,9 +273,19 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">AI CFO Analysis</p>
-                  <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                    {cfoAnswer}
-                  </p>
+                  <div className="text-sm leading-relaxed text-muted-foreground prose prose-sm prose-invert max-w-none">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkMath]} 
+                      rehypePlugins={[rehypeKatex]}
+                      components={{
+                        b: ({...props}) => <b className="font-bold text-emerald-400" {...props} />,
+                        strong: ({...props}) => <strong className="font-bold text-emerald-400" {...props} />,
+                        p: ({...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                      }}
+                    >
+                      {cfoAnswer}
+                    </ReactMarkdown>
+                  </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 

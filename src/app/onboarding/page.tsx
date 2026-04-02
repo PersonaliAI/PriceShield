@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle, ArrowRight, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
@@ -22,6 +22,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
@@ -34,6 +35,9 @@ export default function OnboardingPage() {
         if (token) {
           const s = await api.getSettings(token);
           setSettings(s);
+          if (s.locations.length > 0) {
+            setSelectedLocationId(s.locations[0].id);
+          }
         }
       } catch (err) {
         console.error("Failed to load settings in onboarding:", err);
@@ -81,7 +85,7 @@ export default function OnboardingPage() {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
 
-      const result = await api.runAudit(token, files);
+      const result = await api.runAudit(token, files, selectedLocationId);
       setAuditResult(result);
       setCurrentStep(2);
     } catch (err) {
@@ -145,11 +149,30 @@ export default function OnboardingPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Error display */}
-                {error && (
-                  <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    {error}
+                {/* Location Selector */}
+                {settings && settings.locations.length > 0 && (
+                  <div className="space-y-2 mb-4">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Which location are these for?
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={selectedLocationId}
+                        onChange={(e) => setSelectedLocationId(e.target.value)}
+                        className="flex-1 rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium appearance-none cursor-pointer"
+                      >
+                        {settings.locations.map((loc) => (
+                          <option key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </option>
+                        ))}
+                      </select>
+                      <Link href="/dashboard/locations">
+                        <Button variant="outline" size="icon" className="shrink-0" title="Manage Locations">
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 )}
 
@@ -203,9 +226,10 @@ export default function OnboardingPage() {
 
                 <Button
                   className="w-full bg-emerald-500 hover:bg-emerald-400 text-background font-semibold h-11"
-                  disabled={files.length < 2}
+                  disabled={files.length < 2 || isProcessing}
                   onClick={handleSubmit}
                 >
+                  {isProcessing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Run Free Audit <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">

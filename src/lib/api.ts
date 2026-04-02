@@ -10,6 +10,19 @@ export interface UserSettings {
   alert_channels: string[];
   tier: string;
   manual_uploads_count: number;
+  locations: Location[];
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  address: string | null;
+  created_at: string;
+}
+
+export interface LocationCreate {
+  name: string;
+  address?: string;
 }
 
 export interface SettingsUpdate {
@@ -55,10 +68,14 @@ async function request<T>(
 async function uploadFiles<T>(
   path: string,
   files: File[],
-  token: string
+  token: string,
+  metadata?: Record<string, string>
 ): Promise<T> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
+  if (metadata) {
+    Object.entries(metadata).forEach(([key, val]) => formData.append(key, val));
+  }
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
@@ -144,8 +161,13 @@ export const api = {
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
 
-  runAudit: (token: string, files: File[]) =>
-    uploadFiles<AuditResult>(`/onboarding/audit`, files, token),
+  runAudit: (token: string, files: File[], locationId?: string) =>
+    uploadFiles<AuditResult>(
+      `/onboarding/audit`, 
+      files, 
+      token, 
+      locationId ? { location_id: locationId } : undefined
+    ),
 
   getSettings: (token: string) =>
     request<UserSettings>(`/api/settings`, { token }),
@@ -176,11 +198,34 @@ export const api = {
       body: JSON.stringify({ question }),
     }),
 
+  getAICFOHistory: (token: string, limit: number = 30) =>
+    request<Array<{ role: string; content: string; created_at: string }>>(
+      `/api/ai-cfo/history?limit=${limit}`,
+      { token }
+    ),
+
   // Subscriptions
   getCheckoutUrl: (token: string, tier: string) =>
     request<{ url: string }>(`/api/subscriptions/checkout`, {
       token,
       method: "POST",
       body: JSON.stringify({ tier }),
+    }),
+
+  // Locations
+  getLocations: (token: string) =>
+    request<Location[]>(`/api/locations`, { token }),
+
+  createLocation: (token: string, data: LocationCreate) =>
+    request<Location>(`/api/locations`, {
+      token,
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  deleteLocation: (token: string, id: string) =>
+    request<{ status: string }>(`/api/locations/${id}`, {
+      token,
+      method: "DELETE",
     }),
 };
