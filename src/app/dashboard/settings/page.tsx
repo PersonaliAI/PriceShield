@@ -48,6 +48,10 @@ export default function SettingsPage() {
   const [forwardingEmails, setForwardingEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
   const [alertChannels, setAlertChannels] = useState<string[]>(["push"]);
+  const [dailyReportEnabled, setDailyReportEnabled] = useState(false);
+  const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(true);
+  const [monthlyReportEnabled, setMonthlyReportEnabled] = useState(true);
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -58,6 +62,10 @@ export default function SettingsPage() {
       setWhatsappNumber(data.whatsapp_number || "");
       setForwardingEmails(data.forwarding_emails || []);
       setAlertChannels(data.alert_channels || ["push"]);
+      setDailyReportEnabled(data.daily_report_enabled ?? false);
+      setWeeklyReportEnabled(data.weekly_report_enabled ?? true);
+      setMonthlyReportEnabled(data.monthly_report_enabled ?? true);
+      setEmailNotificationsEnabled(data.email_notifications_enabled ?? true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -100,6 +108,10 @@ export default function SettingsPage() {
         whatsapp_number: whatsappNumber || null,
         forwarding_emails: forwardingEmails,
         alert_channels: alertChannels,
+        daily_report_enabled: dailyReportEnabled,
+        weekly_report_enabled: weeklyReportEnabled,
+        monthly_report_enabled: monthlyReportEnabled,
+        email_notifications_enabled: emailNotificationsEnabled,
       };
 
       await api.updateSettings(token, update);
@@ -469,6 +481,91 @@ export default function SettingsPage() {
             </div>
           </div>
         </CardContent>
+      </Card>
+
+      {/* Scheduled Reports */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-blue-400" />
+            </div>
+            <div>
+              <CardTitle>Scheduled Intelligence</CardTitle>
+              <CardDescription>
+                Receive automated financial audits via Email, Telegram, and WhatsApp
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-lg border border-border/50 p-4 flex flex-col justify-between gap-4">
+            <div>
+              <p className="font-semibold text-sm">Daily Audit</p>
+              <p className="text-xs text-muted-foreground">Every 24 hours of activity</p>
+            </div>
+            <button
+              onClick={() => setDailyReportEnabled(!dailyReportEnabled)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                dailyReportEnabled ? "bg-emerald-500" : "bg-muted"
+              }`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${dailyReportEnabled ? "translate-x-5" : ""}`} />
+            </button>
+          </div>
+          
+          <div className="rounded-lg border border-border/50 p-4 flex flex-col justify-between gap-4 font-bold border-emerald-500/30 bg-emerald-500/5">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <p className="font-semibold text-sm">Weekly Summary</p>
+                <Badge className="bg-emerald-500 text-background text-[10px] py-0 px-1.5 h-4 border-0">RECOMMENDED</Badge>
+              </div>
+              <p className="text-xs text-emerald-400/80">Deep dive into 7-day trends</p>
+            </div>
+            <button
+              onClick={() => setWeeklyReportEnabled(!weeklyReportEnabled)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                weeklyReportEnabled ? "bg-emerald-500" : "bg-muted"
+              }`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${weeklyReportEnabled ? "translate-x-5" : ""}`} />
+            </button>
+          </div>
+
+          <div className="rounded-lg border border-border/50 p-4 flex flex-col justify-between gap-4">
+            <div>
+              <p className="font-semibold text-sm">Monthly Audit</p>
+              <p className="text-xs text-muted-foreground">Full financial month review</p>
+            </div>
+            <button
+              onClick={() => setMonthlyReportEnabled(!monthlyReportEnabled)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                monthlyReportEnabled ? "bg-emerald-500" : "bg-muted"
+              }`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${monthlyReportEnabled ? "translate-x-5" : ""}`} />
+            </button>
+          </div>
+        </CardContent>
+        <div className="px-6 pb-6 mt-2">
+           <div className="rounded-xl bg-muted/20 border border-border/50 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-blue-400" />
+                <div>
+                  <p className="text-sm font-medium">Email Notifications</p>
+                  <p className="text-xs text-muted-foreground">Receive rich HTML reports in your inbox</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEmailNotificationsEnabled(!emailNotificationsEnabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  emailNotificationsEnabled ? "bg-emerald-500" : "bg-muted"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${emailNotificationsEnabled ? "translate-x-5" : ""}`} />
+              </button>
+           </div>
+        </div>
       </Card>
 
       {/* Connection Status */}
