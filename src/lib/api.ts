@@ -9,7 +9,9 @@ export interface UserSettings {
   onesignal_player_id: string | null;
   alert_channels: string[];
   email_notifications_enabled: boolean;
-  reporting_enabled: boolean;
+  daily_reports_enabled: boolean;
+  weekly_reports_enabled: boolean;
+  monthly_reports_enabled: boolean;
   notification_email: string | null;
   tier: string;
   manual_uploads_count: number;
@@ -34,7 +36,9 @@ export interface SettingsUpdate {
   onesignal_player_id?: string | null;
   alert_channels?: string[];
   email_notifications_enabled?: boolean;
-  reporting_enabled?: boolean;
+  daily_reports_enabled?: boolean;
+  weekly_reports_enabled?: boolean;
+  monthly_reports_enabled?: boolean;
   notification_email?: string | null;
 }
 

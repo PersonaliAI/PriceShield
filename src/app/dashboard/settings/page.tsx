@@ -48,7 +48,9 @@ export default function SettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [alertChannels, setAlertChannels] = useState<string[]>(["telegram", "whatsapp", "email"]);
   const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(true);
-  const [reportingEnabled, setReportingEnabled] = useState(true);
+  const [dailyReportsEnabled, setDailyReportsEnabled] = useState(false);
+  const [weeklyReportsEnabled, setWeeklyReportsEnabled] = useState(true);
+  const [monthlyReportsEnabled, setMonthlyReportsEnabled] = useState(true);
   const [notificationEmail, setNotificationEmail] = useState("");
 
   const fetchSettings = useCallback(async () => {
@@ -61,7 +63,9 @@ export default function SettingsPage() {
       setForwardingEmails(data.forwarding_emails || []);
       setAlertChannels(data.alert_channels || ["telegram", "whatsapp", "email"]);
       setEmailAlertsEnabled(data.email_notifications_enabled ?? true);
-      setReportingEnabled(data.reporting_enabled ?? true);
+      setDailyReportsEnabled(data.daily_reports_enabled ?? false);
+      setWeeklyReportsEnabled(data.weekly_reports_enabled ?? true);
+      setMonthlyReportsEnabled(data.monthly_reports_enabled ?? true);
       setNotificationEmail(data.notification_email || "");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
@@ -106,7 +110,9 @@ export default function SettingsPage() {
         forwarding_emails: forwardingEmails,
         alert_channels: alertChannels,
         email_notifications_enabled: emailAlertsEnabled,
-        reporting_enabled: reportingEnabled,
+        daily_reports_enabled: dailyReportsEnabled,
+        weekly_reports_enabled: weeklyReportsEnabled,
+        monthly_reports_enabled: monthlyReportsEnabled,
         notification_email: notificationEmail || null,
       };
 
@@ -481,21 +487,61 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              {/* Reports Toggle */}
+              {/* Daily Reports Toggle */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Financial Reporting</p>
-                  <p className="text-xs text-muted-foreground">Receive Daily, Weekly & Monthly summaries</p>
+                  <p className="text-sm font-medium">Daily Digest</p>
+                  <p className="text-xs text-muted-foreground">Short summary of past 24h (Default: Off)</p>
                 </div>
                 <button
-                  onClick={() => setReportingEnabled(!reportingEnabled)}
+                  onClick={() => setDailyReportsEnabled(!dailyReportsEnabled)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${
-                    reportingEnabled ? "bg-emerald-500" : "bg-muted"
+                    dailyReportsEnabled ? "bg-emerald-500" : "bg-muted"
                   }`}
                 >
                   <span
                     className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      reportingEnabled ? "translate-x-5" : ""
+                      dailyReportsEnabled ? "translate-x-5" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Weekly Reports Toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Weekly Summary</p>
+                  <p className="text-xs text-muted-foreground">Comprehensive week-over-week audit</p>
+                </div>
+                <button
+                  onClick={() => setWeeklyReportsEnabled(!weeklyReportsEnabled)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                    weeklyReportsEnabled ? "bg-emerald-500" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                      weeklyReportsEnabled ? "translate-x-5" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Monthly Reports Toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Monthly Audit</p>
+                  <p className="text-xs text-muted-foreground">Deep dive into monthly margin leaks</p>
+                </div>
+                <button
+                  onClick={() => setMonthlyReportsEnabled(!monthlyReportsEnabled)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                    monthlyReportsEnabled ? "bg-emerald-500" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                      monthlyReportsEnabled ? "translate-x-5" : ""
                     }`}
                   />
                 </button>
