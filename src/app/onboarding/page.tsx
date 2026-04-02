@@ -9,7 +9,8 @@ import {
   ArrowRight, 
   Loader2, 
   Plus,
-  MapPin
+  MapPin,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -20,7 +21,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { 
   Dialog, 
   DialogContent, 
