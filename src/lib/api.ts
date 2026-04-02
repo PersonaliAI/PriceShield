@@ -223,6 +223,13 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  updateLocation: (token: string, id: string, data: LocationCreate) =>
+    request<Location>(`/api/locations/${id}`, {
+      token,
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
   deleteLocation: (token: string, id: string) =>
     request<{ status: string }>(`/api/locations/${id}`, {
       token,

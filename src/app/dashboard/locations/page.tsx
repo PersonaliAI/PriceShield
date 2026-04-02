@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, MapPin, Trash2, Loader2, AlertTriangle, Building2, ExternalLink } from "lucide-react";
+import { 
+  Plus, 
+  MapPin, 
+  Trash2, 
+  Loader2, 
+  AlertTriangle, 
+  Building2, 
+  ExternalLink,
+  Pencil,
+  X,
+  Check
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { api, Location, UserSettings } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 export default function LocationsPage() {
   const { getToken } = useAuth();
@@ -13,8 +25,12 @@ export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
-  const [newLocName, setNewLocName] = useState("");
-  const [newLocAddress, setNewLocAddress] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Form State
+  const [locName, setLocName] = useState("");
+  const [locAddress, setLocAddress] = useState("");
+  
   const [error, setError] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -42,26 +58,54 @@ export default function LocationsPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleAddLocation = async () => {
-    if (!newLocName.trim()) return;
+  const handleStartAdd = () => {
+    setIsAdding(true);
+    setEditingId(null);
+    setLocName("");
+    setLocAddress("");
+  };
+
+  const handleStartEdit = (loc: Location) => {
+    setEditingId(loc.id);
+    setIsAdding(false);
+    setLocName(loc.name);
+    setLocAddress(loc.address || "");
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    setEditingId(null);
+    setLocName("");
+    setLocAddress("");
+  };
+
+  const handleSave = async () => {
+    if (!locName.trim()) return;
     setError("");
-    setProcessingId("adding");
+    const procId = editingId || "adding";
+    setProcessingId(procId);
     
     try {
       const token = await getToken();
       if (!token) return;
       
-      const newLoc = await api.createLocation(token, {
-        name: newLocName,
-        address: newLocAddress
-      });
+      if (editingId) {
+        const updated = await api.updateLocation(token, editingId, {
+          name: locName,
+          address: locAddress
+        });
+        setLocations(locations.map(l => l.id === editingId ? updated : l));
+      } else {
+        const newLoc = await api.createLocation(token, {
+          name: locName,
+          address: locAddress
+        });
+        setLocations([...locations, newLoc]);
+      }
       
-      setLocations([...locations, newLoc]);
-      setIsAdding(false);
-      setNewLocName("");
-      setNewLocAddress("");
+      handleCancel();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add location");
+      setError(err instanceof Error ? err.message : "Failed to save location");
     } finally {
       setProcessingId(null);
     }
@@ -104,8 +148,8 @@ export default function LocationsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Restaurant Locations</h1>
           <p className="text-muted-foreground">Manage the physical sites monitored by PriceShield.</p>
         </div>
-        {!isAdding && !atLimit && (
-          <Button onClick={() => setIsAdding(true)} className="bg-emerald-500 hover:bg-emerald-400 text-background">
+        {!isAdding && !editingId && !atLimit && (
+          <Button onClick={handleStartAdd} className="bg-emerald-500 hover:bg-emerald-400 text-background">
             <Plus className="h-4 w-4 mr-2" /> Add Location
           </Button>
         )}
@@ -118,11 +162,11 @@ export default function LocationsPage() {
         </div>
       )}
 
-      {isAdding && (
-        <Card className="border-emerald-500/30 bg-emerald-500/5">
+      {(isAdding || editingId) && (
+        <Card className="border-emerald-500/30 bg-emerald-500/5 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardHeader>
-            <CardTitle className="text-lg">Add New Location</CardTitle>
-            <CardDescription>Enter the details for your new restaurant site.</CardDescription>
+            <CardTitle className="text-lg">{editingId ? "Edit Location" : "Add New Location"}</CardTitle>
+            <CardDescription>Enter the details for your restaurant site.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,18 +174,18 @@ export default function LocationsPage() {
                 <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Location Name</label>
                 <input
                   type="text"
-                  value={newLocName}
-                  onChange={(e) => setNewLocName(e.target.value)}
+                  value={locName}
+                  onChange={(e) => setLocName(e.target.value)}
                   placeholder="e.g. Downtown Bistro"
                   className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Address (Optional)</label>
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Address (Important for Multi-Audit)</label>
                 <input
                   type="text"
-                  value={newLocAddress}
-                  onChange={(e) => setNewLocAddress(e.target.value)}
+                  value={locAddress}
+                  onChange={(e) => setLocAddress(e.target.value)}
                   placeholder="123 Main St, City"
                   className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
                 />
@@ -149,21 +193,28 @@ export default function LocationsPage() {
             </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-3 border-t border-border/20 pt-4">
-            <Button variant="ghost" onClick={() => setIsAdding(false)} disabled={processingId === "adding"}>
+            <Button variant="ghost" onClick={handleCancel} disabled={!!processingId}>
               Cancel
             </Button>
             <Button 
-              onClick={handleAddLocation} 
-              disabled={processingId === "adding" || !newLocName.trim()}
+              onClick={handleSave} 
+              disabled={!!processingId || !locName.trim()}
               className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold"
             >
-              {processingId === "adding" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Location"}
+              {processingId === "adding" || (editingId && processingId === editingId) ? (
+                <Loader2 className="h-4 w-4 animate-spin" /> 
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  {editingId ? "Update Location" : "Save Location"}
+                </>
+              )}
             </Button>
           </CardFooter>
         </Card>
       )}
 
-      {atLimit && !isAdding && tier !== "multi" && (
+      {atLimit && !isAdding && !editingId && tier !== "multi" && (
         <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -184,35 +235,52 @@ export default function LocationsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {locations.map((loc) => (
-          <Card key={loc.id} className="group hover:border-emerald-500/30 transition-all duration-300">
+          <Card key={loc.id} className={cn(
+            "group transition-all duration-300",
+            editingId === loc.id ? "border-emerald-500 ring-1 ring-emerald-500/20" : "hover:border-emerald-500/30"
+          )}>
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-emerald-500/10 transition-colors">
                   <MapPin className="h-5 w-5 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
                 </div>
-                {locations.length > 1 && (
+                <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDeleteLocation(loc.id)}
-                    disabled={processingId === loc.id}
-                    className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={() => handleStartEdit(loc)}
+                    disabled={!!processingId}
+                    className="text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    {processingId === loc.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
+                    <Pencil className="h-4 w-4" />
                   </Button>
-                )}
+                  {locations.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteLocation(loc.id)}
+                      disabled={processingId === loc.id}
+                      className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      {processingId === loc.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                </div>
               </div>
               <CardTitle className="mt-4">{loc.name}</CardTitle>
-              <CardDescription className="flex items-center gap-1.5 mt-1">
+              <CardDescription className={cn(
+                "flex items-center gap-1.5 mt-1 font-medium",
+                !loc.address && "text-rose-400/70"
+              )}>
                 {loc.address || "No address provided"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/50">
                 <span>Created {new Date(loc.created_at).toLocaleDateString()}</span>
                 <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                 <span>ID: {loc.id}</span>
