@@ -10,11 +10,18 @@ import {
   Building2, 
   ExternalLink,
   Pencil,
-  X,
   Check
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { api, Location, UserSettings } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -27,9 +34,14 @@ export default function LocationsPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
-  // Form State
+  // Dialog State
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  
+  // Structured Form State
   const [locName, setLocName] = useState("");
-  const [locAddress, setLocAddress] = useState("");
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrCity, setAddrCity] = useState("");
+  const [addrZip, setAddrZip] = useState("");
   
   const [error, setError] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -58,25 +70,43 @@ export default function LocationsPage() {
     fetchData();
   }, [fetchData]);
 
+  // Helper to parse existing single-string address
+  const parseAddress = (fullAddr: string | null) => {
+    if (!fullAddr) return { street: "", city: "", zip: "" };
+    const parts = fullAddr.split(",").map(p => p.trim());
+    return {
+      street: parts[0] || "",
+      city: parts[1] || "",
+      zip: parts[2] || ""
+    };
+  };
+
   const handleStartAdd = () => {
     setIsAdding(true);
     setEditingId(null);
     setLocName("");
-    setLocAddress("");
+    setAddrStreet("");
+    setAddrCity("");
+    setAddrZip("");
   };
 
   const handleStartEdit = (loc: Location) => {
+    const parsed = parseAddress(loc.address);
     setEditingId(loc.id);
     setIsAdding(false);
     setLocName(loc.name);
-    setLocAddress(loc.address || "");
+    setAddrStreet(parsed.street);
+    setAddrCity(parsed.city);
+    setAddrZip(parsed.zip);
   };
 
   const handleCancel = () => {
     setIsAdding(false);
     setEditingId(null);
     setLocName("");
-    setLocAddress("");
+    setAddrStreet("");
+    setAddrCity("");
+    setAddrZip("");
   };
 
   const handleSave = async () => {
@@ -85,6 +115,9 @@ export default function LocationsPage() {
     const procId = editingId || "adding";
     setProcessingId(procId);
     
+    // Join structured address
+    const fullAddress = [addrStreet, addrCity, addrZip].filter(Boolean).join(", ");
+    
     try {
       const token = await getToken();
       if (!token) return;
@@ -92,13 +125,13 @@ export default function LocationsPage() {
       if (editingId) {
         const updated = await api.updateLocation(token, editingId, {
           name: locName,
-          address: locAddress
+          address: fullAddress
         });
         setLocations(locations.map(l => l.id === editingId ? updated : l));
       } else {
         const newLoc = await api.createLocation(token, {
           name: locName,
-          address: locAddress
+          address: fullAddress
         });
         setLocations([...locations, newLoc]);
       }
@@ -111,16 +144,16 @@ export default function LocationsPage() {
     }
   };
 
-  const handleDeleteLocation = async (id: string) => {
-    if (!confirm("Are you sure? All historical invoices linked to this location will remain, but you won't be able to filter by this location anymore.")) return;
-    
-    setProcessingId(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setProcessingId(deleteId);
     try {
       const token = await getToken();
       if (!token) return;
       
-      await api.deleteLocation(token, id);
-      setLocations(locations.filter(l => l.id !== id));
+      await api.deleteLocation(token, deleteId);
+      setLocations(locations.filter(l => l.id !== deleteId));
+      setDeleteId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete location");
     } finally {
@@ -166,29 +199,53 @@ export default function LocationsPage() {
         <Card className="border-emerald-500/30 bg-emerald-500/5 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardHeader>
             <CardTitle className="text-lg">{editingId ? "Edit Location" : "Add New Location"}</CardTitle>
-            <CardDescription>Enter the details for your restaurant site.</CardDescription>
+            <CardDescription>Enter the physical details for your restaurant site.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Location Name</label>
-                <input
-                  type="text"
-                  value={locName}
-                  onChange={(e) => setLocName(e.target.value)}
-                  placeholder="e.g. Downtown Bistro"
-                  className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Address (Important for Multi-Audit)</label>
-                <input
-                  type="text"
-                  value={locAddress}
-                  onChange={(e) => setLocAddress(e.target.value)}
-                  placeholder="123 Main St, City"
-                  className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
-                />
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">Location Name</label>
+              <input
+                type="text"
+                value={locName}
+                onChange={(e) => setLocName(e.target.value)}
+                placeholder="e.g. Downtown Bistro"
+                className="w-full rounded-xl border border-border/50 bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium border-emerald-500/10"
+              />
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">Structured Address</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-3 space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">Street Address</label>
+                  <input
+                    type="text"
+                    value={addrStreet}
+                    onChange={(e) => setAddrStreet(e.target.value)}
+                    placeholder="361, Nagahamulsa Rd"
+                    className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">City</label>
+                  <input
+                    type="text"
+                    value={addrCity}
+                    onChange={(e) => setAddrCity(e.target.value)}
+                    placeholder="Kadawatha"
+                    className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
+                  />
+                </div>
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">Postal Code / Region</label>
+                  <input
+                    type="text"
+                    value={addrZip}
+                    onChange={(e) => setAddrZip(e.target.value)}
+                    placeholder="11850"
+                    className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
+                  />
+                </div>
               </div>
             </div>
           </CardContent>
@@ -199,7 +256,7 @@ export default function LocationsPage() {
             <Button 
               onClick={handleSave} 
               disabled={!!processingId || !locName.trim()}
-              className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold"
+              className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold px-6"
             >
               {processingId === "adding" || (editingId && processingId === editingId) ? (
                 <Loader2 className="h-4 w-4 animate-spin" /> 
@@ -215,7 +272,7 @@ export default function LocationsPage() {
       )}
 
       {atLimit && !isAdding && !editingId && tier !== "multi" && (
-        <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm shadow-emerald-500/5">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
               <Building2 className="h-6 w-6 text-emerald-400" />
@@ -236,8 +293,8 @@ export default function LocationsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {locations.map((loc) => (
           <Card key={loc.id} className={cn(
-            "group transition-all duration-300",
-            editingId === loc.id ? "border-emerald-500 ring-1 ring-emerald-500/20" : "hover:border-emerald-500/30"
+            "group transition-all duration-300 border-border/40",
+            editingId === loc.id ? "border-emerald-500 ring-4 ring-emerald-500/5" : "hover:border-emerald-500/30"
           )}>
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
@@ -250,7 +307,7 @@ export default function LocationsPage() {
                     size="icon"
                     onClick={() => handleStartEdit(loc)}
                     disabled={!!processingId}
-                    className="text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                    className="text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -258,15 +315,11 @@ export default function LocationsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteLocation(loc.id)}
+                      onClick={() => setDeleteId(loc.id)}
                       disabled={processingId === loc.id}
-                      className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                      className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                     >
-                      {processingId === loc.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -280,7 +333,7 @@ export default function LocationsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/50">
+              <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/40">
                 <span>Created {new Date(loc.created_at).toLocaleDateString()}</span>
                 <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                 <span>ID: {loc.id}</span>
@@ -289,6 +342,30 @@ export default function LocationsPage() {
           </Card>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-500">
+              <AlertTriangle className="h-5 w-5" /> Delete Location?
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure? All historical invoices linked to this location will remain, but you won&apos;t be able to filter by this location anymore.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="ghost" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete} 
+              className="bg-rose-500 hover:bg-rose-600"
+            >
+              {processingId === deleteId ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete Forever"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

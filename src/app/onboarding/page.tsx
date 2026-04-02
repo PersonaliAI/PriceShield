@@ -2,9 +2,24 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, CheckCircle, ArrowRight, Loader2, Plus } from "lucide-react";
+import { 
+  Upload, 
+  FileText, 
+  CheckCircle, 
+  ArrowRight, 
+  Loader2, 
+  Plus,
+  MapPin
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
 import { api, AuditResult, UserSettings } from "@/lib/api";
 import ProtectedRoute from "@/components/protected-route";
@@ -151,24 +166,33 @@ export default function OnboardingPage() {
               <CardContent className="space-y-4">
                 {/* Location Selector */}
                 {settings && settings.locations.length > 0 && (
-                  <div className="space-y-2 mb-4">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Which location are these for?
+                  <div className="space-y-2 mb-6">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">
+                      Target Audit Location
                     </label>
                     <div className="flex items-center gap-2">
-                      <select
-                        value={selectedLocationId}
-                        onChange={(e) => setSelectedLocationId(e.target.value)}
-                        className="flex-1 rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium appearance-none cursor-pointer"
-                      >
-                        {settings.locations.map((loc) => (
-                          <option key={loc.id} value={loc.id}>
-                            {loc.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex-1">
+                        <Select 
+                          value={selectedLocationId} 
+                          onValueChange={(val) => setSelectedLocationId(val || "")}
+                        >
+                          <SelectTrigger className="w-full h-11 bg-background/50 border-border/50 rounded-xl px-4 text-sm font-medium">
+                            <SelectValue placeholder="Select Location" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover/80 backdrop-blur-xl border-border/50 rounded-xl shadow-2xl">
+                            {settings.locations.map((loc) => (
+                              <SelectItem key={loc.id} value={loc.id}>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+                                  <span>{loc.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <Link href="/dashboard/locations">
-                        <Button variant="outline" size="icon" className="shrink-0" title="Manage Locations">
+                        <Button variant="outline" size="icon" className="shrink-0 h-11 w-11 rounded-xl border-border/50 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors" title="Manage Locations">
                           <Plus className="h-4 w-4" />
                         </Button>
                       </Link>
