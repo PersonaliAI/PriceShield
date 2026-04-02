@@ -42,6 +42,11 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  
+  // Address Setup State
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrCity, setAddrCity] = useState("");
+  const [addrZip, setAddrZip] = useState("");
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -94,12 +99,23 @@ export default function OnboardingPage() {
     if (files.length < 2) return;
     setIsProcessing(true);
     setError("");
-    setCurrentStep(1);
-
+    
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
 
+      // Save Address if provided/missing
+      const selectedLoc = settings?.locations.find(l => l.id === selectedLocationId);
+      if (selectedLoc && !selectedLoc.address && addrStreet && addrCity) {
+        setSavingAddress(true);
+        const fullAddr = [addrStreet, addrCity, addrZip].filter(Boolean).join(", ");
+        await api.updateLocation(token, selectedLocationId, {
+          name: selectedLoc.name,
+          address: fullAddr
+        });
+      }
+
+      setCurrentStep(1);
       const result = await api.runAudit(token, files, selectedLocationId);
       setAuditResult(result);
       setCurrentStep(2);
@@ -196,6 +212,51 @@ export default function OnboardingPage() {
                           <Plus className="h-4 w-4" />
                         </Button>
                       </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* New: Address Setup if missing */}
+                {settings && selectedLocationId && !settings.locations.find(l => l.id === selectedLocationId)?.address && (
+                  <div className="space-y-4 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <MapPin className="h-4 w-4" />
+                      <p className="text-xs font-bold uppercase tracking-widest">Setup Restaurant Address</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground/80 leading-relaxed">
+                      Enter your physical site address so our AI can match future invoices to this location automatically.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="md:col-span-2 space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">Street</label>
+                        <input
+                          type="text"
+                          value={addrStreet}
+                          onChange={(e) => setAddrStreet(e.target.value)}
+                          placeholder="e.g. 361, Nagahamulsa Rd"
+                          className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">City</label>
+                        <input
+                          type="text"
+                          value={addrCity}
+                          onChange={(e) => setAddrCity(e.target.value)}
+                          placeholder="Kadawatha"
+                          className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">Zip / Region</label>
+                        <input
+                          type="text"
+                          value={addrZip}
+                          onChange={(e) => setAddrZip(e.target.value)}
+                          placeholder="11850"
+                          className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

@@ -20,6 +20,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { api, UserSettings, SettingsUpdate } from "@/lib/api";
 
@@ -33,6 +41,7 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [copiedInbox, setCopiedInbox] = useState(false);
+  const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
 
   // Form state
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -62,8 +71,7 @@ export default function SettingsPage() {
   }, [fetchSettings]);
 
   const handleDisconnectTelegram = async () => {
-    if (!confirm("Are you sure you want to disconnect Telegram? You will stop receiving alerts there.")) return;
-    
+    setShowConfirmDisconnect(false);
     setSaving(true);
     try {
       const token = await getToken();
@@ -315,8 +323,8 @@ export default function SettingsPage() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={handleDisconnectTelegram}
-                      className="h-7 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[10px] uppercase tracking-wider font-bold"
+                      onClick={() => setShowConfirmDisconnect(true)}
+                      className="h-7 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[10px] uppercase tracking-wider font-bold cursor-pointer"
                     >
                       Disconnect
                     </Button>
@@ -529,6 +537,30 @@ export default function SettingsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Disconnect Confirmation Dialog */}
+      <Dialog open={showConfirmDisconnect} onOpenChange={setShowConfirmDisconnect}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-500">
+              <AlertTriangle className="h-5 w-5" /> Disconnect Telegram?
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure? You will stop receiving instant price alerts on Telegram. You can reconnect anytime.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="ghost" onClick={() => setShowConfirmDisconnect(false)}>Cancel</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDisconnectTelegram} 
+              className="bg-rose-500 hover:bg-rose-600"
+            >
+              Disconnect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
