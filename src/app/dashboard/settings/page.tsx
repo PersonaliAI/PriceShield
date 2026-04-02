@@ -146,14 +146,23 @@ export default function SettingsPage() {
       const res = await api.debugReport(token, period);
       if (res.status === "sent") {
         setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+        // We'll also use setTesting to show a success message briefly
+        setTesting("success-" + period);
+        setTimeout(() => {
+          setSaved(false);
+          setTesting(null);
+        }, 5000);
       } else if (res.status === "no_data") {
-        setError(res.message || "No activity found to report.");
+        setTesting("nodata-" + period);
+        setTimeout(() => setTesting(null), 5000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Test failed");
+      setTimeout(() => setError(""), 5000);
     } finally {
-      setTesting(null);
+      if (!testing?.startsWith("success") && !testing?.startsWith("nodata")) {
+        setTesting(null);
+      }
     }
   };
 
@@ -541,12 +550,14 @@ export default function SettingsPage() {
             <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-8 text-[10px] uppercase font-bold"
+                className={`h-8 text-[10px] uppercase font-bold ${testing === "success-daily" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" : ""}`}
                 onClick={() => handleTestReport("daily")}
-                disabled={testing === "daily"}
+                disabled={testing?.includes("daily")}
             >
-              {testing === "daily" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-              Test Now
+              {testing === "daily" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : 
+               testing === "success-daily" ? <Check className="h-3 w-3 mr-1" /> : 
+               <Send className="h-3 w-3 mr-1" />}
+              {testing === "success-daily" ? "Sent!" : testing === "nodata-daily" ? "No Data" : "Test Now"}
             </Button>
           </div>
           
@@ -568,12 +579,14 @@ export default function SettingsPage() {
             <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-8 text-[10px] uppercase font-bold border-emerald-500/30 hover:bg-emerald-500/10"
+                className={`h-8 text-[10px] uppercase font-bold border-emerald-500/30 hover:bg-emerald-500/10 ${testing === "success-weekly" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" : ""}`}
                 onClick={() => handleTestReport("weekly")}
-                disabled={testing === "weekly"}
+                disabled={testing?.includes("weekly")}
             >
-              {testing === "weekly" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-              Test Now
+              {testing === "weekly" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : 
+               testing === "success-weekly" ? <Check className="h-3 w-3 mr-1" /> : 
+               <Send className="h-3 w-3 mr-1" />}
+              {testing === "success-weekly" ? "Sent!" : testing === "nodata-weekly" ? "No Data" : "Test Now"}
             </Button>
           </div>
 
@@ -595,12 +608,14 @@ export default function SettingsPage() {
             <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-8 text-[10px] uppercase font-bold"
+                className={`h-8 text-[10px] uppercase font-bold ${testing === "success-monthly" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" : ""}`}
                 onClick={() => handleTestReport("monthly")}
-                disabled={testing === "monthly"}
+                disabled={testing?.includes("monthly")}
             >
-              {testing === "monthly" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-              Test Now
+              {testing === "monthly" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : 
+               testing === "success-monthly" ? <Check className="h-3 w-3 mr-1" /> : 
+               <Send className="h-3 w-3 mr-1" />}
+              {testing === "success-monthly" ? "Sent!" : testing === "nodata-monthly" ? "No Data" : "Test Now"}
             </Button>
           </div>
         </CardContent>
