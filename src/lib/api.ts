@@ -11,10 +11,6 @@ export interface UserSettings {
   tier: string;
   manual_uploads_count: number;
   locations: Location[];
-  daily_report_enabled: boolean;
-  weekly_report_enabled: boolean;
-  monthly_report_enabled: boolean;
-  email_notifications_enabled: boolean;
 }
 
 export interface Location {
@@ -34,11 +30,6 @@ export interface SettingsUpdate {
   whatsapp_number?: string | null;
   onesignal_player_id?: string | null;
   alert_channels?: string[];
-  email?: string | null;
-  daily_report_enabled?: boolean;
-  weekly_report_enabled?: boolean;
-  monthly_report_enabled?: boolean;
-  email_notifications_enabled?: boolean;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -211,13 +202,6 @@ export const api = {
     request<Array<{ role: string; content: string; created_at: string }>>(
       `/api/ai-cfo/history?limit=${limit}`,
       { token }
-    ),
-
-  // Reports
-  debugReport: (token: string, period: string) =>
-    request<{ status: string; message?: string }>(
-      `/api/reports/debug/${period}`,
-      { token, method: "POST" }
     ),
 
   // Subscriptions
