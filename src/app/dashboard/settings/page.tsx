@@ -47,7 +47,12 @@ export default function SettingsPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [forwardingEmails, setForwardingEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
-  const [alertChannels, setAlertChannels] = useState<string[]>(["push"]);
+  const [alertChannels, setAlertChannels] = useState<string[]>(["push", "email"]);
+  
+  // Reporting Preferences
+  const [reportDaily, setReportDaily] = useState(false);
+  const [reportWeekly, setReportWeekly] = useState(true);
+  const [reportMonthly, setReportMonthly] = useState(true);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -57,7 +62,10 @@ export default function SettingsPage() {
       setSettings(data);
       setWhatsappNumber(data.whatsapp_number || "");
       setForwardingEmails(data.forwarding_emails || []);
-      setAlertChannels(data.alert_channels || ["push"]);
+      setAlertChannels(data.alert_channels || ["push", "email"]);
+      setReportDaily(data.report_daily);
+      setReportWeekly(data.report_weekly);
+      setReportMonthly(data.report_monthly);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -100,6 +108,9 @@ export default function SettingsPage() {
         whatsapp_number: whatsappNumber || null,
         forwarding_emails: forwardingEmails,
         alert_channels: alertChannels,
+        report_daily: reportDaily,
+        report_weekly: reportWeekly,
+        report_monthly: reportMonthly,
       };
 
       await api.updateSettings(token, update);
@@ -442,14 +453,41 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Push Notifications */}
+          {/* Email Alerts */}
+          <div className="rounded-lg border border-border/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-blue-400" />
+                <div>
+                  <p className="font-medium text-sm">Email Alerts</p>
+                  <p className="text-xs text-muted-foreground">Transactional email via OneSignal</p>
+                </div>
+              </div>
+              <button
+                onClick={() => toggleChannel("email")}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  alertChannels.includes("email")
+                    ? "bg-emerald-500"
+                    : "bg-muted"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    alertChannels.includes("email") ? "translate-x-5" : ""
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Browser Notifications */}
           <div className="rounded-lg border border-border/50 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Smartphone className="h-5 w-5 text-purple-400" />
                 <div>
-                  <p className="font-medium text-sm">Push Notifications</p>
-                  <p className="text-xs text-muted-foreground">Browser/mobile push via OneSignal</p>
+                  <p className="font-medium text-sm">Browser Notifications</p>
+                  <p className="text-xs text-muted-foreground">Real-time push via OneSignal</p>
                 </div>
               </div>
               <button
@@ -467,6 +505,84 @@ export default function SettingsPage() {
                 />
               </button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reporting Preferences */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-indigo-400" />
+            </div>
+            <div>
+              <CardTitle>Reporting Preferences</CardTitle>
+              <CardDescription>
+                Receive automated summaries of your margin performance
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Daily Report */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">Daily Summary</p>
+              <p className="text-xs text-muted-foreground">Every morning at 8:00 AM</p>
+            </div>
+            <button
+              onClick={() => setReportDaily(!reportDaily)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                reportDaily ? "bg-emerald-500" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  reportDaily ? "translate-x-5" : ""
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Weekly Report */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">Weekly Digest</p>
+              <p className="text-xs text-muted-foreground">Every Monday morning</p>
+            </div>
+            <button
+              onClick={() => setReportWeekly(!reportWeekly)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                reportWeekly ? "bg-emerald-500" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  reportWeekly ? "translate-x-5" : ""
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Monthly Report */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">Monthly Insight</p>
+              <p className="text-xs text-muted-foreground">First day of each month</p>
+            </div>
+            <button
+              onClick={() => setReportMonthly(!reportMonthly)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                reportMonthly ? "bg-emerald-500" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  reportMonthly ? "translate-x-5" : ""
+                }`}
+              />
+            </button>
           </div>
         </CardContent>
       </Card>
