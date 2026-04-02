@@ -185,15 +185,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-3xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure your alert channels and email forwarding
-        </p>
-      </div>
-
+    <div className="space-y-8 max-w-4xl pb-10">
       {error && (
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-4 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
@@ -479,16 +471,16 @@ export default function SettingsPage() {
 
       {/* Sticky Save Button */}
       <div className="sticky bottom-6 left-0 right-0 z-10 flex justify-center sm:justify-end">
-        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 p-4 rounded-2xl shadow-2xl shadow-emerald-500/20 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 p-4 rounded-2xl flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           {saved && (
             <span className="text-sm font-semibold text-emerald-400 animate-in fade-in slide-in-from-right-2">
-              ✓ All settings localized & saved
+              ✓ Settings saved
             </span>
           )}
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="w-full sm:w-56 bg-emerald-500 hover:bg-emerald-400 text-background font-black text-sm px-8 h-12 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
+            className="w-full sm:w-56 bg-emerald-500 hover:bg-emerald-400 text-background font-bold text-sm px-8 h-12 rounded-xl active:scale-[0.98] transition-all"
           >
             {saving ? (
               <Loader2 className="h-5 w-5 animate-spin mr-3" />
