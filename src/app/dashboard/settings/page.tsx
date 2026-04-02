@@ -6,6 +6,7 @@ import {
   MessageCircle,
   Mail,
   Send,
+  Smartphone,
   ExternalLink,
   Loader2,
   Save,
@@ -46,12 +47,7 @@ export default function SettingsPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [forwardingEmails, setForwardingEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
-  const [alertChannels, setAlertChannels] = useState<string[]>(["telegram", "whatsapp", "email"]);
-  const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(true);
-  const [dailyReportsEnabled, setDailyReportsEnabled] = useState(false);
-  const [weeklyReportsEnabled, setWeeklyReportsEnabled] = useState(true);
-  const [monthlyReportsEnabled, setMonthlyReportsEnabled] = useState(true);
-  const [notificationEmail, setNotificationEmail] = useState("");
+  const [alertChannels, setAlertChannels] = useState<string[]>(["push"]);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -61,12 +57,7 @@ export default function SettingsPage() {
       setSettings(data);
       setWhatsappNumber(data.whatsapp_number || "");
       setForwardingEmails(data.forwarding_emails || []);
-      setAlertChannels(data.alert_channels || ["telegram", "whatsapp", "email"]);
-      setEmailAlertsEnabled(data.email_notifications_enabled ?? true);
-      setDailyReportsEnabled(data.daily_reports_enabled ?? false);
-      setWeeklyReportsEnabled(data.weekly_reports_enabled ?? true);
-      setMonthlyReportsEnabled(data.monthly_reports_enabled ?? true);
-      setNotificationEmail(data.notification_email || "");
+      setAlertChannels(data.alert_channels || ["push"]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -109,11 +100,6 @@ export default function SettingsPage() {
         whatsapp_number: whatsappNumber || null,
         forwarding_emails: forwardingEmails,
         alert_channels: alertChannels,
-        email_notifications_enabled: emailAlertsEnabled,
-        daily_reports_enabled: dailyReportsEnabled,
-        weekly_reports_enabled: weeklyReportsEnabled,
-        monthly_reports_enabled: monthlyReportsEnabled,
-        notification_email: notificationEmail || null,
       };
 
       await api.updateSettings(token, update);
@@ -456,111 +442,30 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Email Notifications & Reporting */}
-          <div className="rounded-lg border border-border/50 p-4 space-y-4">
-            <div className="flex items-center gap-3 mb-1">
-              <Mail className="h-5 w-5 text-purple-400" />
-              <div>
-                <p className="font-medium text-sm">Email Delivery (OneSignal)</p>
-                <p className="text-xs text-muted-foreground">Configure your primary email alerting & reporting channel</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-2">
-              {/* Alert Toggle */}
-              <div className="flex items-center justify-between">
+          {/* Push Notifications */}
+          <div className="rounded-lg border border-border/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Smartphone className="h-5 w-5 text-purple-400" />
                 <div>
-                  <p className="text-sm font-medium">Price Creep Alerts</p>
-                  <p className="text-xs text-muted-foreground">Get notified when prices jump &gt;2%</p>
+                  <p className="font-medium text-sm">Push Notifications</p>
+                  <p className="text-xs text-muted-foreground">Browser/mobile push via OneSignal</p>
                 </div>
-                <button
-                  onClick={() => setEmailAlertsEnabled(!emailAlertsEnabled)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    emailAlertsEnabled ? "bg-emerald-500" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      emailAlertsEnabled ? "translate-x-5" : ""
-                    }`}
-                  />
-                </button>
               </div>
-
-              {/* Daily Reports Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Daily Digest</p>
-                  <p className="text-xs text-muted-foreground">Short summary of past 24h (Default: Off)</p>
-                </div>
-                <button
-                  onClick={() => setDailyReportsEnabled(!dailyReportsEnabled)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    dailyReportsEnabled ? "bg-emerald-500" : "bg-muted"
+              <button
+                onClick={() => toggleChannel("push")}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  alertChannels.includes("push")
+                    ? "bg-emerald-500"
+                    : "bg-muted"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    alertChannels.includes("push") ? "translate-x-5" : ""
                   }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      dailyReportsEnabled ? "translate-x-5" : ""
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Weekly Reports Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Weekly Summary</p>
-                  <p className="text-xs text-muted-foreground">Comprehensive week-over-week audit</p>
-                </div>
-                <button
-                  onClick={() => setWeeklyReportsEnabled(!weeklyReportsEnabled)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    weeklyReportsEnabled ? "bg-emerald-500" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      weeklyReportsEnabled ? "translate-x-5" : ""
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Monthly Reports Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Monthly Audit</p>
-                  <p className="text-xs text-muted-foreground">Deep dive into monthly margin leaks</p>
-                </div>
-                <button
-                  onClick={() => setMonthlyReportsEnabled(!monthlyReportsEnabled)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    monthlyReportsEnabled ? "bg-emerald-500" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      monthlyReportsEnabled ? "translate-x-5" : ""
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Dedicated Email Field */}
-              <div className="space-y-1.5 pt-2">
-                <label className="text-xs font-medium" htmlFor="notification-email">
-                  Alert & Report Email <span className="text-muted-foreground font-normal">(Defaults to {settings?.email})</span>
-                </label>
-                <input
-                  id="notification-email"
-                  type="email"
-                  value={notificationEmail}
-                  onChange={(e) => setNotificationEmail(e.target.value)}
-                  placeholder={settings?.email || "notifications@yourstore.com"}
-                  className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
                 />
-              </div>
+              </button>
             </div>
           </div>
         </CardContent>
