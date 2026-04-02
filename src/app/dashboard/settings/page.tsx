@@ -330,9 +330,9 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Telegram */}
-            <div className={`p-4 rounded-xl border transition-all ${user?.telegram_chat_id ? 'border-sky-500/30 bg-sky-500/5' : 'border-border/50 bg-card/50'}`}>
+            <div className={`p-4 rounded-xl border transition-all ${settings?.telegram_chat_id ? 'border-sky-500/30 bg-sky-500/5' : 'border-border/50 bg-card/50'}`}>
               <div className="flex items-center gap-3 mb-4">
-                <div className={`p-2 rounded-lg ${user?.telegram_chat_id ? 'bg-sky-500/20 text-sky-400' : 'bg-muted text-muted-foreground'}`}>
+                <div className={`p-2 rounded-lg ${settings?.telegram_chat_id ? 'bg-sky-500/20 text-sky-400' : 'bg-muted text-muted-foreground'}`}>
                   <Send className="h-4 w-4" />
                 </div>
                 <div>
@@ -342,14 +342,14 @@ export default function SettingsPage() {
               </div>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  {user?.telegram_chat_id ? (
+                  {settings?.telegram_chat_id ? (
                     <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
                       <Check className="h-3 w-3" /> Linked
                     </span>
                   ) : (
                     <span className="text-[10px] text-muted-foreground font-medium">Not connected</span>
                   )}
-                  {user?.telegram_chat_id ? (
+                  {settings?.telegram_chat_id ? (
                     <Button 
                       variant="ghost" 
                       size="sm" 
