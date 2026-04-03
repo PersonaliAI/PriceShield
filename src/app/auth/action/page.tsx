@@ -12,7 +12,6 @@ import Link from "next/link";
 
 function AuthActionHandler() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const mode = searchParams.get("mode");
   const oobCode = searchParams.get("oobCode");
 
@@ -42,10 +41,10 @@ function AuthActionHandler() {
           setStatus("error");
           setError("Unsupported action mode.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Auth action error:", err);
         setStatus("error");
-        setError(err.message || "Failed to process auth action.");
+        setError(err instanceof Error ? err.message : "Failed to process auth action.");
       }
     };
 
@@ -59,8 +58,8 @@ function AuthActionHandler() {
     try {
       await confirmPasswordReset(auth, oobCode, password);
       setStatus("success");
-    } catch (err: any) {
-      setError(err.message || "Failed to reset password.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to reset password.");
       setStatus("error");
     } finally {
       setResetting(false);
