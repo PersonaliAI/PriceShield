@@ -39,6 +39,7 @@ const plans = [
     description: "Perfect for getting started",
     features: ["3 vendors monitored", "Telegram alerts", "30-day history", "AI CFO (5 queries/mo)"],
     cta: "Start Free",
+    href: "/login",
     highlighted: false,
   },
   {
@@ -55,6 +56,7 @@ const plans = [
       "Custom thresholds",
     ],
     cta: "Start Pro Trial",
+    href: "/login?redirect=/dashboard/billing",
     highlighted: true,
   },
   {
@@ -71,6 +73,7 @@ const plans = [
       "SLA guarantee",
     ],
     cta: "Contact Sales",
+    href: "mailto:sales@trypriceshield.com",
     highlighted: false,
   },
 ];
@@ -211,7 +214,7 @@ export default function LandingPage() {
                 }`}
               >
                 {plan.highlighted && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-background">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-background px-3 py-1 text-[10px] uppercase font-bold tracking-widest whitespace-nowrap shadow-xl">
                     Most Popular
                   </Badge>
                 )}
@@ -232,16 +235,18 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    className={`w-full ${
-                      plan.highlighted
-                        ? "bg-emerald-500 hover:bg-emerald-400 text-background font-semibold"
-                        : ""
-                    }`}
-                    variant={plan.highlighted ? "default" : "outline"}
-                  >
-                    {plan.cta}
-                  </Button>
+                  <Link href={plan.href} className="block w-full">
+                    <Button
+                      className={`w-full ${
+                        plan.highlighted
+                          ? "bg-emerald-500 hover:bg-emerald-400 text-background font-semibold"
+                          : ""
+                      }`}
+                      variant={plan.highlighted ? "default" : "outline"}
+                    >
+                      {plan.cta}
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

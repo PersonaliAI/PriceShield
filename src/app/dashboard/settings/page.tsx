@@ -357,32 +357,49 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3 ml-auto sm:ml-0">
                 {settings?.telegram_linked ? (
                   <div className="flex items-center gap-3">
-                    <Badge className="bg-emerald-500/10 text-emerald-400 border-0 h-6">
-                      <Check className="h-3 w-3 mr-1" /> Linked
-                    </Badge>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setShowConfirmDisconnect(true)}
-                      className="h-6 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[9px] uppercase tracking-wider font-bold"
-                    >
-                      Disconnect
-                    </Button>
+                    <div className="flex flex-col items-end mr-2">
+                       <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Alerts</span>
+                       <button
+                         onClick={() => !isFree && toggleChannel("telegram")}
+                         disabled={isFree}
+                         className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                           alertChannels.includes("telegram") ? "bg-emerald-500" : "bg-muted"
+                         } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
+                       >
+                         <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                           alertChannels.includes("telegram") ? "translate-x-5" : ""
+                         }`} />
+                       </button>
+                    </div>
+                    <div className="border-l border-border/40 h-8 mx-2 hidden sm:block" />
+                    <div className="flex flex-col items-end">
+                      <Badge className="bg-emerald-500/10 text-emerald-400 border-0 h-6 mb-1">
+                        <Check className="h-3 w-3 mr-1" /> Linked
+                      </Badge>
+                      <button 
+                        onClick={() => setShowConfirmDisconnect(true)}
+                        className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[9px] uppercase tracking-wider font-bold p-1"
+                      >
+                        Disconnect Bot
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <Badge variant="secondary" className="border-0 h-6">Not linked</Badge>
+                  <div className="flex items-center gap-4">
+                    <Badge variant="secondary" className="border-0 h-6">Not linked</Badge>
+                    <button
+                      onClick={() => !isFree && toggleChannel("telegram")}
+                      disabled={isFree}
+                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                        alertChannels.includes("telegram") ? "bg-emerald-500" : "bg-muted"
+                      } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                        alertChannels.includes("telegram") ? "translate-x-5" : ""
+                      }`} />
+                    </button>
+                  </div>
                 )}
-                <button
-                  onClick={() => !isFree && toggleChannel("telegram")}
-                  disabled={isFree}
-                  className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                    alertChannels.includes("telegram") ? "bg-emerald-500" : "bg-muted"
-                  } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    alertChannels.includes("telegram") ? "translate-x-5" : ""
-                  }`} />
-                </button>
               </div>
             </div>
 
@@ -454,9 +471,12 @@ export default function SettingsPage() {
 
             {alertChannels.includes("whatsapp") && !isFree && (
               <div className="space-y-1.5 pt-2">
-                <label className="text-xs font-medium text-muted-foreground" htmlFor="whatsapp-number">
-                  WhatsApp Number (with country code)
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-muted-foreground" htmlFor="whatsapp-number">
+                    WhatsApp Number (with country code)
+                  </label>
+                  <span className="text-[10px] text-amber-400/80 italic">Meta Approval Required</span>
+                </div>
                 <input
                   id="whatsapp-number"
                   type="tel"
@@ -465,6 +485,9 @@ export default function SettingsPage() {
                   placeholder="+1234567890"
                   className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all font-mono"
                 />
+                <p className="text-[10px] text-muted-foreground leading-relaxed mt-1">
+                  Note: Business-initiated alerts require a pre-approved Meta Template. If alerts aren't hitting your phone, ensure your template name matches <code className="bg-muted px-1">price_hike_alert</code> in the backend.
+                </p>
               </div>
             )}
             {isFree && (
@@ -535,13 +558,13 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Daily Report */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
+          <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">Daily Summary</p>
                 <button
                   onClick={() => handleTestReport("daily")}
-                  disabled={triggeringReport === "daily"}
+                  disabled={triggeringReport === "daily" || isFree}
                   className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
                 >
                   {triggeringReport === "daily" ? "Sending..." : "Test"}
@@ -550,10 +573,11 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground">Every morning at 8:00 AM</p>
             </div>
             <button
-              onClick={() => setReportDaily(!reportDaily)}
+              onClick={() => !isFree && setReportDaily(!reportDaily)}
+              disabled={isFree}
               className={`relative w-11 h-6 rounded-full transition-colors ${
                 reportDaily ? "bg-emerald-500" : "bg-muted"
-              }`}
+              } ${isFree ? "cursor-not-allowed" : ""}`}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
@@ -564,13 +588,13 @@ export default function SettingsPage() {
           </div>
 
           {/* Weekly Report */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
+          <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">Weekly Digest</p>
                 <button
                   onClick={() => handleTestReport("weekly")}
-                  disabled={triggeringReport === "weekly"}
+                  disabled={triggeringReport === "weekly" || isFree}
                   className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
                 >
                   {triggeringReport === "weekly" ? "Sending..." : "Test"}
@@ -579,10 +603,11 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground">Every Monday morning</p>
             </div>
             <button
-              onClick={() => setReportWeekly(!reportWeekly)}
+              onClick={() => !isFree && setReportWeekly(!reportWeekly)}
+              disabled={isFree}
               className={`relative w-11 h-6 rounded-full transition-colors ${
                 reportWeekly ? "bg-emerald-500" : "bg-muted"
-              }`}
+              } ${isFree ? "cursor-not-allowed" : ""}`}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
@@ -593,13 +618,13 @@ export default function SettingsPage() {
           </div>
 
           {/* Monthly Report */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
+          <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">Monthly Insight</p>
                 <button
                   onClick={() => handleTestReport("monthly")}
-                  disabled={triggeringReport === "monthly"}
+                  disabled={triggeringReport === "monthly" || isFree}
                   className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
                 >
                   {triggeringReport === "monthly" ? "Sending..." : "Test"}
@@ -608,10 +633,11 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground">First day of each month</p>
             </div>
             <button
-              onClick={() => setReportMonthly(!reportMonthly)}
+              onClick={() => !isFree && setReportMonthly(!reportMonthly)}
+              disabled={isFree}
               className={`relative w-11 h-6 rounded-full transition-colors ${
                 reportMonthly ? "bg-emerald-500" : "bg-muted"
-              }`}
+              } ${isFree ? "cursor-not-allowed" : ""}`}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
@@ -620,6 +646,13 @@ export default function SettingsPage() {
               />
             </button>
           </div>
+
+          {isFree && (
+            <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              Automated reports require Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
+            </p>
+          )}
         </CardContent>
       </Card>
 

@@ -8,6 +8,7 @@ import {
   Building2,
   RefreshCw,
   MessageSquare,
+  Mail,
   Search,
   Loader2,
   Shield,
@@ -65,25 +66,31 @@ export default function DashboardPage() {
   const [cfoAnswer, setCfoAnswer] = useState<string | null>(null);
   const [isAskingCFO, setIsAskingCFO] = useState(false);
 
+  const [inboxCount, setInboxCount] = useState(0);
+  const [inboxLoading, setInboxLoading] = useState(true);
+
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
+    setInboxLoading(true);
     setError("");
     try {
       const token = await getToken();
       if (!token) return;
 
-      const [summaryData, vendorsData, invoicesData] = await Promise.all([
+      const [summaryData, vendorsData, invoicesData, inboxData, s] = await Promise.all([
         api.getDashboardSummary(token),
         api.getVendors(token),
         api.getInvoices(token),
+        api.getInboxMessages(token),
+        api.getSettings(token),
       ]);
 
       setSummary(summaryData);
       setVendors(vendorsData.vendors);
       setInvoices(invoicesData.rows);
-      
-      const s = await api.getSettings(token);
+      setInboxCount(inboxData.length);
       setSettings(s);
+      setInboxLoading(false);
 
       // Auto-select first item for trend chart
       if (invoicesData.rows.length > 0) {
@@ -322,17 +329,47 @@ export default function DashboardPage() {
 
       {!hasData && (
         <Card className="bg-card/50 border-border/50">
-          <CardContent className="flex flex-col items-center justify-center py-16 space-y-4">
-            <TrendingUp className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-lg font-medium">No invoice data yet</p>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Upload your first invoices via the onboarding flow to start seeing price trends and analytics.
-            </p>
-            <a href="/onboarding">
-              <Button className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold">
-                Upload Invoices
-              </Button>
-            </a>
+          <CardContent className="flex flex-col items-center justify-center py-16 space-y-6 text-center px-6">
+            {!inboxLoading && inboxCount > 0 ? (
+              <>
+                <div className="relative">
+                  <Mail className="h-16 w-16 text-emerald-400/50" />
+                  <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-background animate-bounce">
+                    {inboxCount}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xl font-bold text-foreground">Invoices Received!</p>
+                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                    We see {inboxCount} forwarded email{inboxCount > 1 ? 's' : ''} in your inbox. 
+                    Our AI is currently extracting the line items. Check back in a few minutes!
+                  </p>
+                </div>
+                <Button onClick={fetchDashboard} variant="outline" className="h-11">
+                  <RefreshCw className="mr-2 h-4 w-4" /> Check Status
+                </Button>
+              </>
+            ) : (
+              <>
+                <TrendingUp className="h-16 w-16 text-muted-foreground/20" />
+                <div className="space-y-2">
+                  <p className="text-xl font-bold text-foreground">Awaiting Your First Invoice</p>
+                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                    Forward your first supplier invoice to your unique address in <a href="/dashboard/settings" className="text-emerald-400 underline">Settings</a> to start protecting your margins.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a href="/dashboard/settings">
+                    <Button className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold px-8 h-11 w-full sm:w-auto shadow-lg shadow-emerald-500/20">
+                      Configure Forwarding
+                    </Button>
+                  </a>
+                  <Button variant="outline" onClick={fetchDashboard} className="h-11">
+                    <RefreshCw className="mr-2 h-4 w-4" /> I already forwarded
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}

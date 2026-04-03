@@ -8,7 +8,9 @@ import {
   Mail, 
   CreditCard, 
   MapPin, 
-  Shield 
+  Shield,
+  Menu,
+  X 
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,6 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { signOut, user, sendVerification } = useAuth();
   const [verifying, setVerifying] = useState(false);
   const [sent, setSent] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSendVerification = async () => {
     setVerifying(true);
@@ -98,8 +101,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Main content */}
         <main className="flex-1 overflow-auto">
           {/* Mobile header */}
-          <header className="md:hidden flex items-center justify-between px-6 h-14 border-b border-border/40">
-            <div className="flex items-center gap-2">
+          <header className="md:hidden flex items-center justify-between px-6 h-14 border-b border-border/40 bg-card/30 backdrop-blur sticky top-0 z-50">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsMenuOpen(true)}
+                className="p-2 -ml-2 text-muted-foreground hover:text-foreground"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
               <img src="/logo.png" alt="PriceShield Logo" className="h-6 w-auto" />
             </div>
             <button
@@ -109,6 +118,66 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <LogOut className="h-4 w-4" />
             </button>
           </header>
+
+          {/* Mobile Menu Overlay */}
+          {isMenuOpen && (
+            <div className="fixed inset-0 z-[100] md:hidden">
+              {/* Backdrop */}
+              <div 
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                onClick={() => setIsMenuOpen(false)}
+              />
+              
+              {/* Drawer */}
+              <div className="absolute inset-y-0 left-0 w-72 bg-card border-r border-border/40 shadow-2xl animate-in slide-in-from-left duration-300">
+                <div className="flex items-center justify-between px-6 h-20 border-b border-border/40">
+                  <div className="flex items-center gap-2">
+                    <img src="/logo.png" alt="PriceShield Logo" className="h-10 w-auto" />
+                  </div>
+                  <button
+                    onClick={() => setIsMenuOpen(false)}
+                    className="p-2 -mr-2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <nav className="flex-1 px-3 py-4 space-y-1">
+                  {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsMenuOpen(false)}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                          isActive
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/40 bg-card/50">
+                  {user?.email && (
+                    <p className="px-3 py-2 text-xs text-muted-foreground truncate mb-2">{user.email}</p>
+                  )}
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 w-full transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Email Verification Banner */}
           {user && !user.emailVerified && (
