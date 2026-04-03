@@ -1,10 +1,20 @@
 "use client";
 
-import { LayoutDashboard, FileText, Settings, LogOut, Mail, CreditCard, MapPin, Shield } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  Settings, 
+  LogOut, 
+  Mail, 
+  CreditCard, 
+  MapPin, 
+  Shield 
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
+import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -19,7 +29,22 @@ const navItems = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut, user } = useAuth();
+  const { signOut, user, sendVerification } = useAuth();
+  const [verifying, setVerifying] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSendVerification = async () => {
+    setVerifying(true);
+    try {
+      await sendVerification();
+      setSent(true);
+      setTimeout(() => setSent(false), 5000);
+    } catch (error) {
+      console.error("Failed to send verification:", error);
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -84,6 +109,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <LogOut className="h-4 w-4" />
             </button>
           </header>
+
+          {/* Email Verification Banner */}
+          {user && !user.emailVerified && (
+            <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-2 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-medium">
+                <Mail className="h-3.5 w-3.5" />
+                <span>Your email is not verified. Please check your inbox.</span>
+              </div>
+              <button
+                onClick={handleSendVerification}
+                disabled={verifying || sent}
+                className="text-[10px] uppercase tracking-wider font-bold text-amber-400 hover:text-amber-300 disabled:opacity-50"
+              >
+                {sent ? "Sent!" : verifying ? "Sending..." : "Resend Link"}
+              </button>
+            </div>
+          )}
 
           <div className="p-6 md:p-8 max-w-7xl mx-auto">{children}</div>
         </main>
