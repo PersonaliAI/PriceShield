@@ -16,8 +16,6 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
-  sendPasswordResetEmail,
-  sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -84,12 +82,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Failed to send reset email");
+    }
   };
 
   const sendVerification = async () => {
-    if (user) {
-      await sendEmailVerification(user);
+    if (!user?.email) return;
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: user.email }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Failed to send verification email");
     }
   };
 

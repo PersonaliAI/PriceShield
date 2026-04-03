@@ -6,7 +6,6 @@ import {
   MessageCircle,
   Mail,
   Send,
-  Smartphone,
   ExternalLink,
   Loader2,
   Save,
