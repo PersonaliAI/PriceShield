@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { applyActionCode, confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, CheckCircle2, XCircle, Shield, Lock } from "lucide-react";
 import Link from "next/link";
@@ -110,9 +110,12 @@ function AuthActionHandler() {
                     : "Your password has been updated. You can now sign in with your new credentials."}
                 </p>
               </div>
-              <Button asChild className="w-full bg-emerald-500 hover:bg-emerald-600 h-11">
-                <Link href="/login">Return to Login</Link>
-              </Button>
+              <Link 
+                href="/login" 
+                className={buttonVariants({ className: "w-full bg-emerald-500 hover:bg-emerald-600 h-11" })}
+              >
+                Return to Login
+              </Link>
             </div>
           )}
 
@@ -127,9 +130,12 @@ function AuthActionHandler() {
                   The link may be expired or already used. Please try requesting a new one.
                 </p>
               </div>
-              <Button asChild variant="outline" className="w-full h-11 border-border/40">
-                <Link href="/login">Back to Login</Link>
-              </Button>
+              <Link 
+                href="/login" 
+                className={buttonVariants({ variant: "outline", className: "w-full h-11 border-border/40" })}
+              >
+                Back to Login
+              </Link>
             </div>
           )}
 
