@@ -21,9 +21,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-export function WelcomeGuide() {
-  const [isOpen, setIsOpen] = useState(false);
+interface WelcomeGuideProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function WelcomeGuide({ open, onOpenChange }: WelcomeGuideProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [step, setStep] = useState(1);
+
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = onOpenChange || setInternalOpen;
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("priceshield_onboarding_seen");

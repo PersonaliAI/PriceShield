@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const { signIn, signUp, signInWithGoogle, resetPassword, user, loading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword, sendVerification, user, loading } = useAuth();
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
@@ -43,6 +43,8 @@ export default function LoginPage() {
         setIsReset(false);
       } else if (isSignUp) {
         await signUp(email, password);
+        // Best effort: send verification right away
+        try { await sendVerification(); } catch (e) { console.error("Auto-verification failed:", e); }
         router.push("/dashboard");
       } else {
         await signIn(email, password);

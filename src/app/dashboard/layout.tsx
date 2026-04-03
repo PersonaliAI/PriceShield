@@ -10,6 +10,7 @@ import {
   MapPin, 
   Shield,
   Menu,
+  HelpCircle,
   X 
 } from "lucide-react";
 import Link from "next/link";
@@ -17,11 +18,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
 import { useState } from "react";
+import { WelcomeGuide } from "@/components/dashboard/WelcomeGuide";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/dashboard/ai-cfo", icon: Shield, label: "AI CFO" },
-  { href: "/onboarding", icon: FileText, label: "Upload Invoices" },
+  { href: "/dashboard/upload", icon: FileText, label: "Upload Invoices" },
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox" },
   { href: "/dashboard/locations", icon: MapPin, label: "Locations" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
@@ -35,6 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [verifying, setVerifying] = useState(false);
   const [sent, setSent] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleSendVerification = async () => {
     setVerifying(true);
@@ -85,6 +88,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           <div className="px-3 py-4 border-t border-border/40 space-y-2">
+            <button
+              onClick={() => setShowGuide(true)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-500/5 w-full transition-colors"
+            >
+              <HelpCircle className="h-4 w-4" />
+              Platform Tour
+            </button>
             {user?.email && (
               <p className="px-3 text-xs text-muted-foreground truncate">{user.email}</p>
             )}
@@ -204,7 +214,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           )}
 
-          <div className="p-6 md:p-8 max-w-7xl mx-auto">{children}</div>
+          <WelcomeGuide open={showGuide} onOpenChange={setShowGuide} />
+
+          <div className="p-6 md:p-8 max-w-[1600px] mx-auto">{children}</div>
         </main>
       </div>
     </ProtectedRoute>

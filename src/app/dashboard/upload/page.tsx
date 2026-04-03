@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { api, AuditResult, UserSettings } from "@/lib/api";
-import ProtectedRoute from "@/components/protected-route";
 import Link from "next/link";
 import { useEffect } from "react";
 
@@ -140,21 +139,17 @@ export default function OnboardingPage() {
   };
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative">
-        {/* Background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-emerald-500/8 blur-3xl animate-pulse-glow" />
-        </div>
+    <div className="relative">
+      {/* Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-emerald-500/8 blur-3xl animate-pulse-glow" />
+      </div>
 
-        {/* Header */}
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <img src="/logo.png" alt="PriceShield Logo" className="h-10 w-auto" />
-          </Link>
-          <h1 className="text-3xl font-bold mb-2">Get Your Free Price Audit</h1>
-          <p className="text-muted-foreground">Upload a few invoices and see how much you&apos;ve been overcharged</p>
-        </div>
+      {/* Header - Simplified for Dashboard */}
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold mb-2">Manual Price Audit</h1>
+        <p className="text-muted-foreground">Upload a few invoices and see how much you&apos;ve been overcharged</p>
+      </div>
 
         {/* Step indicator */}
         <div className="flex items-center gap-3 mb-10">
@@ -420,6 +415,5 @@ export default function OnboardingPage() {
         </DialogContent>
       </Dialog>
     </div>
-  </ProtectedRoute>
   );
 }
