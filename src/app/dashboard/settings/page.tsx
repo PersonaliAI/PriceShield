@@ -53,6 +53,7 @@ export default function SettingsPage() {
   const [reportDaily, setReportDaily] = useState(false);
   const [reportWeekly, setReportWeekly] = useState(true);
   const [reportMonthly, setReportMonthly] = useState(true);
+  const [alertThreshold, setAlertThreshold] = useState(2.0);
   
   const [triggeringReport, setTriggeringReport] = useState<string | null>(null);
 
@@ -69,6 +70,7 @@ export default function SettingsPage() {
       setReportDaily(data.report_daily);
       setReportWeekly(data.report_weekly);
       setReportMonthly(data.report_monthly);
+      setAlertThreshold(data.alert_threshold || 2.0);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -115,6 +117,7 @@ export default function SettingsPage() {
         report_daily: reportDaily,
         report_weekly: reportWeekly,
         report_monthly: reportMonthly,
+        alert_threshold: alertThreshold,
       };
 
       await api.updateSettings(token, update);
@@ -327,7 +330,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Alert Channels */}
-      <Card className="bg-card/50 border-border/50">
+      <Card id="tour-settings-channels" className="bg-card/50 border-border/50">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -478,8 +481,54 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Alert Sensitivity */}
+      <Card id="tour-settings-sensitivity" className="bg-card/50 border-border/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div>
+              <CardTitle>Alert Sensitivity</CardTitle>
+              <CardDescription>
+                Define the minimum price increase (%) that should trigger an alert
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Notification Threshold</span>
+              <span className="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold border border-emerald-500/20">
+                {alertThreshold}%
+              </span>
+            </div>
+            <div className="relative pt-1">
+              <input
+                type="range"
+                min="0.5"
+                max="20"
+                step="0.5"
+                value={alertThreshold}
+                onChange={(e) => setAlertThreshold(parseFloat(e.target.value))}
+                className="w-full h-2 bg-muted/30 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-400 transition-all"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-2 px-1">
+                <span>0.5% (Sensitive)</span>
+                <span>10%</span>
+                <span>20% (Conservative)</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              We recommend <span className="text-emerald-400 font-bold">2%</span> for most restaurants to ignore minor market fluctuations while catching meaningful supplier jumps.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Reporting Preferences */}
-      <Card className="bg-card/50 border-border/50">
+      <Card id="tour-settings-reports" className="bg-card/50 border-border/50">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">

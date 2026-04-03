@@ -49,6 +49,30 @@ const TOUR_STEPS: TourStep[] = [
     title: "Alert Settings",
     content: "Configure your Telegram and Email alerts to get notified the second a price changes by >2%.",
     position: "right"
+  },
+  {
+    id: "tour-upload-location",
+    title: "Multi-Location Support",
+    content: "If you have multiple sites, select the target location for your audit. We automatically handle address matching for you.",
+    position: "bottom"
+  },
+  {
+    id: "tour-settings-sensitivity",
+    title: "Price Sensitivity",
+    content: "Our most powerful feature. Define exactly what % increase triggers an alert. We recommend 2% for maximum protection with minimal noise.",
+    position: "top"
+  },
+  {
+    id: "tour-settings-channels",
+    title: "Omni-Channel Alerts",
+    content: "Link your Telegram bot or configure custom email alerts to know about price hikes the moment they happen.",
+    position: "top"
+  },
+  {
+    id: "tour-settings-reports",
+    title: "Automated Reporting",
+    content: "Receive Daily, Weekly, or Monthly margin summaries directly to your inbox. Stay ahead of supplier trends effortlessly.",
+    position: "top"
   }
 ];
 

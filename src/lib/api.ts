@@ -15,6 +15,7 @@ export interface UserSettings {
   report_daily: boolean;
   report_weekly: boolean;
   report_monthly: boolean;
+  alert_threshold: number;
   locations: Location[];
 }
 
@@ -39,6 +40,7 @@ export interface SettingsUpdate {
   alert_email?: string | null;
   report_weekly?: boolean;
   report_monthly?: boolean;
+  alert_threshold?: number;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
