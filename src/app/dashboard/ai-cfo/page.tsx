@@ -120,7 +120,7 @@ export default function AICFOPage() {
     <div className="relative flex flex-col h-[calc(100vh-100px)] overflow-hidden">
       {/* Centered Scrollable Area */}
       <div className="flex-1 overflow-y-auto pt-4 pb-32 scroll-smooth custom-scrollbar">
-        <div className="max-w-3xl mx-auto px-4 w-full">
+        <div className="max-w-5xl mx-auto px-4 w-full">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center pt-20 space-y-10 animate-in fade-in duration-700">
               <div className="flex flex-col items-center space-y-4">
@@ -257,7 +257,7 @@ export default function AICFOPage() {
 
       {/* Centered Floating Input Area */}
       <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
-        <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+        <div className="max-w-5xl mx-auto w-full pointer-events-auto">
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-emerald-500/0 rounded-[2rem] blur opacity-40 group-focus-within:opacity-100 transition-opacity duration-500"></div>
             <form 
