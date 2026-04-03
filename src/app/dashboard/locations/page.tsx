@@ -175,7 +175,7 @@ export default function LocationsPage() {
   const atLimit = locations.length >= limit;
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Restaurant Locations</h1>
