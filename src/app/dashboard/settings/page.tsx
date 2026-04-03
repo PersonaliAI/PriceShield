@@ -345,53 +345,50 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Telegram */}
-          <div className="rounded-lg border border-border/50 p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          <div className="rounded-lg border border-border/50 p-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-[140px]">
                 <Send className="h-5 w-5 text-sky-400" />
                 <div>
                   <p className="font-medium text-sm">Telegram</p>
-                  <p className="text-xs text-muted-foreground">Get alerts via Telegram bot</p>
+                  <p className="text-xs text-muted-foreground">Bot alerts</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              
+              <div className="flex items-center gap-3 ml-auto sm:ml-0">
                 {settings?.telegram_linked ? (
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-emerald-500/10 text-emerald-400 border-0">
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-emerald-500/10 text-emerald-400 border-0 h-6">
                       <Check className="h-3 w-3 mr-1" /> Linked
                     </Badge>
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => setShowConfirmDisconnect(true)}
-                      className="h-7 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[10px] uppercase tracking-wider font-bold cursor-pointer"
+                      className="h-6 px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[9px] uppercase tracking-wider font-bold"
                     >
                       Disconnect
                     </Button>
                   </div>
                 ) : (
-                  <Badge variant="secondary" className="border-0">Not linked</Badge>
+                  <Badge variant="secondary" className="border-0 h-6">Not linked</Badge>
                 )}
                 <button
                   onClick={() => !isFree && toggleChannel("telegram")}
                   disabled={isFree}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    alertChannels.includes("telegram")
-                      ? "bg-emerald-500"
-                      : "bg-muted"
+                  className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                    alertChannels.includes("telegram") ? "bg-emerald-500" : "bg-muted"
                   } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      alertChannels.includes("telegram") ? "translate-x-5" : ""
-                    }`}
-                  />
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    alertChannels.includes("telegram") ? "translate-x-5" : ""
+                  }`} />
                 </button>
               </div>
             </div>
 
             {!settings?.telegram_linked && !isFree && (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
                 <div className="flex-1 rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground font-mono break-all min-w-0">
                   {telegramDeepLink || "Sign in to get your link"}
                 </div>
@@ -399,21 +396,16 @@ export default function SettingsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 sm:flex-none"
+                    className="flex-1 sm:flex-none h-9"
                     onClick={copyTelegramLink}
                     disabled={!telegramDeepLink}
                   >
-                    {copied ? <Check className="h-3 w-3 mr-2" /> : <Copy className="h-3 w-3 mr-2" />}
-                    <span className="text-[10px]">Copy</span>
+                    {copied ? <Check className="h-3.5 w-3.5 mr-2" /> : <Copy className="h-3.5 w-3.5 mr-2" />}
+                    <span className="text-[11px]">Copy Link</span>
                   </Button>
-                  <a
-                    href={telegramDeepLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none"
-                  >
-                    <Button variant="outline" size="sm" className="w-full" disabled={!telegramDeepLink}>
-                      <ExternalLink className="h-3 w-3" />
+                  <a href={telegramDeepLink} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                    <Button variant="outline" size="sm" className="w-full h-9" disabled={!telegramDeepLink}>
+                      <ExternalLink className="h-3.5 w-3.5" />
                     </Button>
                   </a>
                 </div>
@@ -428,45 +420,42 @@ export default function SettingsPage() {
           </div>
 
           {/* WhatsApp */}
-          <div className="rounded-lg border border-border/50 p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          <div className="rounded-lg border border-border/50 p-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-[140px]">
                 <MessageCircle className="h-5 w-5 text-emerald-400" />
                 <div>
                   <p className="font-medium text-sm">WhatsApp</p>
-                  <p className="text-xs text-muted-foreground">Get alerts via WhatsApp messages</p>
+                  <p className="text-xs text-muted-foreground">Mobile messages</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-3 ml-auto sm:ml-0">
                 <a
                   href="https://wa.me/15556359583"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 transition-colors text-xs font-semibold"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 transition-colors text-xs font-semibold h-7"
                 >
                   <ExternalLink className="h-3.5 w-3.5" /> Open Chat
                 </a>
                 <button
                   onClick={() => !isFree && toggleChannel("whatsapp")}
                   disabled={isFree}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    alertChannels.includes("whatsapp")
-                      ? "bg-emerald-500"
-                      : "bg-muted"
+                  className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                    alertChannels.includes("whatsapp") ? "bg-emerald-500" : "bg-muted"
                   } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      alertChannels.includes("whatsapp") ? "translate-x-5" : ""
-                    }`}
-                  />
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    alertChannels.includes("whatsapp") ? "translate-x-5" : ""
+                  }`} />
                 </button>
               </div>
             </div>
 
             {alertChannels.includes("whatsapp") && !isFree && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium" htmlFor="whatsapp-number">
+              <div className="space-y-1.5 pt-2">
+                <label className="text-xs font-medium text-muted-foreground" htmlFor="whatsapp-number">
                   WhatsApp Number (with country code)
                 </label>
                 <input
@@ -475,7 +464,7 @@ export default function SettingsPage() {
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
                   placeholder="+1234567890"
-                  className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
+                  className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all font-mono"
                 />
               </div>
             )}
@@ -527,32 +516,6 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Browser Notifications */}
-          <div className="rounded-lg border border-border/50 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Smartphone className="h-5 w-5 text-purple-400" />
-                <div>
-                  <p className="font-medium text-sm">Browser Notifications</p>
-                  <p className="text-xs text-muted-foreground">Real-time push via OneSignal</p>
-                </div>
-              </div>
-              <button
-                onClick={() => toggleChannel("push")}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
-                  alertChannels.includes("push")
-                    ? "bg-emerald-500"
-                    : "bg-muted"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    alertChannels.includes("push") ? "translate-x-5" : ""
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
