@@ -117,13 +117,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Mail className="h-3.5 w-3.5" />
                 <span>Your email is not verified. Please check your inbox.</span>
               </div>
-              <button
-                onClick={handleSendVerification}
-                disabled={verifying || sent}
-                className="text-[10px] uppercase tracking-wider font-bold text-amber-400 hover:text-amber-300 disabled:opacity-50"
-              >
-                {sent ? "Sent!" : verifying ? "Sending..." : "Resend Link"}
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-[10px] uppercase tracking-wider font-bold text-amber-400 hover:text-amber-300"
+                >
+                  Already Verified? Click to Refresh
+                </button>
+                <button
+                  onClick={handleSendVerification}
+                  disabled={verifying || sent}
+                  className="text-[10px] uppercase tracking-wider font-bold text-amber-400 hover:text-amber-300 disabled:opacity-50 border-l border-amber-500/20 pl-4"
+                >
+                  {sent ? "Sent!" : verifying ? "Sending..." : "Resend Link"}
+                </button>
+              </div>
             </div>
           )}
 
