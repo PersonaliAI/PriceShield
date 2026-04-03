@@ -1,0 +1,258 @@
+"use client";
+
+import { useEffect, useState, useCallback, useLayoutEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, ArrowLeft, Check, Shield } from "lucide-react";
+import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
+
+interface TourStep {
+  id: string;
+  title: string;
+  content: string;
+  position: "top" | "bottom" | "left" | "right";
+}
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    id: "tour-sidebar",
+    title: "Intelligence Center",
+    content: "This is your main navigation. Access your AI CFO diagnostics, Invoices, and Reports from here.",
+    position: "right"
+  },
+  {
+    id: "tour-kpis",
+    title: "Performance Monitor",
+    content: "Instantly see how much potential profit you've lost to stealth price hikes this month.",
+    position: "bottom"
+  },
+  {
+    id: "tour-cfo-bar",
+    title: "Conversational CFO",
+    content: "Ask our AI complex questions like 'Which vendor had the most price jumps?' or 'Analyze my Sysco invoices'.",
+    position: "bottom"
+  },
+  {
+    id: "tour-upload",
+    title: "AI Ingestion",
+    content: "Upload physical invoices here. Our AI will automatically extract every single line item for comparison.",
+    position: "right"
+  },
+  {
+    id: "tour-inbox",
+    title: "Verification Inbox",
+    content: "Confirm your email forwarding rules and see exactly what the AI is receiving in real-time.",
+    position: "right"
+  },
+  {
+    id: "tour-settings",
+    title: "Alert Settings",
+    content: "Configure your Telegram and Email alerts to get notified the second a price changes by >2%.",
+    position: "right"
+  }
+];
+
+interface AppTourProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function AppTour({ open, onOpenChange }: AppTourProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Handle first-time auto-show
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => setIsVisible(true), 100);
+    } else {
+      setIsVisible(false);
+    }
+  }, [open]);
+
+  // Update spotlight position
+  const updatePosition = useCallback(() => {
+    const step = TOUR_STEPS[currentStep];
+    const element = document.getElementById(step.id);
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      setCoords({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      });
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      setCoords(null);
+    }
+  }, [currentStep]);
+
+  useLayoutEffect(() => {
+    if (isVisible) {
+      updatePosition();
+      window.addEventListener("resize", updatePosition);
+      window.addEventListener("scroll", updatePosition);
+      return () => {
+        window.removeEventListener("resize", updatePosition);
+        window.removeEventListener("scroll", updatePosition);
+      };
+    }
+  }, [isVisible, updatePosition]);
+
+  if (!mounted || !open || !isVisible) return null;
+
+  const step = TOUR_STEPS[currentStep];
+  const isLast = currentStep === TOUR_STEPS.length - 1;
+
+  const handleNext = () => {
+    if (isLast) {
+      onOpenChange(false);
+      localStorage.setItem("priceshield_onboarding_seen", "true");
+    } else {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(prev => Math.max(0, prev - 1));
+  };
+
+  const handleSkip = () => {
+    onOpenChange(false);
+    localStorage.setItem("priceshield_onboarding_seen", "true");
+  };
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden font-sans">
+      {/* Background Mask */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-auto">
+        <defs>
+          <mask id="spotlight-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            {coords && (
+              <rect
+                x={coords.left - 8}
+                y={coords.top - 8}
+                width={coords.width + 16}
+                height={coords.height + 16}
+                rx="12"
+                fill="black"
+                className="transition-all duration-500 ease-in-out"
+              />
+            )}
+          </mask>
+        </defs>
+        <rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="rgba(0,0,0,0.85)"
+          mask="url(#spotlight-mask)"
+          className="backdrop-blur-[2px]"
+          onClick={handleSkip}
+        />
+      </svg>
+
+      {/* Pulsing Highlight border */}
+      {coords && (
+        <div 
+          className="absolute border-2 border-emerald-500/50 rounded-2xl transition-all duration-500 ease-in-out animate-pulse pointer-events-none"
+          style={{
+            top: coords.top - 12,
+            left: coords.left - 12,
+            width: coords.width + 24,
+            height: coords.height + 24
+          }}
+        />
+      )}
+
+      {/* Tooltip */}
+      {coords && (
+        <div
+          className={cn(
+            "absolute transition-all duration-500 ease-in-out pointer-events-auto",
+            "w-[340px] z-50 animate-in fade-in zoom-in-95 duration-500"
+          )}
+          style={{
+            top: step.position === "bottom" ? coords.top + coords.height + 24 : 
+                 step.position === "top" ? coords.top - 200 : 
+                 coords.top + (coords.height / 2) - 100,
+            left: step.position === "right" ? coords.left + coords.width + 32 :
+                  step.position === "left" ? coords.left - 360 : 
+                  coords.left + (coords.width / 2) - 170
+          }}
+        >
+          <div className="bg-card border border-emerald-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2rem] p-6 relative overflow-hidden group">
+            {/* Background Glow */}
+            <div className="absolute top-0 right-0 h-32 w-32 bg-emerald-500/10 blur-[40px] -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-1000" />
+            
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <Shield className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/60">
+                  Step {currentStep + 1} of {TOUR_STEPS.length}
+                </p>
+                <h3 className="text-lg font-bold text-foreground">{step.title}</h3>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+              {step.content}
+            </p>
+
+            <div className="flex items-center justify-between gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleSkip}
+                className="text-muted-foreground hover:text-emerald-400 transition-colors"
+              >
+                Skip Tour
+              </Button>
+              
+              <div className="flex items-center gap-2">
+                {currentStep > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleBack}
+                    className="h-9 w-9 rounded-xl border-border/50"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button 
+                  onClick={handleNext}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold px-6 h-10 rounded-xl shadow-lg shadow-emerald-500/20"
+                >
+                  {isLast ? "Finish" : "Next"}
+                  {isLast ? <Check className="ml-2 h-4 w-4" /> : <ArrowRight className="ml-2 h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Connected Arrow line */}
+          <div className={cn(
+            "absolute w-8 h-px bg-emerald-500/30",
+            step.position === "right" && "-left-8 top-1/2 -translate-y-1/2",
+            step.position === "left" && "-right-8 top-1/2 -translate-y-1/2",
+            step.position === "bottom" && "left-1/2 -translate-x-1/2 -top-8 h-8 w-px",
+            step.position === "top" && "left-1/2 -translate-x-1/2 -bottom-8 h-8 w-px"
+          )} />
+        </div>
+      )}
+    </div>,
+    document.body
+  );
+}

@@ -17,17 +17,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
-import { useState } from "react";
-import { WelcomeGuide } from "@/components/dashboard/WelcomeGuide";
+import { useState, useEffect } from "react";
+import AppTour from "@/components/dashboard/AppTour";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/dashboard/ai-cfo", icon: Shield, label: "AI CFO" },
-  { href: "/dashboard/upload", icon: FileText, label: "Upload Invoices" },
-  { href: "/dashboard/inbox", icon: Mail, label: "Inbox" },
-  { href: "/dashboard/locations", icon: MapPin, label: "Locations" },
-  { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
-  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", id: "tour-home" },
+  { href: "/dashboard/ai-cfo", icon: Shield, label: "AI CFO", id: "tour-aicfo" },
+  { href: "/dashboard/upload", icon: FileText, label: "Upload Invoices", id: "tour-upload" },
+  { href: "/dashboard/inbox", icon: Mail, label: "Inbox", id: "tour-inbox" },
+  { href: "/dashboard/locations", icon: MapPin, label: "Locations", id: "tour-locations" },
+  { href: "/dashboard/billing", icon: CreditCard, label: "Billing", id: "tour-billing" },
+  { href: "/dashboard/settings", icon: Settings, label: "Settings", id: "tour-settings" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -37,7 +37,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [verifying, setVerifying] = useState(false);
   const [sent, setSent] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  // Auto-trigger tour for first-time users
+  useEffect(() => {
+    const hasSeen = localStorage.getItem("priceshield_onboarding_seen");
+    if (!hasSeen) {
+      const timer = setTimeout(() => setShowTour(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleSendVerification = async () => {
     setVerifying(true);
@@ -61,7 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <ProtectedRoute>
       <div className="flex min-h-screen">
         {/* Sidebar */}
-        <aside className="hidden md:flex flex-col w-64 border-r border-border/40 bg-card/30 backdrop-blur">
+        <aside id="tour-sidebar" className="hidden md:flex flex-col w-64 border-r border-border/40 bg-card/30 backdrop-blur">
           <div className="flex items-center gap-2 px-6 h-20 border-b border-border/40">
             <img src="/logo.png" alt="PriceShield Logo" className="h-10 w-auto" />
             <span className="hidden">PriceShield</span>
@@ -74,6 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   key={item.href}
                   href={item.href}
+                  id={item.id}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-emerald-500/10 text-emerald-400"
@@ -89,7 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div className="px-3 py-4 border-t border-border/40 space-y-2">
             <button
-              onClick={() => setShowGuide(true)}
+              onClick={() => setShowTour(true)}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-500/5 w-full transition-colors"
             >
               <HelpCircle className="h-4 w-4" />
@@ -214,7 +224,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           )}
 
-          <WelcomeGuide open={showGuide} onOpenChange={setShowGuide} />
+          <AppTour open={showTour} onOpenChange={setShowTour} />
 
           <div className="p-6 md:p-8 max-w-[1600px] mx-auto">{children}</div>
         </main>

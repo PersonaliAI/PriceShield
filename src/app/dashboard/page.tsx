@@ -237,7 +237,7 @@ export default function DashboardPage() {
       </div>
       
       {/* AI CFO Bar */}
-      <Card className={`bg-emerald-500/5 border-emerald-500/20 overflow-hidden relative ${settings?.tier === "free" ? "opacity-75" : ""}`}>
+      <Card id="tour-cfo-bar" className={`bg-emerald-500/5 border-emerald-500/20 overflow-hidden relative ${settings?.tier === "free" ? "opacity-75" : ""}`}>
         {settings?.tier === "free" && (
           <div className="absolute inset-0 z-10 bg-background/40 backdrop-blur-[1px] flex items-center justify-center p-4">
             <div className="bg-background/90 border border-border px-4 py-2 rounded-xl shadow-xl flex items-center gap-3">
@@ -309,7 +309,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div id="tour-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
           <Card key={kpi.label} className="bg-card/50 border-border/50 hover:border-border transition-colors">
             <CardContent className="pt-6">
