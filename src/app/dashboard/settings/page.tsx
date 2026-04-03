@@ -237,17 +237,18 @@ export default function SettingsPage() {
           <div>
             <p className="text-sm font-medium mb-2">📬 Forward invoices to this address:</p>
             {inboxEmail ? (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 rounded-lg border-2 border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-base font-mono font-semibold text-emerald-400 tracking-wide">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="flex-1 rounded-lg border-2 border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm sm:text-base font-mono font-semibold text-emerald-400 tracking-wide break-all min-w-0">
                   {inboxEmail}
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={copyInboxEmail}
-                  className="h-11 px-3"
+                  className="h-11 sm:h-11 px-3 w-full sm:w-auto flex items-center justify-center"
                 >
-                  {copiedInbox ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                  {copiedInbox ? <Check className="h-4 w-4 text-emerald-400 mr-2 sm:mr-0" /> : <Copy className="h-4 w-4 mr-2 sm:mr-0" />}
+                  <span className="sm:hidden text-xs">Copy Address</span>
                 </Button>
               </div>
             ) : (
@@ -390,27 +391,32 @@ export default function SettingsPage() {
             </div>
 
             {!settings?.telegram_linked && !isFree && (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground font-mono truncate">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="flex-1 rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground font-mono break-all min-w-0">
                   {telegramDeepLink || "Sign in to get your link"}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copyTelegramLink}
-                  disabled={!telegramDeepLink}
-                >
-                  {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                </Button>
-                <a
-                  href={telegramDeepLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button variant="outline" size="sm" disabled={!telegramDeepLink}>
-                    <ExternalLink className="h-3 w-3" />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 sm:flex-none"
+                    onClick={copyTelegramLink}
+                    disabled={!telegramDeepLink}
+                  >
+                    {copied ? <Check className="h-3 w-3 mr-2" /> : <Copy className="h-3 w-3 mr-2" />}
+                    <span className="text-[10px]">Copy</span>
                   </Button>
-                </a>
+                  <a
+                    href={telegramDeepLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Button variant="outline" size="sm" className="w-full" disabled={!telegramDeepLink}>
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </a>
+                </div>
               </div>
             )}
             {isFree && (
