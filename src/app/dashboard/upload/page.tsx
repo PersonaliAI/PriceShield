@@ -175,8 +175,9 @@ export default function OnboardingPage() {
           ))}
         </div>
 
+        <div className="flex flex-col items-center">
         {/* Step content */}
-        <Card className="w-full max-w-lg bg-card/80 backdrop-blur border-border/50">
+        <Card className="w-full max-w-2xl bg-card/80 backdrop-blur border-border/50">
           {currentStep === 0 && (
             <>
               <CardHeader>
@@ -239,7 +240,7 @@ export default function OnboardingPage() {
                           type="text"
                           value={addrStreet}
                           onChange={(e) => setAddrStreet(e.target.value)}
-                          placeholder="e.g. 361, Nagahamulsa Rd"
+                          placeholder="e.g. 123 Business Way"
                           className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
                         />
                       </div>
@@ -249,7 +250,7 @@ export default function OnboardingPage() {
                           type="text"
                           value={addrCity}
                           onChange={(e) => setAddrCity(e.target.value)}
-                          placeholder="Kadawatha"
+                          placeholder="New York"
                           className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
                         />
                       </div>
@@ -259,7 +260,7 @@ export default function OnboardingPage() {
                           type="text"
                           value={addrZip}
                           onChange={(e) => setAddrZip(e.target.value)}
-                          placeholder="11850"
+                          placeholder="10001"
                           className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
                         />
                       </div>
@@ -414,6 +415,7 @@ export default function OnboardingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

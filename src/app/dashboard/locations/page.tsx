@@ -222,7 +222,7 @@ export default function LocationsPage() {
                     type="text"
                     value={addrStreet}
                     onChange={(e) => setAddrStreet(e.target.value)}
-                    placeholder="361, Nagahamulsa Rd"
+                    placeholder="123 Business Way"
                     className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
                   />
                 </div>
@@ -232,7 +232,7 @@ export default function LocationsPage() {
                     type="text"
                     value={addrCity}
                     onChange={(e) => setAddrCity(e.target.value)}
-                    placeholder="Kadawatha"
+                    placeholder="New York"
                     className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function LocationsPage() {
                     type="text"
                     value={addrZip}
                     onChange={(e) => setAddrZip(e.target.value)}
-                    placeholder="11850"
+                    placeholder="10001"
                     className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
                   />
                 </div>
