@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, Check, Shield } from "lucide-react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { usePathname, useRouter } from "next/navigation";
 
 interface TourStep {
   id: string;
   title: string;
   content: string;
   position: "top" | "bottom" | "left" | "right";
+  path?: string;
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -18,61 +20,71 @@ const TOUR_STEPS: TourStep[] = [
     id: "tour-sidebar",
     title: "Intelligence Center",
     content: "This is your main navigation. Access your AI CFO diagnostics, Invoices, and Reports from here.",
-    position: "right"
+    position: "right",
+    path: "/dashboard"
   },
   {
     id: "tour-kpis",
     title: "Performance Monitor",
     content: "Instantly see how much potential profit you've lost to stealth price hikes this month.",
-    position: "bottom"
+    position: "bottom",
+    path: "/dashboard"
   },
   {
     id: "tour-cfo-bar",
     title: "Conversational CFO",
     content: "Ask our AI complex questions like 'Which vendor had the most price jumps?' or 'Analyze my Sysco invoices'.",
-    position: "bottom"
+    position: "bottom",
+    path: "/dashboard"
   },
   {
     id: "tour-upload",
     title: "AI Ingestion",
     content: "Upload physical invoices here. Our AI will automatically extract every single line item for comparison.",
-    position: "right"
+    position: "right",
+    path: "/dashboard/upload"
   },
   {
     id: "tour-inbox",
     title: "Verification Inbox",
     content: "Confirm your email forwarding rules and see exactly what the AI is receiving in real-time.",
-    position: "right"
+    position: "right",
+    path: "/dashboard/inbox"
   },
   {
     id: "tour-settings",
     title: "Alert Settings",
     content: "Configure your Telegram and Email alerts to get notified the second a price changes by >2%.",
-    position: "right"
+    position: "right",
+    path: "/dashboard/settings"
   },
   {
     id: "tour-upload-location",
     title: "Multi-Location Support",
     content: "If you have multiple sites, select the target location for your audit. We automatically handle address matching for you.",
-    position: "bottom"
+    position: "bottom",
+    path: "/dashboard/upload"
   },
   {
     id: "tour-settings-sensitivity",
     title: "Price Sensitivity",
     content: "Our most powerful feature. Define exactly what % increase triggers an alert. We recommend 2% for maximum protection with minimal noise.",
-    position: "top"
+    position: "top",
+    path: "/dashboard/settings"
   },
   {
     id: "tour-settings-channels",
     title: "Omni-Channel Alerts",
     content: "Link your Telegram bot or configure custom email alerts to know about price hikes the moment they happen.",
-    position: "top"
+    position: "top",
+    path: "/dashboard/settings"
   },
   {
     id: "tour-settings-reports",
     title: "Automated Reporting",
     content: "Receive Daily, Weekly, or Monthly margin summaries directly to your inbox. Stay ahead of supplier trends effortlessly.",
-    position: "top"
+    position: "top",
+    path: "/dashboard/settings"
   }
 ];
 
@@ -82,23 +94,12 @@ interface AppTourProps {
 }
 
 export default function AppTour({ open, onOpenChange }: AppTourProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [currentStep, setCurrentStep] = useState(0);
   const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Handle first-time auto-show
-  useEffect(() => {
-    if (open) {
-      setTimeout(() => setIsVisible(true), 100);
-    } else {
-      setIsVisible(false);
-    }
-  }, [open]);
 
   // Update spotlight position
   const updatePosition = useCallback(() => {
@@ -118,9 +119,39 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
     }
   }, [currentStep]);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Handle first-time auto-show
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => setIsVisible(true), 100);
+      return () => clearTimeout(timer);
+    } else if (isVisible) {
+      setIsVisible(false);
+    }
+  }, [open, isVisible]);
+
+  // Handle navigation on step change
+  useEffect(() => {
+    if (!open || !isVisible) return;
+    const step = TOUR_STEPS[currentStep];
+    if (step.path && step.path !== pathname) {
+      router.push(step.path);
+    }
+  }, [currentStep, open, isVisible, pathname, router]);
+
+  // Recalculate position when pathname or currentStep changes
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(updatePosition, 300); // Wait for page transition
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, pathname, isVisible, updatePosition]);
+
   useLayoutEffect(() => {
     if (isVisible) {
-      updatePosition();
       window.addEventListener("resize", updatePosition);
       window.addEventListener("scroll", updatePosition);
       return () => {
