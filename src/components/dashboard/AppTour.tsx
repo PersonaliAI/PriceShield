@@ -179,8 +179,8 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
           width="100%"
           height="100%"
           fill="rgba(0,0,0,0.85)"
-          mask="url(#spotlight-mask)"
-          className="backdrop-blur-[2px]"
+          mask={coords ? "url(#spotlight-mask)" : undefined}
+          className={cn("backdrop-blur-[2px] transition-all duration-700", !coords && "opacity-40")}
           onClick={handleSkip}
         />
       </svg>
@@ -199,21 +199,21 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
       )}
 
       {/* Tooltip */}
-      {coords && (
-        <div
-          className={cn(
-            "absolute transition-all duration-500 ease-in-out pointer-events-auto",
-            "w-[340px] z-50 animate-in fade-in zoom-in-95 duration-500"
-          )}
-          style={{
-            top: step.position === "bottom" ? coords.top + coords.height + 24 : 
-                 step.position === "top" ? coords.top - 200 : 
-                 coords.top + (coords.height / 2) - 100,
-            left: step.position === "right" ? coords.left + coords.width + 32 :
-                  step.position === "left" ? coords.left - 360 : 
-                  coords.left + (coords.width / 2) - 170
-          }}
-        >
+      <div
+        className={cn(
+          "absolute transition-all duration-500 ease-in-out pointer-events-auto",
+          "w-[340px] z-[10000] animate-in fade-in zoom-in-95 duration-500",
+          !coords && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        )}
+        style={coords ? {
+          top: step.position === "bottom" ? coords.top + coords.height + 24 : 
+               step.position === "top" ? coords.top - 200 : 
+               coords.top + (coords.height / 2) - 100,
+          left: step.position === "right" ? coords.left + coords.width + 32 :
+                step.position === "left" ? coords.left - 360 : 
+                coords.left + (coords.width / 2) - 170
+        } : {}}
+      >
           <div className="bg-card border border-emerald-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2rem] p-6 relative overflow-hidden group">
             {/* Background Glow */}
             <div className="absolute top-0 right-0 h-32 w-32 bg-emerald-500/10 blur-[40px] -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-1000" />
@@ -275,8 +275,7 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
             step.position === "top" && "left-1/2 -translate-x-1/2 -bottom-8 h-8 w-px"
           )} />
         </div>
-      )}
-    </div>,
+      </div>,
     document.body
   );
 }

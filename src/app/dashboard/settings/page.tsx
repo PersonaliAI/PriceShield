@@ -14,10 +14,12 @@ import {
   AlertTriangle,
   X,
   Plus,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { 
   Dialog, 
   DialogContent, 
@@ -227,8 +229,11 @@ export default function SettingsPage() {
             </div>
             <div>
               <CardTitle>Email Forwarding</CardTitle>
-              <CardDescription>
-                Forward supplier invoices and we&apos;ll extract them automatically with AI
+              <CardDescription className="flex flex-wrap items-center gap-1">
+                Forward supplier invoices and we&apos;ll extract them automatically with AI.
+                <Link href="/blog/mastering-auto-forwarding" className="text-blue-400 hover:text-blue-300 hover:underline inline-flex items-center gap-1 font-medium">
+                  Setup Guide <ArrowRight className="h-3 w-3" />
+                </Link>
               </CardDescription>
             </div>
           </div>
