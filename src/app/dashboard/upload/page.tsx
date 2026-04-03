@@ -56,6 +56,7 @@ export default function OnboardingPage() {
   const [addrStreet, setAddrStreet] = useState("");
   const [addrCity, setAddrCity] = useState("");
   const [addrZip, setAddrZip] = useState("");
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -104,6 +105,35 @@ export default function OnboardingPage() {
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
     if (error && error.includes("limit")) setError("");
+  };
+
+  const handleSaveAddress = async () => {
+    if (!addrStreet || !addrCity) return;
+    setIsSavingAddress(true);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
+
+      const selectedLoc = settings?.locations.find(l => l.id === selectedLocationId);
+      if (!selectedLoc) throw new Error("No location selected");
+
+      const fullAddr = [addrStreet, addrCity, addrZip].filter(Boolean).join(", ");
+      await api.updateLocation(token, selectedLocationId, {
+        name: selectedLoc.name,
+        address: fullAddr
+      });
+
+      // Update local state to hide the box
+      const updatedLocations = settings.locations.map(l => 
+        l.id === selectedLocationId ? { ...l, address: fullAddr } : l
+      );
+      setSettings({ ...settings, locations: updatedLocations });
+    } catch (err) {
+      console.error("Failed to save address:", err);
+      alert("Failed to save address. Please try again.");
+    } finally {
+      setIsSavingAddress(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -273,6 +303,18 @@ export default function OnboardingPage() {
                           className="w-full rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium"
                         />
                       </div>
+                    </div>
+                    <div className="flex justify-end pt-2">
+                       <Button 
+                         variant="ghost" 
+                         size="sm" 
+                         onClick={handleSaveAddress}
+                         disabled={!addrStreet || !addrCity || isSavingAddress}
+                         className="h-9 px-4 text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition-all"
+                       >
+                         {isSavingAddress ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <CheckCircle className="h-3 w-3 mr-2" />}
+                         Save Location Address
+                       </Button>
                     </div>
                   </div>
                 )}
