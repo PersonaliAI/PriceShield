@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Bell,
-  MessageCircle,
   Mail,
   Send,
   ExternalLink,
@@ -270,8 +269,8 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">Our AI <strong className="text-foreground">extracts every line item</strong> from the PDF automatically</p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="shrink-0 h-6 w-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold">3</span>
-                <p className="text-sm text-muted-foreground">You get <strong className="text-foreground">instant alerts</strong> on Telegram, WhatsApp, or email if any prices went up &gt;2%</p>
+                <span className="shrink-0 h-6 w-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold-3">3</span>
+                <p className="text-sm text-muted-foreground">You get <strong className="text-foreground">instant alerts</strong> on Telegram or email if any prices went up &gt;2%</p>
               </div>
             </div>
           </div>
@@ -435,68 +434,6 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* WhatsApp */}
-          <div className="rounded-lg border border-border/50 p-4 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-[140px]">
-                <MessageCircle className="h-5 w-5 text-emerald-400" />
-                <div>
-                  <p className="font-medium text-sm">WhatsApp</p>
-                  <p className="text-xs text-muted-foreground">Mobile messages</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 ml-auto sm:ml-0">
-                <a
-                  href="https://wa.me/15556359583"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 transition-colors text-xs font-semibold h-7"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" /> Open Chat
-                </a>
-                <button
-                  onClick={() => !isFree && toggleChannel("whatsapp")}
-                  disabled={isFree}
-                  className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                    alertChannels.includes("whatsapp") ? "bg-emerald-500" : "bg-muted"
-                  } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    alertChannels.includes("whatsapp") ? "translate-x-5" : ""
-                  }`} />
-                </button>
-              </div>
-            </div>
-
-            {alertChannels.includes("whatsapp") && !isFree && (
-              <div className="space-y-1.5 pt-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground" htmlFor="whatsapp-number">
-                    WhatsApp Number (with country code)
-                  </label>
-                  <span className="text-[10px] text-amber-400/80 italic">Meta Approval Required</span>
-                </div>
-                <input
-                  id="whatsapp-number"
-                  type="tel"
-                  value={whatsappNumber}
-                  onChange={(e) => setWhatsappNumber(e.target.value)}
-                  placeholder="+1234567890"
-                  className="w-full rounded-lg border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all font-mono"
-                />
-                <p className="text-[10px] text-muted-foreground leading-relaxed mt-1">
-                  Note: Business-initiated alerts require a pre-approved Meta Template. If alerts aren't hitting your phone, ensure your template name matches <code className="bg-muted px-1">price_hike_alert</code> in the backend.
-                </p>
-              </div>
-            )}
-            {isFree && (
-              <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                WhatsApp alerts require Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
-              </p>
-            )}
-          </div>
 
           {/* Email Alerts */}
           <div className="rounded-lg border border-border/50 p-4 space-y-4">
@@ -678,13 +615,6 @@ export default function SettingsPage() {
               <p className="text-xs font-medium">Telegram</p>
               <p className={`text-xs mt-1 ${settings?.telegram_linked ? "text-emerald-400" : "text-muted-foreground"}`}>
                 {settings?.telegram_linked ? "✓ Connected" : "Not connected"}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/50 bg-muted/10 p-3 text-center">
-              <MessageCircle className="h-5 w-5 mx-auto mb-2 text-emerald-400" />
-              <p className="text-xs font-medium">WhatsApp</p>
-              <p className={`text-xs mt-1 ${whatsappNumber ? "text-emerald-400" : "text-muted-foreground"}`}>
-                {whatsappNumber ? "✓ Number set" : "Not configured"}
               </p>
             </div>
             <div className="rounded-lg border border-border/50 bg-muted/10 p-3 text-center">

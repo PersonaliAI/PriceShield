@@ -21,7 +21,7 @@ const features = [
   {
     icon: Bell,
     title: "Instant Alerts",
-    desc: "Get notified via WhatsApp or Telegram within seconds. Know exactly which items went up and by how much.",
+    desc: "Get notified via Telegram or email within seconds. Know exactly which items went up and by how much.",
   },
   {
     icon: MessageSquare,
@@ -49,7 +49,7 @@ const plans = [
     description: "For serious margin protection",
     features: [
       "Unlimited vendors",
-      "WhatsApp + Telegram alerts",
+      "Telegram alerts",
       "Full history & analytics",
       "AI CFO unlimited",
       "Priority support",
@@ -180,7 +180,7 @@ export default function LandingPage() {
             {[
               { step: "01", title: "Forward Your Invoices", desc: "Set up email forwarding to your unique PriceShield address. That's it — no scanning, no data entry." },
               { step: "02", title: "AI Extracts Every Detail", desc: "Gemini Vision AI reads every line item — item name, SKU, price, quantity — and logs it to your history." },
-              { step: "03", title: "Get Alerted Instantly", desc: "Whenever unit prices jump more than 2%, you get a WhatsApp or Telegram alert with exact amounts and percentages." },
+              { step: "03", title: "Get Alerted Instantly", desc: "Whenever unit prices jump more than 2%, you get a Telegram or email alert with exact amounts and percentages." },
             ].map((s) => (
               <div key={s.step} className="flex gap-6 items-start">
                 <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center">

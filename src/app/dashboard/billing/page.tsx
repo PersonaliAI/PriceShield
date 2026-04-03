@@ -22,7 +22,6 @@ const PLANS = [
     ],
     limitations: [
       "No Auto-Forwarding",
-      "No WhatsApp Alerts",
       "No Telegram Alerts",
       "No AI CFO chat",
     ],
@@ -37,7 +36,7 @@ const PLANS = [
     features: [
       "1 Restaurant Location",
       "Unlimited Auto-Forwarding",
-      "Real-Time WhatsApp & Telegram Alerts",
+      "Real-Time Telegram Alerts",
       "Ask Your AI CFO Chat Access",
       "Unlimited Vendor Tracking",
     ],

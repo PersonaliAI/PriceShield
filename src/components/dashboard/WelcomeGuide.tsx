@@ -75,7 +75,7 @@ export function WelcomeGuide() {
       title: "Smart Alerts",
       icon: <Settings className="h-6 w-6 text-sky-400" />,
       bg: "bg-sky-500/10",
-      desc: "Set and forget. Connect Telegram or WhatsApp to get notified within minutes when a supplier raises their rates.",
+      desc: "Set and forget. Connect Telegram to get notified within minutes when a supplier raises their rates.",
     },
     {
       title: "Pro Shield",
