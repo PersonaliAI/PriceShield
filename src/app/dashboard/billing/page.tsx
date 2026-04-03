@@ -133,7 +133,7 @@ export default function BillingPage() {
               key={plan.tier} 
               className={`relative flex flex-col ${
                 plan.popular 
-                  ? "border-emerald-500/50 shadow-xl shadow-emerald-500/10 bg-card/80" 
+                  ? "border-emerald-500/50 shadow-xl shadow-emerald-500/10 bg-card/80 overflow-visible" 
                   : "border-border/50 bg-card/30"
               }`}
             >

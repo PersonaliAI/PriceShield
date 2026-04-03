@@ -209,7 +209,7 @@ export default function LandingPage() {
                 key={plan.name}
                 className={`relative ${
                   plan.highlighted
-                    ? "border-emerald-500/50 bg-emerald-500/5 shadow-lg shadow-emerald-500/10"
+                    ? "border-emerald-500/50 bg-emerald-500/5 shadow-lg shadow-emerald-500/10 overflow-visible"
                     : "bg-card/50 border-border/50"
                 }`}
               >
