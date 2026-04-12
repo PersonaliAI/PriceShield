@@ -266,7 +266,12 @@ export default function OnboardingPage() {
     
     setIsProcessing(true);
     setError("");
-    setTerminalLogs([]);
+    // Show immediate upload messages
+    setTerminalLogs([
+      "Initializing PriceShield AI Agent...",
+      `Uploading ${files.length} invoices to secure cloud...`,
+      "> This may take 30-60 seconds for large files.",
+    ]);
     setCurrentStep(1);
     setJobId(clientJobId); // This triggers the polling useEffect immediately!
     
