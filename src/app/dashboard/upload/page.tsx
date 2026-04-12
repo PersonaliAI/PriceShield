@@ -220,8 +220,10 @@ export default function OnboardingPage() {
           setIsProcessing(false);
           setJobId(null);
           clearInterval(interval);
-          // Force dashboard refresh so KPIs are updated
-          setTimeout(() => router.refresh(), 1000);
+          // Wait briefly for data propagation then force refresh
+          setTimeout(() => {
+             router.refresh();
+          }, 1500);
         } else if (statusData.status === "failed") {
           setErrorMessage(statusData.error || "Audit failed unexpectedly.");
           setShowErrorDialog(true);
