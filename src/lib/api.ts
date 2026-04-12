@@ -173,7 +173,6 @@ export const api = {
       method: "POST",
       token,
       body: formData,
-      headers: {}, // Body is FormData, let fetch handle boundary
     });
   },
 
