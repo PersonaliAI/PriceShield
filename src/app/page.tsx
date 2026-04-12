@@ -1,10 +1,11 @@
 "use client";
 
-import { TrendingUp, Bell, MessageSquare, ArrowRight, Check } from "lucide-react";
+import { TrendingUp, Bell, MessageSquare, ArrowRight, Check, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import Image from "next/image";
 
 /* ─── Feature cards ─── */
 const features = [
@@ -15,13 +16,13 @@ const features = [
   },
   {
     icon: TrendingUp,
-    title: "Price Creep Detection",
+    title: "Supplier Price Increase Detect",
     desc: "We compare every delivery against your baseline. If a vendor sneaks in even a 2% hike, we catch it.",
   },
   {
     icon: Bell,
     title: "Instant Alerts",
-    desc: "Get notified via Telegram or email within seconds. Know exactly which items went up and by how much.",
+    desc: "Get notified via Telegram or email the second a price shift is detected. Stop overpaying immediately.",
   },
   {
     icon: MessageSquare,
@@ -82,14 +83,14 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="PriceShield Logo" className="h-8 w-auto" />
+            <Image src="/logo.png" alt="PriceShield Logo" width={32} height={32} className="h-8 w-auto" />
             <span className="hidden">PriceShield</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            <a href="/blog" className="hover:text-foreground transition-colors">Blog</a>
-            <a href="#how" className="hover:text-foreground transition-colors">How It Works</a>
+            <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
+            <Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+            <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+            <Link href="#how" className="hover:text-foreground transition-colors">How It Works</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login">
@@ -114,7 +115,7 @@ export default function LandingPage() {
 
         <div className="mx-auto max-w-4xl text-center px-6">
           <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium">
-            🛡️ Trusted by 500+ small businesses
+            🛡️ Trusted by 500+ businesses
           </Badge>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
             Stop Suppliers From{" "}
@@ -124,7 +125,7 @@ export default function LandingPage() {
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
             Forward your invoices. Our AI catches every stealth price hike your suppliers sneak in.
-            Zero setup. Instant alerts. See exactly how much you&apos;ve been overcharged.
+            Zero setup. Instant alerts. Detect supplier price increases automatically.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login">
@@ -140,6 +141,19 @@ export default function LandingPage() {
           <p className="mt-8 text-sm text-muted-foreground">
             Average user discovers <span className="text-emerald-400 font-semibold">$2,400/year</span> in hidden price hikes
           </p>
+        </div>
+
+        {/* ─── Logo Cloud ─── */}
+        <div className="mx-auto max-w-6xl px-6 mt-24 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/60 mb-10">Protecting margins against 100+ suppliers</p>
+          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+            {['Sysco', 'US Foods', 'Gordon Food Service', 'PFG', 'Ben E. Keith', 'Cheney Brothers'].map((name) => (
+               <div key={name} className="flex items-center gap-2 hover:text-emerald-400 transition-colors cursor-default">
+                 <Shield className="h-5 w-5" />
+                 <span className="text-xl font-bold tracking-tighter">{name}</span>
+               </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -253,17 +267,71 @@ export default function LandingPage() {
       </section>
 
       {/* ───────── Footer ───────── */}
-      <footer className="border-t border-border/40 py-12 bg-card/10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Logo" className="h-6 w-auto opacity-50" />
-            <span className="text-sm font-medium text-muted-foreground">© 2026 PriceShield AI. All rights reserved.</span>
+      <footer className="border-t border-border/40 py-20 bg-card/20 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+        
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+          {/* Brand Col */}
+          <div className="col-span-1 md:col-span-1 space-y-6">
+            <div className="flex items-center gap-2">
+              <Image src="/logo.png" alt="PriceShield Logo" width={32} height={32} className="h-8 w-auto" />
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-emerald-500">PriceShield</span>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              The industry standard for supplier price increase detection. We protect your margins so you can focus on your guests.
+            </p>
+            <div className="flex items-center gap-4">
+               {/* Placeholders for social icons */}
+               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-emerald-500/20 transition-colors cursor-pointer">
+                 <span className="text-xs font-bold">X</span>
+               </div>
+               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-emerald-500/20 transition-colors cursor-pointer">
+                 <span className="text-xs font-bold">In</span>
+               </div>
+            </div>
           </div>
-          <div className="flex items-center gap-8 text-sm text-muted-foreground font-medium">
-             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-             <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-             <Link href="/blog" className="hover:text-foreground transition-colors text-emerald-400">Blog</Link>
+
+          {/* Product Col */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold uppercase tracking-widest text-emerald-500">Product</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link href="#features" className="hover:text-foreground transition-colors">Features</Link></li>
+              <li><Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
+              <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
+              <li><Link href="#how" className="hover:text-foreground transition-colors">How It Works</Link></li>
+            </ul>
           </div>
+
+          {/* Company Col */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold uppercase tracking-widest text-emerald-500">Legal</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+              <li><a href="mailto:support@trypriceshield.com" className="hover:text-foreground transition-colors">Support</a></li>
+            </ul>
+          </div>
+
+          {/* Newsletter Col */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold uppercase tracking-widest text-emerald-500">The Weekly Shield</h4>
+            <p className="text-sm text-muted-foreground">Get margin recovery tips delivered to your inbox.</p>
+            <div className="flex gap-2">
+              <input 
+                type="email" 
+                placeholder="email@address.com" 
+                className="flex-1 bg-background/50 border border-border/50 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-emerald-500 outline-none" 
+              />
+              <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-background h-8">Join</Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-6 mt-20 pt-8 border-t border-border/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">© 2026 PriceShield AI. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            Built for <Shield className="h-3 w-3 text-emerald-400" /> Restaurant Integrity
+          </p>
         </div>
       </footer>
     </div>
