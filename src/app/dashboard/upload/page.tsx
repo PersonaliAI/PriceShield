@@ -215,42 +215,39 @@ export default function OnboardingPage() {
       }
 
       setCurrentStep(1);
-      const stream = await api.runAudit(token, files, selectedLocationId);
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+      const { job_id } = await api.runAudit(token, files, selectedLocationId);
+      
+      // Poll for status and logs
+      const pollInterval = setInterval(async () => {
+        try {
+          const [statusData, logsData] = await Promise.all([
+            api.getJobStatus(token, job_id),
+            api.getJobLogs(token, job_id)
+          ]);
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const event = JSON.parse(line);
-            if (event.type === "log") {
-              setTerminalLogs(prev => [...prev, event.message]);
-            } else if (event.type === "complete") {
-              setAuditResult(event.result);
-              setCurrentStep(2);
-            } else if (event.type === "error") {
-              throw new Error(event.message);
-            }
-          } catch (e) {
-             console.error("Failed to parse event line:", line, e);
+          if (logsData) {
+            setTerminalLogs(logsData.map(l => l.message));
           }
+
+          if (statusData.status === "completed") {
+            clearInterval(pollInterval);
+            setAuditResult(statusData);
+            setCurrentStep(2);
+            setIsProcessing(false);
+          } else if (statusData.status === "failed") {
+            clearInterval(pollInterval);
+            throw new Error(statusData.error || "Audit failed unexpectedly.");
+          }
+        } catch (pollErr) {
+          console.error("Polling error:", pollErr);
         }
-      }
+      }, 1500);
+
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Audit failed";
       setErrorMessage(msg);
       setShowErrorDialog(true);
       setCurrentStep(0);
-    } finally {
       setIsProcessing(false);
     }
   };

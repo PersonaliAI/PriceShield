@@ -150,25 +150,30 @@ export const api = {
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
 
-  async runAudit(token: string, files: File[], locationId?: string): Promise<ReadableStream<Uint8Array>> {
+  async runAudit(token: string, files: File[], locationId?: string): Promise<{ job_id: string }> {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     if (locationId) formData.append("location_id", locationId);
 
-    const res = await fetch(`${API_BASE}/onboarding/audit`, {
+    return request<{ job_id: string }>(`/onboarding/audit`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      token,
       body: formData,
+      headers: {}, // Body is FormData, let fetch handle boundary
     });
-
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(error.detail || "Audit failed to start");
-    }
-    
-    if (!res.body) throw new Error("No response body from audit");
-    return res.body;
   },
+
+export interface AuditJobStatus extends AuditResult {
+  status: "processing" | "completed" | "failed";
+  progress?: number;
+  error?: string;
+}
+
+  getJobStatus: (token: string, jobId: string) =>
+    request<AuditJobStatus>(`/onboarding/job/${jobId}/status`, { token }),
+
+  getJobLogs: (token: string, jobId: string) =>
+    request<Array<{ message: string; created_at: string }>>(`/onboarding/job/${jobId}/logs`, { token }),
 
   getSettings: (token: string) =>
     request<UserSettings>(`/api/settings`, { token }),
