@@ -194,8 +194,8 @@ export const api = {
     }),
 
   // Inbox
-  getInboxMessages: (token: string) =>
-    request<InboxMessage[]>(`/api/inbox`, { token }),
+  getInboxMessages: (token: string, limit: number = 20, offset: number = 0) =>
+    request<InboxMessage[]>(`/api/inbox?limit=${limit}&offset=${offset}`, { token }),
 
   // Telegram
   disconnectTelegram: (token: string) =>

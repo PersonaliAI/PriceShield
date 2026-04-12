@@ -11,24 +11,43 @@ export default function InboxPage() {
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<InboxMessage | null>(null);
+  
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const LIMIT = 20;
 
-  const fetchMessages = useCallback(async (isRefresh = false) => {
+  const fetchMessages = useCallback(async (isRefresh = false, isLoadMore = false) => {
     if (isRefresh) setRefreshing(true);
+    if (isLoadMore) setLoadingMore(true);
+    
     try {
       const token = await getToken();
       if (!token) return;
-      const data = await api.getInboxMessages(token);
-      setMessages(data);
+      
+      const newOffset = isLoadMore ? offset + LIMIT : 0;
+      const data = await api.getInboxMessages(token, LIMIT, newOffset);
+      
+      if (isLoadMore) {
+        setMessages(prev => [...prev, ...data]);
+        setOffset(newOffset);
+      } else {
+        setMessages(data);
+        setOffset(0);
+      }
+      
+      setHasMore(data.length === LIMIT);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
     }
-  }, [getToken]);
+  }, [getToken, offset]);
 
   useEffect(() => {
     fetchMessages();
@@ -122,6 +141,24 @@ export default function InboxPage() {
                   </p>
                 </div>
               ))}
+            </div>
+          )}
+          {messages.length > 0 && hasMore && (
+            <div className="p-4 border-t border-border/50 flex justify-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 font-bold uppercase tracking-widest text-[10px]"
+                onClick={() => fetchMessages(false, true)}
+                disabled={loadingMore}
+              >
+                {loadingMore ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                ) : (
+                  <RefreshCw className="h-3 w-3 mr-2" />
+                )}
+                Load More Messages
+              </Button>
             </div>
           )}
         </CardContent>
