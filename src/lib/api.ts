@@ -78,12 +78,7 @@ async function request<T>(
   return res.json();
 }
 
-/* ─── Types ─── */
-export interface AuditJobStatus extends AuditResult {
-  status: "processing" | "completed" | "failed";
-  progress?: number;
-  error?: string;
-}
+
 
 export interface DashboardSummary {
   total_margin_lost: number;
