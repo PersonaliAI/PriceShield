@@ -79,6 +79,7 @@ export default function OnboardingPage() {
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
+  const [jobId, setJobId] = useState<string | null>(null);
   
   // Address Setup State
   const [addrStreet, setAddrStreet] = useState("");
@@ -194,6 +195,55 @@ export default function OnboardingPage() {
     }
   };
 
+  // Reliable Polling Effect
+  useEffect(() => {
+    if (!jobId || !isProcessing) return;
+
+    let pollCount = 0;
+    const interval = setInterval(async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+
+        const [statusData, logsData] = await Promise.all([
+          api.getJobStatus(token, jobId),
+          api.getJobLogs(token, jobId)
+        ]);
+
+        if (logsData) {
+          setTerminalLogs(logsData.map(l => l.message));
+        }
+
+        if (statusData.status === "completed") {
+          setAuditResult(statusData);
+          setCurrentStep(2);
+          setIsProcessing(false);
+          setJobId(null);
+          clearInterval(interval);
+        } else if (statusData.status === "failed") {
+          setErrorMessage(statusData.error || "Audit failed unexpectedly.");
+          setShowErrorDialog(true);
+          setIsProcessing(false);
+          setJobId(null);
+          clearInterval(interval);
+        }
+        
+        // Safety timeout after 10 minutes
+        pollCount++;
+        if (pollCount > 400) { // ~10 mins at 1.5s
+           clearInterval(interval);
+           setErrorMessage("Audit timed out. Please check your data and try again.");
+           setShowErrorDialog(true);
+           setIsProcessing(false);
+        }
+      } catch (pollErr) {
+        console.error("Polling error:", pollErr);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [jobId, isProcessing]);
+
   const handleSubmit = async () => {
     if (files.length < 2) return;
     setIsProcessing(true);
@@ -216,32 +266,7 @@ export default function OnboardingPage() {
 
       setCurrentStep(1);
       const { job_id } = await api.runAudit(token, files, selectedLocationId);
-      
-      // Poll for status and logs
-      const pollInterval = setInterval(async () => {
-        try {
-          const [statusData, logsData] = await Promise.all([
-            api.getJobStatus(token, job_id),
-            api.getJobLogs(token, job_id)
-          ]);
-
-          if (logsData) {
-            setTerminalLogs(logsData.map(l => l.message));
-          }
-
-          if (statusData.status === "completed") {
-            clearInterval(pollInterval);
-            setAuditResult(statusData);
-            setCurrentStep(2);
-            setIsProcessing(false);
-          } else if (statusData.status === "failed") {
-            clearInterval(pollInterval);
-            throw new Error(statusData.error || "Audit failed unexpectedly.");
-          }
-        } catch (pollErr) {
-          console.error("Polling error:", pollErr);
-        }
-      }, 1500);
+      setJobId(job_id);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Audit failed";
