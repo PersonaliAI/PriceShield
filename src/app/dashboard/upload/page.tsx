@@ -215,15 +215,15 @@ export default function OnboardingPage() {
         }
 
         if (statusData.status === "completed") {
-          setAuditResult(statusData);
-          setCurrentStep(2);
-          setIsProcessing(false);
-          setJobId(null);
           clearInterval(interval);
-          // Wait briefly for data propagation then force refresh
+          setAuditResult(statusData);
+          // Show logs for 3 seconds before transitioning to results
           setTimeout(() => {
-             router.refresh();
-          }, 1500);
+            setCurrentStep(2);
+            setIsProcessing(false);
+            setJobId(null);
+            router.refresh();
+          }, 3000);
         } else if (statusData.status === "failed") {
           setErrorMessage(statusData.error || "Audit failed unexpectedly.");
           setShowErrorDialog(true);
