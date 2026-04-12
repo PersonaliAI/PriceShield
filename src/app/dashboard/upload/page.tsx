@@ -210,8 +210,10 @@ export default function OnboardingPage() {
           api.getJobLogs(token, jobId)
         ]);
 
-        if (logsData) {
-          setTerminalLogs(logsData.map(l => l.message));
+        console.log("[PriceShield Poll]", { status: statusData?.status, logCount: logsData?.length, logs: logsData });
+
+        if (logsData && logsData.length > 0) {
+          setTerminalLogs(logsData.map((l: { message: string }) => l.message));
         }
 
         if (statusData.status === "completed") {
