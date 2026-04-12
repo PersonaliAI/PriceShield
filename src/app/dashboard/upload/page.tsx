@@ -197,20 +197,26 @@ export default function OnboardingPage() {
 
   // Reliable Polling Effect
   useEffect(() => {
+    console.log("[PS] useEffect fired", { jobId, isProcessing });
     if (!jobId || !isProcessing) return;
 
+    console.log("[PS] Starting polling for job:", jobId);
     let pollCount = 0;
     const interval = setInterval(async () => {
       try {
         const token = await getToken();
-        if (!token) return;
+        if (!token) {
+          console.warn("[PS] No token, skipping poll");
+          return;
+        }
 
+        console.log("[PS] Polling...", { pollCount, jobId });
         const [statusData, logsData] = await Promise.all([
           api.getJobStatus(token, jobId),
           api.getJobLogs(token, jobId)
         ]);
 
-        console.log("[PriceShield Poll]", { status: statusData?.status, logCount: logsData?.length, logs: logsData });
+        console.log("[PS] Poll result", { status: statusData?.status, logCount: logsData?.length });
 
         if (logsData && logsData.length > 0) {
           setTerminalLogs(logsData.map((l: { message: string }) => l.message));
@@ -243,7 +249,7 @@ export default function OnboardingPage() {
            setIsProcessing(false);
         }
       } catch (pollErr) {
-        console.error("Polling error:", pollErr);
+        console.error("[PS] Polling error:", pollErr);
       }
     }, 1500);
 
@@ -252,6 +258,7 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     if (files.length < 2) return;
+    console.log("[PS] handleSubmit start, files:", files.length);
     setIsProcessing(true);
     setError("");
     setTerminalLogs([]);
@@ -271,10 +278,13 @@ export default function OnboardingPage() {
       }
 
       setCurrentStep(1);
+      console.log("[PS] Calling runAudit...");
       const { job_id } = await api.runAudit(token, files, selectedLocationId);
+      console.log("[PS] Got job_id:", job_id);
       setJobId(job_id);
 
     } catch (err) {
+      console.error("[PS] handleSubmit error:", err);
       const msg = err instanceof Error ? err.message : "Audit failed";
       setErrorMessage(msg);
       setShowErrorDialog(true);
