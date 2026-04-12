@@ -114,7 +114,7 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
         width: rect.width,
         height: rect.height
       });
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      element.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } else {
       setCoords(null);
     }
@@ -241,14 +241,35 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
           "w-[calc(100vw-32px)] md:w-[340px] z-[10000] animate-in fade-in zoom-in-95 duration-500",
           (!coords || isMobile) ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""
         )}
-        style={coords && !isMobile ? {
-          top: step.position === "bottom" ? coords.top + coords.height + 24 : 
-               step.position === "top" ? coords.top - 200 : 
-               coords.top + (coords.height / 2) - 100,
-          left: step.position === "right" ? coords.left + coords.width + 32 :
-                step.position === "left" ? coords.left - 360 : 
-                coords.left + (coords.width / 2) - 170
-        } : {}}
+        style={coords && !isMobile ? (() => {
+          const viewportH = window.innerHeight;
+          const viewportW = window.innerWidth;
+          const tooltipH = 220;
+          const tooltipW = 340;
+
+          let top = 0;
+          let left = 0;
+
+          if (step.position === "bottom") {
+            top = coords.top + coords.height + 24;
+            left = coords.left + (coords.width / 2) - (tooltipW / 2);
+          } else if (step.position === "top") {
+            top = coords.top - tooltipH - 24;
+            left = coords.left + (coords.width / 2) - (tooltipW / 2);
+          } else if (step.position === "right") {
+            top = coords.top + (coords.height / 2) - (tooltipH / 2);
+            left = coords.left + coords.width + 32;
+          } else {
+            top = coords.top + (coords.height / 2) - (tooltipH / 2);
+            left = coords.left - tooltipW - 32;
+          }
+
+          // Clamp to viewport
+          top = Math.max(16, Math.min(top, viewportH - tooltipH - 16));
+          left = Math.max(16, Math.min(left, viewportW - tooltipW - 16));
+
+          return { top, left };
+        })() : {}}
       >
           <div className="bg-card border border-emerald-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2rem] p-6 relative overflow-hidden group">
             {/* Background Glow */}
