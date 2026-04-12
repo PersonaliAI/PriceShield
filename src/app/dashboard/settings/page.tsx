@@ -103,35 +103,55 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    setSaved(false);
-    setError("");
-    try {
-      const token = await getToken();
-      if (!token) return;
+  // Automatically save settings when state changes (debounced)
+  useEffect(() => {
+    // Only save if we have loaded the initial settings
+    if (loading || !settings) return;
 
-      const update: SettingsUpdate = {
-        whatsapp_number: whatsappNumber || null,
-        forwarding_emails: forwardingEmails,
-        alert_channels: alertChannels,
-        alert_email: alertEmail || null,
-        report_daily: reportDaily,
-        report_weekly: reportWeekly,
-        report_monthly: reportMonthly,
-        alert_threshold: alertThreshold,
-      };
+    const saveTimer = setTimeout(async () => {
+      setSaving(true);
+      setSaved(false);
+      setError("");
+      try {
+        const token = await getToken();
+        if (!token) return;
 
-      await api.updateSettings(token, update);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to save settings";
-      setError(msg);
-    } finally {
-      setSaving(false);
-    }
-  };
+        const update: SettingsUpdate = {
+          whatsapp_number: whatsappNumber || null,
+          forwarding_emails: forwardingEmails,
+          alert_channels: alertChannels,
+          alert_email: alertEmail || null,
+          report_daily: reportDaily,
+          report_weekly: reportWeekly,
+          report_monthly: reportMonthly,
+          alert_threshold: alertThreshold,
+        };
+
+        await api.updateSettings(token, update);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to save settings";
+        setError(msg);
+      } finally {
+        setSaving(false);
+      }
+    }, 1000); // 1s debounce
+
+    return () => clearTimeout(saveTimer);
+  }, [
+    whatsappNumber,
+    forwardingEmails,
+    alertChannels,
+    alertEmail,
+    reportDaily,
+    reportWeekly,
+    reportMonthly,
+    alertThreshold,
+    loading,
+    settings,
+    getToken,
+  ]);
 
   const toggleChannel = (channel: string) => {
     setAlertChannels((prev) =>
