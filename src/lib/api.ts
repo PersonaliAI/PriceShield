@@ -76,31 +76,6 @@ async function request<T>(
   return res.json();
 }
 
-async function uploadFiles<T>(
-  path: string,
-  files: File[],
-  token: string,
-  metadata?: Record<string, string>
-): Promise<T> {
-  const formData = new FormData();
-  files.forEach((file) => formData.append("files", file));
-  if (metadata) {
-    Object.entries(metadata).forEach(([key, val]) => formData.append(key, val));
-  }
-
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || "Upload failed");
-  }
-  return res.json();
-}
-
 /* ─── Types ─── */
 export interface DashboardSummary {
   total_margin_lost: number;
@@ -175,13 +150,25 @@ export const api = {
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
 
-  runAudit: (token: string, files: File[], locationId?: string) =>
-    uploadFiles<AuditResult>(
-      `/onboarding/audit`, 
-      files, 
-      token, 
-      locationId ? { location_id: locationId } : undefined
-    ),
+  async runAudit(token: string, files: File[], locationId?: string): Promise<ReadableStream<Uint8Array>> {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    if (locationId) formData.append("location_id", locationId);
+
+    const res = await fetch(`${API_BASE}/onboarding/audit`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(error.detail || "Audit failed to start");
+    }
+    
+    if (!res.body) throw new Error("No response body from audit");
+    return res.body;
+  },
 
   getSettings: (token: string) =>
     request<UserSettings>(`/api/settings`, { token }),

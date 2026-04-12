@@ -41,37 +41,11 @@ const STEPS = [
   { title: "See Your Results", desc: "Discover exactly how much you've been overcharged" },
 ];
 
-const ProcessingTerminal = ({ files }: { files: File[] }) => {
-  const [logs, setLogs] = useState<string[]>([]);
-  
+const ProcessingTerminal = ({ logs }: { logs: string[] }) => {
   useEffect(() => {
-    const messages = [
-      "Initializing PriceShield AI Agent...",
-      "Connecting to Gemini 1.5 Pro...",
-      `Detected ${files.length} documents in queue.`,
-      ...files.flatMap(f => [
-        `> Extracting structure from ${f.name}...`,
-        `> Parsing line items...`,
-        `> Matching "${f.name}" against previous baseline...`,
-      ]),
-      "Calculating cumulative margin leakage...",
-      "Detecting stealth price creeps...",
-      "Finalizing historical audit report...",
-      "SUCCESS: Audit results ready."
-    ];
-
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < messages.length) {
-        setLogs(prev => [...prev, messages[i]]);
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 450);
-
-    return () => clearInterval(interval);
-  }, [files]);
+    const terminal = document.getElementById("terminal-logs");
+    if (terminal) terminal.scrollTop = terminal.scrollHeight;
+  }, [logs]);
 
   return (
     <div className="w-full max-w-xl mx-auto rounded-xl border border-emerald-500/20 bg-black/40 backdrop-blur-xl p-4 font-mono text-xs overflow-hidden shadow-2xl">
@@ -79,9 +53,9 @@ const ProcessingTerminal = ({ files }: { files: File[] }) => {
         <div className="h-2 w-2 rounded-full bg-rose-500/50" />
         <div className="h-2 w-2 rounded-full bg-amber-500/50" />
         <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
-        <span className="ml-2 text-[10px] text-muted-foreground/60 uppercase tracking-tighter">Onboarding_Audit.log</span>
+        <span className="ml-2 text-[10px] text-muted-foreground/60 uppercase tracking-tighter">AI_Agent_Real_Time.log</span>
       </div>
-      <div className="h-48 overflow-y-auto space-y-1 scrollbar-hide">
+      <div id="terminal-logs" className="h-48 overflow-y-auto space-y-1 scrollbar-hide">
         {logs.map((log, i) => (
           <div key={i} className={`${log.startsWith(">") ? "text-emerald-400/80" : "text-emerald-400"} animate-in fade-in slide-in-from-left-2 duration-300`}>
             <span className="opacity-40 mr-2">[{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}]</span>
@@ -104,6 +78,7 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   
   // Address Setup State
   const [addrStreet, setAddrStreet] = useState("");
@@ -223,6 +198,7 @@ export default function OnboardingPage() {
     if (files.length < 2) return;
     setIsProcessing(true);
     setError("");
+    setTerminalLogs([]);
     
     try {
       const token = await getToken();
@@ -239,9 +215,36 @@ export default function OnboardingPage() {
       }
 
       setCurrentStep(1);
-      const result = await api.runAudit(token, files, selectedLocationId);
-      setAuditResult(result);
-      setCurrentStep(2);
+      const stream = await api.runAudit(token, files, selectedLocationId);
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            if (event.type === "log") {
+              setTerminalLogs(prev => [...prev, event.message]);
+            } else if (event.type === "complete") {
+              setAuditResult(event.result);
+              setCurrentStep(2);
+            } else if (event.type === "error") {
+              throw new Error(event.message);
+            }
+          } catch (e) {
+             console.error("Failed to parse event line:", line, e);
+          }
+        }
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Audit failed";
       setErrorMessage(msg);
@@ -490,7 +493,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <ProcessingTerminal files={files} />
+              <ProcessingTerminal logs={terminalLogs} />
             </CardContent>
           )}
 
