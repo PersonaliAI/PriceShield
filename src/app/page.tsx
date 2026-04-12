@@ -146,13 +146,37 @@ export default function LandingPage() {
         {/* ─── Logo Cloud ─── */}
         <div className="mx-auto max-w-6xl px-6 mt-24 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/60 mb-10">Protecting margins against 100+ suppliers</p>
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-            {['Sysco', 'US Foods', 'Gordon Food Service', 'PFG', 'Ben E. Keith', 'Cheney Brothers'].map((name) => (
-               <div key={name} className="flex items-center gap-2 hover:text-emerald-400 transition-colors cursor-default">
-                 <Shield className="h-5 w-5" />
-                 <span className="text-xl font-bold tracking-tighter">{name}</span>
-               </div>
-            ))}
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-40 hover:opacity-80 transition-all duration-700">
+            {/* Sysco */}
+            <div className="flex items-center gap-2 cursor-default">
+              <svg viewBox="0 0 40 40" className="h-8 w-8" fill="none"><circle cx="20" cy="20" r="18" stroke="#1e40af" strokeWidth="3"/><path d="M12 22c2-6 14-6 16 0" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round"/><circle cx="20" cy="14" r="3" fill="#1e40af"/></svg>
+              <span className="text-lg font-extrabold tracking-tight text-blue-400">SYSCO</span>
+            </div>
+            {/* US Foods */}
+            <div className="flex items-center gap-2 cursor-default">
+              <svg viewBox="0 0 40 40" className="h-8 w-8" fill="none"><rect x="4" y="8" width="32" height="24" rx="4" stroke="#dc2626" strokeWidth="2.5"/><path d="M4 16h32" stroke="#dc2626" strokeWidth="2"/><circle cx="20" cy="24" r="4" fill="#dc2626" opacity=".3"/></svg>
+              <span className="text-lg font-extrabold tracking-tight text-red-400">US Foods</span>
+            </div>
+            {/* Gordon Food Service */}
+            <div className="flex items-center gap-2 cursor-default">
+              <svg viewBox="0 0 40 40" className="h-8 w-8" fill="none"><path d="M6 34 L20 6 L34 34 Z" stroke="#f59e0b" strokeWidth="2.5" strokeLinejoin="round"/><circle cx="20" cy="24" r="5" stroke="#f59e0b" strokeWidth="2"/></svg>
+              <span className="text-lg font-extrabold tracking-tight text-amber-400">GFS</span>
+            </div>
+            {/* PFG */}
+            <div className="flex items-center gap-2 cursor-default">
+              <svg viewBox="0 0 40 40" className="h-8 w-8" fill="none"><rect x="6" y="6" width="28" height="28" rx="6" stroke="#8b5cf6" strokeWidth="2.5"/><path d="M14 14h12M14 20h8M14 26h10" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round"/></svg>
+              <span className="text-lg font-extrabold tracking-tight text-violet-400">PFG</span>
+            </div>
+            {/* Ben E. Keith */}
+            <div className="flex items-center gap-2 cursor-default">
+              <svg viewBox="0 0 40 40" className="h-8 w-8" fill="none"><path d="M20 4 L36 14 L36 30 L20 36 L4 30 L4 14 Z" stroke="#059669" strokeWidth="2.5" strokeLinejoin="round"/><path d="M20 14v12M14 20h12" stroke="#059669" strokeWidth="2" strokeLinecap="round"/></svg>
+              <span className="text-lg font-extrabold tracking-tight text-emerald-400">Ben E. Keith</span>
+            </div>
+            {/* Cheney Brothers */}
+            <div className="flex items-center gap-2 cursor-default">
+              <svg viewBox="0 0 40 40" className="h-8 w-8" fill="none"><circle cx="20" cy="20" r="16" stroke="#0ea5e9" strokeWidth="2.5"/><path d="M12 20a8 8 0 0116 0" stroke="#0ea5e9" strokeWidth="2"/><path d="M16 20a4 4 0 018 0" stroke="#0ea5e9" strokeWidth="2"/></svg>
+              <span className="text-lg font-extrabold tracking-tight text-sky-400">Cheney Bros</span>
+            </div>
           </div>
         </div>
       </section>
