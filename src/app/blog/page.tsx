@@ -1,13 +1,27 @@
-"use client";
-
-import Link from "next/link";
-import { BLOG_POSTS } from "@/lib/blog-data";
-import { ArrowRight, Clock, User, Shield } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useState } from "react";
+import { api } from "@/lib/api";
 
 export default function BlogIndexPage() {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!email || !email.includes("@")) return;
+    setIsSubmitting(true);
+    try {
+      // Mock for now, but wired up
+      console.log("Subscribing email:", email);
+      await new Promise(r => setTimeout(r, 1000));
+      setIsSuccess(true);
+      setEmail("");
+    } catch (err) {
+      console.error("Subscription failed:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation - Simplified */}
@@ -82,16 +96,31 @@ export default function BlogIndexPage() {
           <div className="relative z-10 max-w-xl mx-auto space-y-6">
             <h2 className="text-3xl font-bold">Never miss a price hike again</h2>
             <p className="text-muted-foreground">Join 500+ restaurants getting weekly insights on supplier pricing trends and margin recovery strategies.</p>
-            <div className="flex flex-col sm:flex-row items-stretch gap-3 mt-8">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="flex-1 rounded-xl border border-border/50 bg-background/50 px-6 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-medium"
-              />
-              <Button className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-12 px-8 rounded-xl shadow-lg shadow-emerald-500/20 transition-all">
-                Join the Shield
-              </Button>
-            </div>
+            
+            {isSuccess ? (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-6 rounded-2xl animate-in zoom-in-95">
+                <p className="font-bold flex items-center justify-center gap-2">
+                   <Shield className="h-5 w-5" /> You&apos;re protected! Welcome to the Shield.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-stretch gap-3 mt-8">
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email" 
+                  className="flex-1 rounded-xl border border-border/50 bg-background/50 px-6 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-medium"
+                />
+                <Button 
+                  onClick={handleSubscribe}
+                  disabled={isSubmitting || !email}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-12 px-8 rounded-xl shadow-lg shadow-emerald-500/20 transition-all"
+                >
+                  {isSubmitting ? "Joining..." : "Join the Shield"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </main>

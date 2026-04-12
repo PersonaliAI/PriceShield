@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { Suspense } from "react";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <Suspense fallback={null}>
+            <AnalyticsProvider>
+              {children}
+            </AnalyticsProvider>
+          </Suspense>
+        </AuthProvider>
       </body>
     </html>
   );

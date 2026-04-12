@@ -100,6 +100,7 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
   const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Update spotlight position
   const updatePosition = useCallback(() => {
@@ -121,6 +122,10 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
 
   useEffect(() => {
     setMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Handle first-time auto-show
@@ -233,10 +238,10 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
       <div
         className={cn(
           "absolute transition-all duration-500 ease-in-out pointer-events-auto",
-          "w-[340px] z-[10000] animate-in fade-in zoom-in-95 duration-500",
-          !coords && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          "w-[calc(100vw-32px)] md:w-[340px] z-[10000] animate-in fade-in zoom-in-95 duration-500",
+          (!coords || isMobile) ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""
         )}
-        style={coords ? {
+        style={coords && !isMobile ? {
           top: step.position === "bottom" ? coords.top + coords.height + 24 : 
                step.position === "top" ? coords.top - 200 : 
                coords.top + (coords.height / 2) - 100,
@@ -298,13 +303,15 @@ export default function AppTour({ open, onOpenChange }: AppTourProps) {
           </div>
 
           {/* Connected Arrow line */}
-          <div className={cn(
-            "absolute w-8 h-px bg-emerald-500/30",
-            step.position === "right" && "-left-8 top-1/2 -translate-y-1/2",
-            step.position === "left" && "-right-8 top-1/2 -translate-y-1/2",
-            step.position === "bottom" && "left-1/2 -translate-x-1/2 -top-8 h-8 w-px",
-            step.position === "top" && "left-1/2 -translate-x-1/2 -bottom-8 h-8 w-px"
-          )} />
+          {coords && !isMobile && (
+            <div className={cn(
+              "absolute w-8 h-px bg-emerald-500/30",
+              step.position === "right" && "-left-8 top-1/2 -translate-y-1/2",
+              step.position === "left" && "-right-8 top-1/2 -translate-y-1/2",
+              step.position === "bottom" && "left-1/2 -translate-x-1/2 -top-8 h-8 w-px",
+              step.position === "top" && "left-1/2 -translate-x-1/2 -bottom-8 h-8 w-px"
+            )} />
+          )}
         </div>
       </div>,
     document.body
