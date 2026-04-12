@@ -41,6 +41,59 @@ const STEPS = [
   { title: "See Your Results", desc: "Discover exactly how much you've been overcharged" },
 ];
 
+const ProcessingTerminal = ({ files }: { files: File[] }) => {
+  const [logs, setLogs] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const messages = [
+      "Initializing PriceShield AI Agent...",
+      "Connecting to Gemini 1.5 Pro...",
+      `Detected ${files.length} documents in queue.`,
+      ...files.flatMap(f => [
+        `> Extracting structure from ${f.name}...`,
+        `> Parsing line items...`,
+        `> Matching "${f.name}" against previous baseline...`,
+      ]),
+      "Calculating cumulative margin leakage...",
+      "Detecting stealth price creeps...",
+      "Finalizing historical audit report...",
+      "SUCCESS: Audit results ready."
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < messages.length) {
+        setLogs(prev => [...prev, messages[i]]);
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 450);
+
+    return () => clearInterval(interval);
+  }, [files]);
+
+  return (
+    <div className="w-full max-w-xl mx-auto rounded-xl border border-emerald-500/20 bg-black/40 backdrop-blur-xl p-4 font-mono text-xs overflow-hidden shadow-2xl">
+      <div className="flex gap-1.5 mb-3 border-b border-white/5 pb-2">
+        <div className="h-2 w-2 rounded-full bg-rose-500/50" />
+        <div className="h-2 w-2 rounded-full bg-amber-500/50" />
+        <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
+        <span className="ml-2 text-[10px] text-muted-foreground/60 uppercase tracking-tighter">Onboarding_Audit.log</span>
+      </div>
+      <div className="h-48 overflow-y-auto space-y-1 scrollbar-hide">
+        {logs.map((log, i) => (
+          <div key={i} className={`${log.startsWith(">") ? "text-emerald-400/80" : "text-emerald-400"} animate-in fade-in slide-in-from-left-2 duration-300`}>
+            <span className="opacity-40 mr-2">[{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}]</span>
+            {log}
+          </div>
+        ))}
+        <div className="h-1 w-full animate-pulse bg-emerald-500/20 rounded mt-1" />
+      </div>
+    </div>
+  );
+};
+
 export default function OnboardingPage() {
   const { getToken } = useAuth();
   const router = useRouter();
@@ -59,6 +112,7 @@ export default function OnboardingPage() {
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -81,26 +135,52 @@ export default function OnboardingPage() {
   const isFree = settings?.tier === "free";
   const uploadsRemaining = isFree ? Math.max(0, 5 - (settings?.manual_uploads_count || 0)) : null;
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files).filter(
-        (f) => f.type === "application/pdf"
-      );
-      setFiles((prev) => {
-        const total = [...prev, ...newFiles];
-        const limit = isFree && uploadsRemaining !== null ? uploadsRemaining : 5;
-        if (total.length > limit) {
-          setError(isFree 
-            ? `Free tier limit: You can only upload ${uploadsRemaining} more invoice(s).`
-            : `Please select up to 5 invoices at a time.`
-          );
-          return total.slice(0, limit);
-        }
-        setError("");
-        return total;
-      });
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement> | React.DragEvent) => {
+    let incomingFiles: File[] = [];
+    
+    if ('target' in e && e.target instanceof HTMLInputElement && e.target.files) {
+      incomingFiles = Array.from(e.target.files);
+    } else if ('dataTransfer' in e && e.dataTransfer.files) {
+      incomingFiles = Array.from(e.dataTransfer.files);
     }
+
+    const newFiles = incomingFiles.filter((f) => f.type === "application/pdf");
+    
+    if (newFiles.length === 0 && incomingFiles.length > 0) {
+      setError("Please upload PDF files only.");
+      return;
+    }
+
+    setFiles((prev) => {
+      const total = [...prev, ...newFiles];
+      const limit = isFree && uploadsRemaining !== null ? uploadsRemaining : 5;
+      if (total.length > limit) {
+        setError(isFree 
+          ? `Free tier limit: You can only upload ${uploadsRemaining} more invoice(s).`
+          : `Please select up to 5 invoices at a time.`
+        );
+        return total.slice(0, limit);
+      }
+      setError("");
+      return total;
+    });
   }, [isFree, uploadsRemaining]);
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFileChange(e);
+  }, [handleFileChange]);
 
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
@@ -323,10 +403,21 @@ export default function OnboardingPage() {
                 )}
 
                 {/* Drop zone */}
-                <label className="flex flex-col items-center justify-center h-40 rounded-xl border-2 border-dashed border-border/50 hover:border-emerald-500/40 transition-colors cursor-pointer bg-muted/30">
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                <label 
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  onDrop={onDrop}
+                  className={`flex flex-col items-center justify-center h-40 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                    isDragging 
+                      ? "border-emerald-500 bg-emerald-500/10 scale-[0.99]" 
+                      : "border-border/50 bg-muted/30 hover:border-emerald-500/40"
+                  }`}
+                >
+                  <Upload className={`h-8 w-8 mb-2 transition-colors ${isDragging ? "text-emerald-400" : "text-muted-foreground"}`} />
                   <span className="text-sm text-muted-foreground">
-                    Drop PDFs here or <span className="text-emerald-400 font-medium">browse</span>
+                    {isDragging ? "Drop to upload" : (
+                      <>Drop PDFs here or <span className="text-emerald-400 font-medium">browse</span></>
+                    )}
                   </span>
                   <input
                     type="file"
@@ -386,12 +477,20 @@ export default function OnboardingPage() {
           )}
 
           {currentStep === 1 && (
-            <CardContent className="flex flex-col items-center justify-center py-16 space-y-4">
-              <Loader2 className="h-10 w-10 text-emerald-400 animate-spin" />
-              <p className="text-lg font-semibold">Analysing your invoices…</p>
-              <p className="text-sm text-muted-foreground">
-                Our AI is extracting line items and comparing prices across {files.length} invoices
-              </p>
+            <CardContent className="flex flex-col items-center justify-center py-12 space-y-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full animate-pulse" />
+                <Loader2 className="h-12 w-12 text-emerald-400 animate-spin relative" />
+              </div>
+              
+              <div className="text-center space-y-1">
+                <p className="text-lg font-bold tracking-tight">AI Agent Processing</p>
+                <p className="text-xs text-muted-foreground px-10">
+                  Our neural engine is precisely extracting and matching every line item across {files.length} invoices.
+                </p>
+              </div>
+
+              <ProcessingTerminal files={files} />
             </CardContent>
           )}
 

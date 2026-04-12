@@ -59,7 +59,10 @@ export default function DashboardPage() {
   const [trendVendor, setTrendVendor] = useState<string>("");
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
+  const [offset, setOffset] = useState(0);
+  const LIMIT = 50;
 
   // AI CFO Chat State
   const [cfoQuestion, setCfoQuestion] = useState("");
@@ -73,6 +76,7 @@ export default function DashboardPage() {
     setLoading(true);
     setInboxLoading(true);
     setError("");
+    setOffset(0);
     try {
       const token = await getToken();
       if (!token) return;
@@ -80,7 +84,7 @@ export default function DashboardPage() {
       const [summaryData, vendorsData, invoicesData, inboxData, s] = await Promise.all([
         api.getDashboardSummary(token),
         api.getVendors(token),
-        api.getInvoices(token),
+        api.getInvoices(token, selectedVendor === "All Vendors" ? undefined : selectedVendor, LIMIT, 0),
         api.getInboxMessages(token),
         api.getSettings(token),
       ]);
@@ -110,7 +114,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [getToken]);
+  }, [getToken, selectedVendor]);
 
   useEffect(() => {
     fetchDashboard();
@@ -120,20 +124,50 @@ export default function DashboardPage() {
   const handleVendorFilter = useCallback(
     async (vendor: string) => {
       setSelectedVendor(vendor);
+      setLoading(true);
+      setOffset(0);
       const token = await getToken();
       if (!token) return;
       try {
         const data = await api.getInvoices(
           token,
-          vendor === "All Vendors" ? undefined : vendor
+          vendor === "All Vendors" ? undefined : vendor,
+          LIMIT,
+          0
         );
         setInvoices(data.rows);
       } catch {
         // Keep existing data
+      } finally {
+        setLoading(false);
       }
     },
     [getToken]
   );
+
+  const handleLoadMore = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    const newOffset = offset + LIMIT;
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const data = await api.getInvoices(
+        token,
+        selectedVendor === "All Vendors" ? undefined : selectedVendor,
+        LIMIT,
+        newOffset
+      );
+      if (data.rows.length > 0) {
+        setInvoices((prev) => [...prev, ...data.rows]);
+        setOffset(newOffset);
+      }
+    } catch {
+      // Fail silently
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Load trend for a specific item
   const handleTrendSelect = useCallback(
@@ -194,7 +228,7 @@ export default function DashboardPage() {
     },
     {
       label: "Vendors Tracked",
-      value: vendors.length.toString(),
+      value: summary?.vendors_tracked?.toString() ?? vendors.length.toString(),
       icon: TrendingUp,
       color: "text-emerald-400",
       bg: "bg-emerald-500/10",
@@ -431,7 +465,7 @@ export default function DashboardPage() {
               </SelectContent>
             </Select>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -481,6 +515,27 @@ export default function DashboardPage() {
                 ))}
               </TableBody>
             </Table>
+
+            {invoices.length >= LIMIT && (
+              <div className="flex justify-center pt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleLoadMore} 
+                  disabled={loadingMore}
+                  className="h-9 px-6 bg-muted/20 border-border/50 hover:bg-muted/30 transition-all font-medium"
+                >
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading more...
+                    </>
+                  ) : (
+                    "Load More Invoices"
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -106,6 +106,7 @@ export interface DashboardSummary {
   total_margin_lost: number;
   hikes_caught: number;
   top_offending_vendor: string;
+  vendors_tracked: number;
 }
 
 export interface PriceTrendPoint {
@@ -163,11 +164,13 @@ export const api = {
       { token }
     ),
 
-  getInvoices: (token: string, vendor?: string) =>
-    request<{ rows: InvoiceRow[]; total: number }>(
-      `/api/dashboard/invoices${vendor ? `?vendor_name=${encodeURIComponent(vendor)}` : ""}`,
-      { token }
-    ),
+  getInvoices: (token: string, vendor?: string, limit: number = 50, offset: number = 0) => {
+    let url = `/api/dashboard/invoices?limit=${limit}&offset=${offset}`;
+    if (vendor && vendor !== "All Vendors") {
+      url += `&vendor_name=${encodeURIComponent(vendor)}`;
+    }
+    return request<{ rows: InvoiceRow[]; total: number }>(url, { token });
+  },
 
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
