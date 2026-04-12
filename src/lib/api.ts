@@ -77,6 +77,12 @@ async function request<T>(
 }
 
 /* ─── Types ─── */
+export interface AuditJobStatus extends AuditResult {
+  status: "processing" | "completed" | "failed";
+  progress?: number;
+  error?: string;
+}
+
 export interface DashboardSummary {
   total_margin_lost: number;
   hikes_caught: number;
@@ -128,6 +134,12 @@ export interface InboxMessage {
   created_at: string;
 }
 
+export interface AuditJobStatus extends AuditResult {
+  status: "processing" | "completed" | "failed";
+  progress?: number;
+  error?: string;
+}
+
 /* ─── API methods ─── */
 export const api = {
   getDashboardSummary: (token: string) =>
@@ -162,12 +174,6 @@ export const api = {
       headers: {}, // Body is FormData, let fetch handle boundary
     });
   },
-
-export interface AuditJobStatus extends AuditResult {
-  status: "processing" | "completed" | "failed";
-  progress?: number;
-  error?: string;
-}
 
   getJobStatus: (token: string, jobId: string) =>
     request<AuditJobStatus>(`/onboarding/job/${jobId}/status`, { token }),
