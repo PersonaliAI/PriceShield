@@ -259,9 +259,16 @@ export default function OnboardingPage() {
   const handleSubmit = async () => {
     if (files.length < 2) return;
     console.log("[PS] handleSubmit start, files:", files.length);
+    
+    // Generate job_id upfront so polling can start immediately
+    const clientJobId = crypto.randomUUID();
+    console.log("[PS] Generated client job_id:", clientJobId);
+    
     setIsProcessing(true);
     setError("");
     setTerminalLogs([]);
+    setCurrentStep(1);
+    setJobId(clientJobId); // This triggers the polling useEffect immediately!
     
     try {
       const token = await getToken();
@@ -277,11 +284,14 @@ export default function OnboardingPage() {
         });
       }
 
-      setCurrentStep(1);
-      console.log("[PS] Calling runAudit...");
-      const { job_id } = await api.runAudit(token, files, selectedLocationId);
-      console.log("[PS] Got job_id:", job_id);
-      setJobId(job_id);
+      console.log("[PS] Calling runAudit with client job_id...");
+      // Fire and forget — don't await. Polling will pick up status changes.
+      api.runAudit(token, files, selectedLocationId, clientJobId).then((data) => {
+        console.log("[PS] runAudit response:", data);
+      }).catch((err) => {
+        console.error("[PS] runAudit error:", err);
+        // The polling will detect the failure via job status
+      });
 
     } catch (err) {
       console.error("[PS] handleSubmit error:", err);
@@ -290,6 +300,7 @@ export default function OnboardingPage() {
       setShowErrorDialog(true);
       setCurrentStep(0);
       setIsProcessing(false);
+      setJobId(null);
     }
   };
 

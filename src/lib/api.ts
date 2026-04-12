@@ -159,10 +159,11 @@ export const api = {
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
 
-  async runAudit(token: string, files: File[], locationId?: string): Promise<{ job_id: string }> {
+  async runAudit(token: string, files: File[], locationId?: string, clientJobId?: string): Promise<{ job_id: string }> {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     if (locationId) formData.append("location_id", locationId);
+    if (clientJobId) formData.append("job_id", clientJobId);
 
     const separator = "/onboarding/audit".includes("?") ? "&" : "?";
     const url = `${API_BASE}/onboarding/audit${separator}t=${Date.now()}`;
