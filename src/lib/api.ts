@@ -164,11 +164,42 @@ export const api = {
     files.forEach((file) => formData.append("files", file));
     if (locationId) formData.append("location_id", locationId);
 
-    return request<{ job_id: string }>(`/onboarding/audit`, {
-      method: "POST",
-      token,
-      body: formData,
-    });
+    const separator = "/onboarding/audit".includes("?") ? "&" : "?";
+    const url = `${API_BASE}/onboarding/audit${separator}t=${Date.now()}`;
+    
+    console.log("[PS] runAudit: sending to", url, "files:", files.length);
+    
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+    
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+        },
+        body: formData,
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      
+      clearTimeout(timeout);
+      console.log("[PS] runAudit: response status", res.status);
+      
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(error.detail || "Audit request failed");
+      }
+      
+      const data = await res.json();
+      console.log("[PS] runAudit: parsed response", data);
+      return data;
+    } catch (err) {
+      clearTimeout(timeout);
+      console.error("[PS] runAudit: fetch error", err);
+      throw err;
+    }
   },
 
   getJobStatus: (token: string, jobId: string) =>
