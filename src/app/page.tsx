@@ -253,11 +253,16 @@ export default function LandingPage() {
       </section>
 
       {/* ───────── Footer ───────── */}
-      <footer className="border-t border-border/40 py-12">
+      <footer className="border-t border-border/40 py-12 bg-card/10">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="Logo" className="h-6 w-auto opacity-50" />
+            <span className="text-sm font-medium text-muted-foreground">© 2026 PriceShield AI. All rights reserved.</span>
+          </div>
           <div className="flex items-center gap-8 text-sm text-muted-foreground font-medium">
              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-             <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+             <Link href="/blog" className="hover:text-foreground transition-colors text-emerald-400">Blog</Link>
           </div>
         </div>
       </footer>

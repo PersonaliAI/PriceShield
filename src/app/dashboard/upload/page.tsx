@@ -124,10 +124,13 @@ export default function OnboardingPage() {
       });
 
       // Update local state to hide the box
+      if (!settings) return;
+      
       const updatedLocations = settings.locations.map(l => 
         l.id === selectedLocationId ? { ...l, address: fullAddr } : l
       );
-      setSettings({ ...settings, locations: updatedLocations });
+      
+      setSettings(prev => prev ? ({ ...prev, locations: updatedLocations }) : null);
     } catch (err) {
       console.error("Failed to save address:", err);
       alert("Failed to save address. Please try again.");

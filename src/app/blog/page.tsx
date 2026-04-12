@@ -1,3 +1,10 @@
+"use client";
+
+import Link from "next/link";
+import { BLOG_POSTS } from "@/lib/blog-data";
+import { ArrowRight, Clock, User, Shield } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
 import { api } from "@/lib/api";
