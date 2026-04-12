@@ -183,9 +183,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   })}
                 </nav>
 
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/40 bg-card/50">
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/40 bg-card/50 space-y-2">
+                  <button
+                    onClick={() => { setIsMenuOpen(false); setShowTour(true); }}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-500/5 w-full transition-colors"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                    Platform Tour
+                  </button>
                   {user?.email && (
-                    <p className="px-3 py-2 text-xs text-muted-foreground truncate mb-2">{user.email}</p>
+                    <p className="px-3 py-2 text-xs text-muted-foreground truncate">{user.email}</p>
                   )}
                   <button
                     onClick={handleSignOut}
