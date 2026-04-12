@@ -50,8 +50,10 @@ async function request<T>(
   options?: RequestInit & { token?: string }
 ): Promise<T> {
   const { token, ...fetchOptions } = options || {};
+  const isFormData = fetchOptions.body instanceof FormData;
+  
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     "Cache-Control": "no-cache",
     ...(fetchOptions?.headers as Record<string, string>),
   };
