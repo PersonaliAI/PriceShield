@@ -198,17 +198,21 @@ export default function OnboardingPage() {
   // Reliable Polling Effect
   useEffect(() => {
     if (!jobId || !isProcessing) return;
+    console.log("[PS] POLLING STARTED for job:", jobId);
 
     let pollCount = 0;
     const interval = setInterval(async () => {
+      pollCount++;
       try {
         const token = await getToken();
-        if (!token) return;
+        if (!token) { console.warn("[PS] no token"); return; }
 
         const [statusData, logsData] = await Promise.all([
           api.getJobStatus(token, jobId),
           api.getJobLogs(token, jobId)
         ]);
+
+        console.log(`[PS] poll #${pollCount}`, statusData?.status, "logs:", logsData?.length);
 
         if (logsData && logsData.length > 0) {
           setTerminalLogs(logsData.map((l: { message: string }) => l.message));
@@ -230,25 +234,24 @@ export default function OnboardingPage() {
           setJobId(null);
           clearInterval(interval);
         }
-        // "uploading" and "processing" — keep polling
         
-        pollCount++;
         if (pollCount > 400) {
            clearInterval(interval);
-           setErrorMessage("Audit timed out. Please check your data and try again.");
+           setErrorMessage("Audit timed out.");
            setShowErrorDialog(true);
            setIsProcessing(false);
         }
-      } catch (pollErr) {
-        // During upload phase, job may not exist yet — silently retry
+      } catch (err: unknown) {
+        console.error(`[PS] poll #${pollCount} ERROR:`, err);
       }
-    }, 1500);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [jobId, isProcessing]);
 
   const handleSubmit = async () => {
     if (files.length < 2) return;
+    console.log("[PS] === SUBMIT CLICKED ===", files.length, "files");
     setIsProcessing(true);
     setError("");
     setTerminalLogs([]);
@@ -257,6 +260,7 @@ export default function OnboardingPage() {
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
+      console.log("[PS] got token, creating job...");
 
       // Save Address if provided/missing
       const selectedLoc = settings?.locations.find(l => l.id === selectedLocationId);
@@ -270,15 +274,18 @@ export default function OnboardingPage() {
 
       // Step 1: Create job instantly (writes to Firestore, returns job_id)
       const { job_id } = await api.createAuditJob(token);
+      console.log("[PS] JOB CREATED:", job_id);
       setJobId(job_id); // Triggers polling immediately!
 
       // Step 2: Fire file upload in background (don't await)
-      api.uploadAuditFiles(token, files, job_id, selectedLocationId).catch((err) => {
-        console.error("Upload error:", err);
-        // The polling will detect the failure via job status
+      api.uploadAuditFiles(token, files, job_id, selectedLocationId).then(() => {
+        console.log("[PS] upload finished OK");
+      }).catch((err) => {
+        console.error("[PS] upload error:", err);
       });
 
     } catch (err) {
+      console.error("[PS] SUBMIT ERROR:", err);
       const msg = err instanceof Error ? err.message : "Audit failed";
       setErrorMessage(msg);
       setShowErrorDialog(true);
