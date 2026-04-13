@@ -62,22 +62,13 @@ const StatusDisplay = ({ logs, progress, isProcessing }: { logs: string[], progr
   
   return (
     <div className="w-full max-w-md mx-auto py-10 px-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl flex flex-col items-center space-y-8 text-center animate-in fade-in zoom-in duration-500">
-      <div className="relative">
-        <div className="h-24 w-24 rounded-full border-2 border-emerald-500/20 flex items-center justify-center">
-            <Loader2 className="h-10 w-10 text-emerald-500 animate-spin" />
-        </div>
-        <div className="absolute top-0 left-0 h-24 w-24 rounded-full border-t-2 border-emerald-500 animate-[spin_2s_linear_infinite]" />
-        <div className="absolute inset-0 flex items-center justify-center font-bold text-emerald-500 text-sm">
-            {progress}%
-        </div>
-      </div>
       
       <div className="space-y-3">
         <h3 className="text-2xl font-bold text-white tracking-tight min-h-[2rem]">
           {status}
         </h3>
         <p className="text-sm text-emerald-500/60 font-medium uppercase tracking-widest">
-            {progress < 70 ? "Stage 1: Neural Extraction" : progress < 90 ? "Stage 2: Market Analysis" : "Stage 3: Finalizing Report"}
+            {progress < 70 ? "Stage 1: Neural Extraction" : progress < 90 ? "Stage 2: Market Analysis" : "Stage 3: Finalizing Report"} — {progress}%
         </p>
       </div>
       
@@ -89,16 +80,23 @@ const StatusDisplay = ({ logs, progress, isProcessing }: { logs: string[], progr
             />
         </div>
         <div className="flex justify-between text-[10px] text-emerald-500/40 font-black uppercase tracking-tighter">
-            <span>Standby</span>
-            <span>Link Active</span>
-            <span>Complete</span>
+            <span className={progress === 0 ? "text-emerald-500" : ""}>Standby</span>
+            <span className={progress > 0 && progress < 100 ? "text-emerald-500 animate-pulse" : ""}>Link Active</span>
+            <span className={progress === 100 ? "text-emerald-500" : ""}>Complete</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Processing Data Stream</span>
-      </div>
+      {progress < 100 && isProcessing ? (
+        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Processing Data Stream</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 opacity-50">
+          <div className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Data Stream Closed</span>
+        </div>
+      )}
     </div>
   );
 };
