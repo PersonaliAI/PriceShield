@@ -197,26 +197,18 @@ export default function OnboardingPage() {
 
   // Reliable Polling Effect
   useEffect(() => {
-    console.log("[PS] useEffect fired", { jobId, isProcessing });
     if (!jobId || !isProcessing) return;
 
-    console.log("[PS] Starting polling for job:", jobId);
     let pollCount = 0;
     const interval = setInterval(async () => {
       try {
         const token = await getToken();
-        if (!token) {
-          console.warn("[PS] No token, skipping poll");
-          return;
-        }
+        if (!token) return;
 
-        console.log("[PS] Polling...", { pollCount, jobId });
         const [statusData, logsData] = await Promise.all([
           api.getJobStatus(token, jobId),
           api.getJobLogs(token, jobId)
         ]);
-
-        console.log("[PS] Poll result", { status: statusData?.status, logCount: logsData?.length });
 
         if (logsData && logsData.length > 0) {
           setTerminalLogs(logsData.map((l: { message: string }) => l.message));
@@ -225,7 +217,6 @@ export default function OnboardingPage() {
         if (statusData.status === "completed") {
           clearInterval(interval);
           setAuditResult(statusData);
-          // Show logs for 3 seconds before transitioning to results
           setTimeout(() => {
             setCurrentStep(2);
             setIsProcessing(false);
@@ -239,17 +230,17 @@ export default function OnboardingPage() {
           setJobId(null);
           clearInterval(interval);
         }
+        // "uploading" and "processing" — keep polling
         
-        // Safety timeout after 10 minutes
         pollCount++;
-        if (pollCount > 400) { // ~10 mins at 1.5s
+        if (pollCount > 400) {
            clearInterval(interval);
            setErrorMessage("Audit timed out. Please check your data and try again.");
            setShowErrorDialog(true);
            setIsProcessing(false);
         }
       } catch (pollErr) {
-        console.error("[PS] Polling error:", pollErr);
+        // During upload phase, job may not exist yet — silently retry
       }
     }, 1500);
 
@@ -258,22 +249,10 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     if (files.length < 2) return;
-    console.log("[PS] handleSubmit start, files:", files.length);
-    
-    // Generate job_id upfront so polling can start immediately
-    const clientJobId = crypto.randomUUID();
-    console.log("[PS] Generated client job_id:", clientJobId);
-    
     setIsProcessing(true);
     setError("");
-    // Show immediate upload messages
-    setTerminalLogs([
-      "Initializing PriceShield AI Agent...",
-      `Uploading ${files.length} invoices to secure cloud...`,
-      "> This may take 30-60 seconds for large files.",
-    ]);
+    setTerminalLogs([]);
     setCurrentStep(1);
-    setJobId(clientJobId); // This triggers the polling useEffect immediately!
     
     try {
       const token = await getToken();
@@ -289,17 +268,17 @@ export default function OnboardingPage() {
         });
       }
 
-      console.log("[PS] Calling runAudit with client job_id...");
-      // Fire and forget — don't await. Polling will pick up status changes.
-      api.runAudit(token, files, selectedLocationId, clientJobId).then((data) => {
-        console.log("[PS] runAudit response:", data);
-      }).catch((err) => {
-        console.error("[PS] runAudit error:", err);
+      // Step 1: Create job instantly (writes to Firestore, returns job_id)
+      const { job_id } = await api.createAuditJob(token);
+      setJobId(job_id); // Triggers polling immediately!
+
+      // Step 2: Fire file upload in background (don't await)
+      api.uploadAuditFiles(token, files, job_id, selectedLocationId).catch((err) => {
+        console.error("Upload error:", err);
         // The polling will detect the failure via job status
       });
 
     } catch (err) {
-      console.error("[PS] handleSubmit error:", err);
       const msg = err instanceof Error ? err.message : "Audit failed";
       setErrorMessage(msg);
       setShowErrorDialog(true);

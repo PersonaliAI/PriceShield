@@ -159,48 +159,23 @@ export const api = {
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
 
-  async runAudit(token: string, files: File[], locationId?: string, clientJobId?: string): Promise<{ job_id: string }> {
+  async createAuditJob(token: string): Promise<{ job_id: string }> {
+    return request<{ job_id: string }>(`/onboarding/create-job`, {
+      method: "POST",
+      token,
+    });
+  },
+
+  async uploadAuditFiles(token: string, files: File[], jobId: string, locationId?: string): Promise<{ job_id: string }> {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
     if (locationId) formData.append("location_id", locationId);
-    if (clientJobId) formData.append("job_id", clientJobId);
 
-    const separator = "/onboarding/audit".includes("?") ? "&" : "?";
-    const url = `${API_BASE}/onboarding/audit${separator}t=${Date.now()}`;
-    
-    console.log("[PS] runAudit: sending to", url, "files:", files.length);
-    
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
-    
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Cache-Control": "no-cache",
-        },
-        body: formData,
-        signal: controller.signal,
-        cache: "no-store",
-      });
-      
-      clearTimeout(timeout);
-      console.log("[PS] runAudit: response status", res.status);
-      
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(error.detail || "Audit request failed");
-      }
-      
-      const data = await res.json();
-      console.log("[PS] runAudit: parsed response", data);
-      return data;
-    } catch (err) {
-      clearTimeout(timeout);
-      console.error("[PS] runAudit: fetch error", err);
-      throw err;
-    }
+    return request<{ job_id: string }>(`/onboarding/audit?job_id=${jobId}`, {
+      method: "POST",
+      token,
+      body: formData,
+    });
   },
 
   getJobStatus: (token: string, jobId: string) =>
