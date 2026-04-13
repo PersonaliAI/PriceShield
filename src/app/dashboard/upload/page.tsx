@@ -47,22 +47,37 @@ const ProcessingTerminal = ({ logs }: { logs: string[] }) => {
     if (terminal) terminal.scrollTop = terminal.scrollHeight;
   }, [logs]);
 
+  console.log("[PS] Terminal Rendering with logs:", logs.length);
+
   return (
-    <div className="w-full max-w-xl mx-auto rounded-xl border border-emerald-500/20 bg-black/40 backdrop-blur-xl p-4 font-mono text-xs overflow-hidden shadow-2xl">
-      <div className="flex gap-1.5 mb-3 border-b border-white/5 pb-2">
-        <div className="h-2 w-2 rounded-full bg-rose-500/50" />
-        <div className="h-2 w-2 rounded-full bg-amber-500/50" />
-        <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
-        <span className="ml-2 text-[10px] text-muted-foreground/60 uppercase tracking-tighter">AI_Agent_Real_Time.log</span>
+    <div className="w-full max-w-xl mx-auto rounded-xl border border-emerald-500/30 bg-black/60 backdrop-blur-2xl p-4 font-mono text-xs overflow-hidden shadow-2xl relative z-10">
+      <div className="flex items-center gap-1.5 mb-3 border-b border-white/10 pb-2">
+        <div className="flex gap-1">
+          <div className="h-2 w-2 rounded-full bg-rose-500" />
+          <div className="h-2 w-2 rounded-full bg-amber-500" />
+          <div className="h-2 w-2 rounded-full bg-emerald-500" />
+        </div>
+        <span className="ml-2 text-[10px] text-emerald-500/60 uppercase tracking-widest font-bold">AI_AGENT_CORE.LOG</span>
+        <div className="ml-auto flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[9px] text-emerald-500/40">LIVE_FEED</span>
+        </div>
       </div>
-      <div id="terminal-logs" className="h-48 overflow-y-auto space-y-1 scrollbar-hide">
-        {logs.map((log, i) => (
-          <div key={i} className={`${log.startsWith(">") ? "text-emerald-400/80" : "text-emerald-400"} animate-in fade-in slide-in-from-left-2 duration-300`}>
-            <span className="opacity-40 mr-2">[{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}]</span>
-            {log}
-          </div>
-        ))}
-        <div className="h-1 w-full animate-pulse bg-emerald-500/20 rounded mt-1" />
+      <div id="terminal-logs" className="h-56 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-emerald-500/20 pr-2">
+        {logs.length === 0 ? (
+          <div className="text-emerald-500/30 italic animate-pulse">Initializing neural matching engine...</div>
+        ) : (
+          logs.map((log, i) => (
+            <div 
+              key={`${i}-${log.substring(0, 10)}`} 
+              className={`${log.startsWith(">") ? "text-emerald-300" : "text-emerald-400"} flex gap-2 break-all animate-in fade-in slide-in-from-left-1 duration-200 border-l border-emerald-500/10 pl-2`}
+            >
+              <span className="opacity-30 shrink-0 select-none">[{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}]</span>
+              <span className="leading-tight">{log}</span>
+            </div>
+          ))
+        )}
+        <div className="h-4 w-full bg-gradient-to-t from-emerald-500/5 to-transparent rounded mt-2 animate-pulse" />
       </div>
     </div>
   );
@@ -198,56 +213,76 @@ export default function OnboardingPage() {
   // Reliable Polling Effect
   useEffect(() => {
     if (!jobId || !isProcessing) return;
-    console.log("[PS] POLLING STARTED for job:", jobId);
+    
+    console.log("[PS] POLLING INITIATED for job:", jobId);
+    let isMounted = true;
+    let pollTimeout: NodeJS.Timeout;
 
-    let pollCount = 0;
-    const interval = setInterval(async () => {
-      pollCount++;
+    const poll = async (count: number) => {
+      if (!isMounted || !isProcessing || !jobId) return;
+
       try {
         const token = await getToken();
-        if (!token) { console.warn("[PS] no token"); return; }
+        if (!token) {
+          console.warn("[PS] Polling: No token available");
+          if (isMounted) pollTimeout = setTimeout(() => poll(count + 1), 3000);
+          return;
+        }
 
         const [statusData, logsData] = await Promise.all([
           api.getJobStatus(token, jobId),
           api.getJobLogs(token, jobId)
         ]);
 
-        console.log(`[PS] poll #${pollCount}`, statusData?.status, "logs:", logsData?.length);
+        if (isMounted) {
+          console.log(`[PS] poll #${count}`, statusData?.status, "logs:", logsData?.length);
+          
+          if (logsData && logsData.length > 0) {
+            setTerminalLogs(logsData.map((l: { message: string }) => l.message));
+          }
 
-        if (logsData && logsData.length > 0) {
-          setTerminalLogs(logsData.map((l: { message: string }) => l.message));
-        }
-
-        if (statusData.status === "completed") {
-          clearInterval(interval);
-          setAuditResult(statusData);
-          setTimeout(() => {
-            setCurrentStep(2);
+          if (statusData.status === "completed") {
+            setAuditResult(statusData);
+            // Wait 2 seconds to let the user see the "Success" logs before showing the final UI
+            setTimeout(() => {
+              if (isMounted) {
+                setCurrentStep(2);
+                setIsProcessing(false);
+                setJobId(null);
+                router.refresh();
+              }
+            }, 2000);
+            return;
+          } else if (statusData.status === "failed") {
+            setErrorMessage(statusData.error || "Audit failed unexpectedly.");
+            setShowErrorDialog(true);
             setIsProcessing(false);
             setJobId(null);
-            router.refresh();
-          }, 3000);
-        } else if (statusData.status === "failed") {
-          setErrorMessage(statusData.error || "Audit failed unexpectedly.");
-          setShowErrorDialog(true);
-          setIsProcessing(false);
-          setJobId(null);
-          clearInterval(interval);
-        }
-        
-        if (pollCount > 400) {
-           clearInterval(interval);
-           setErrorMessage("Audit timed out.");
-           setShowErrorDialog(true);
-           setIsProcessing(false);
-        }
-      } catch (err: unknown) {
-        console.error(`[PS] poll #${pollCount} ERROR:`, err);
-      }
-    }, 2000);
+            return;
+          }
 
-    return () => clearInterval(interval);
-  }, [jobId, isProcessing]);
+          // Continue polling if still processing or uploading
+          if (count < 400) {
+            pollTimeout = setTimeout(() => poll(count + 1), 2000);
+          } else {
+            setErrorMessage("Audit timed out.");
+            setShowErrorDialog(true);
+            setIsProcessing(false);
+          }
+        }
+      } catch (err) {
+        console.error(`[PS] Polling error on #${count}:`, err);
+        if (isMounted) pollTimeout = setTimeout(() => poll(count + 1), 2500);
+      }
+    };
+
+    poll(1);
+
+    return () => {
+      isMounted = false;
+      if (pollTimeout) clearTimeout(pollTimeout);
+    };
+  }, [jobId, isProcessing, getToken, router]);
 
   const handleSubmit = async () => {
     if (files.length < 2) return;
@@ -567,6 +602,11 @@ export default function OnboardingPage() {
                 >
                   View Full Dashboard <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
+                
+                <div className="pt-4 border-t border-white/5">
+                  <p className="text-[10px] text-muted-foreground/40 uppercase tracking-widest font-bold mb-3 text-center">Process Audit Trail</p>
+                  <ProcessingTerminal logs={terminalLogs} />
+                </div>
               </CardContent>
             </>
           )}
