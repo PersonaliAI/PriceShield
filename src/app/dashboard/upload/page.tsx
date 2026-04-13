@@ -255,14 +255,13 @@ export default function OnboardingPage() {
           return;
         }
 
-        console.log(`[PS-FIX] #${pollCount} - Fetching Status & Logs for ${jobId}...`);
-        // Using separate awaits for even finer logging if needed, or Promise.all
-        const [statusData, logsData] = await Promise.all([
-          api.getJobStatus(token, jobId),
-          api.getJobLogs(token, jobId)
-        ]);
+        console.log(`[PS-FIX] #${pollCount} - Fetched Status...`);
+        const statusData = await api.getJobStatus(token, jobId);
+        
+        console.log(`[PS-FIX] #${pollCount} - Fetched Logs...`);
+        const logsData = await api.getJobLogs(token, jobId);
 
-        console.log(`%c[PS-FIX] #${pollCount} - RESPONSE RECEIVED`, "color: #10b981", { 
+        console.log(`%c[PS-FIX] #${pollCount} - POLL COMPLETE`, "color: #10b981", { 
             status: statusData?.status, 
             logs: logsData?.length 
         });
