@@ -42,24 +42,55 @@ const STEPS = [
 ];
 
 const StatusDisplay = ({ logs, isProcessing }: { logs: string[], isProcessing: boolean }) => {
-  // Map complex logs to friendly messages
-  const getFriendlyStatus = () => {
-    if (!isProcessing && logs.length === 0) return "Ready to audit";
-    const lastLog = logs[logs.length - 1] || "";
-    
-    if (lastLog.includes("Initializing")) return "Initializing PriceShield Agent...";
-    if (lastLog.includes("Waiting for invoice")) return "Waiting for uploads...";
-    if (lastLog.includes("Extracting items")) return "AI is extracting line items...";
-    if (lastLog.includes("Success: Extracted")) return "Extraction complete!";
-    if (lastLog.includes("Running historical comparison")) return "Analyzing price hikes...";
-    if (lastLog.includes("Saving results")) return "Finalizing your report...";
-    if (lastLog.includes("SUCCESS")) return "Audit Complete!";
-    if (lastLog.includes("ERROR")) return "Something went wrong.";
-    
-    return "Processing your data...";
+  const [displayLog, setDisplayLog] = useState("");
+  const logQueue = useRef<string[]>([]);
+  const isTyping = useRef(false);
+
+  // Friendly status mapper
+  const getFriendlyStatus = (log: string) => {
+    if (!log && !isProcessing) return "Ready to audit";
+    if (log.includes("Initializing")) return "Initializing PriceShield Agent...";
+    if (log.includes("Connecting")) return "Connecting to AI Engine...";
+    if (log.includes("Extracting items")) return "AI is extracting line items...";
+    if (log.includes("Success: Extracted")) return "Extraction complete!";
+    if (log.includes("Running historical comparison")) return "Analyzing price hikes...";
+    if (log.includes("Saving results")) return "Finalizing your report...";
+    if (log.includes("SUCCESS")) return "Audit Complete!";
+    if (log.includes("ERROR")) return "Something went wrong.";
+    return log || "Processing your data...";
   };
 
-  const status = getFriendlyStatus();
+  useEffect(() => {
+    // Add new logs to queue
+    const lastKnownLog = logs[logs.length - 1];
+    if (lastKnownLog && !logQueue.current.includes(lastKnownLog)) {
+      // Find logs we haven't shown yet
+      const newLogs = logs.filter(l => !logQueue.current.includes(l));
+      logQueue.current = [...logQueue.current, ...newLogs];
+    }
+
+    // Processing loop for the queue
+    if (!isTyping.current && logQueue.current.length > 0) {
+      const processNext = () => {
+        if (logQueue.current.length > 0) {
+          isTyping.current = true;
+          const next = logQueue.current[0];
+          setDisplayLog(next);
+          
+          // Show each log for at least 600ms to make it readable
+          setTimeout(() => {
+            logQueue.current.shift();
+            processNext();
+          }, 600);
+        } else {
+          isTyping.current = false;
+        }
+      };
+      processNext();
+    }
+  }, [logs]);
+
+  const status = getFriendlyStatus(displayLog);
   
   return (
     <div className="w-full max-w-md mx-auto py-8 px-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl flex flex-col items-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
@@ -71,9 +102,11 @@ const StatusDisplay = ({ logs, isProcessing }: { logs: string[], isProcessing: b
       </div>
       
       <div className="space-y-2">
-        <h3 className="text-xl font-bold text-white tracking-tight">{status}</h3>
+        <h3 className="text-xl font-bold text-white tracking-tight min-h-[1.75rem] transition-all duration-300">
+          {status}
+        </h3>
         <p className="text-sm text-emerald-500/60 font-medium">
-            {logs.length > 0 ? `Stage ${Math.min(3, Math.ceil(logs.length / 7))} of 3: Deep Analysis` : "Connecting to AI Engine..."}
+            {logs.length > 0 ? `Stage ${Math.min(3, Math.ceil(logs.length / 5))} of 3: Deep Analysis` : "Connecting to Neural Link..."}
         </p>
       </div>
 
@@ -86,7 +119,7 @@ const StatusDisplay = ({ logs, isProcessing }: { logs: string[], isProcessing: b
 
       <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Neural Link Active</span>
+        <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">{displayLog ? "Data Stream Active" : "Neural Link Active"}</span>
       </div>
     </div>
   );
@@ -247,27 +280,24 @@ export default function OnboardingPage() {
 
       pollCount++;
       try {
-        console.log(`[PS-FIX] #${pollCount} - Requesting Token...`);
-        const token = await getToken();
-        if (!token) {
-          console.warn(`[PS-FIX] #${pollCount} - No token, retrying in 3s`);
-          setTimeout(runPoll, 3000);
-          return;
-        }
-
-        console.log(`[PS-FIX] #${pollCount} - Fetched Status...`);
-        const statusData = await api.getJobStatus(token, jobId);
+        console.log(`[PS-FIX] #${pollCount} - Polling (1s interval)...`);
         
-        console.log(`[PS-FIX] #${pollCount} - Fetched Logs...`);
-        const logsData = await api.getJobLogs(token, jobId);
+        // Parallel fetch for speed
+        const token = await getToken();
+        if (!token) throw new Error("No token");
+
+        const [statusData, logsData] = await Promise.all([
+            api.getJobStatus(token, jobId),
+            api.getJobLogs(token, jobId)
+        ]);
 
         console.log(`%c[PS-FIX] #${pollCount} - POLL COMPLETE`, "color: #10b981", { 
             status: statusData?.status, 
             logs: logsData?.length 
         });
 
-        // Always update terminalLogs if it's an array to ensure the UI has the latest
         if (Array.isArray(logsData)) {
+            // Update logs immediately
             setTerminalLogs(logsData.map((l: { message: string }) => l.message));
         }
 
@@ -292,9 +322,9 @@ export default function OnboardingPage() {
           return;
         }
 
-        // Recursive call for next poll
-        if (pollCount < 400 && isPollingRef.current) {
-          setTimeout(runPoll, 2000);
+        // Recursive call for next poll - Faster 1s interval
+        if (pollCount < 600 && isPollingRef.current) {
+          setTimeout(runPoll, 1000);
         } else {
           console.warn("[PS-FIX] Loop reached max count or was stopped.");
           if (pollCount >= 400) {
