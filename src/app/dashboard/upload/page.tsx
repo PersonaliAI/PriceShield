@@ -230,77 +230,103 @@ export default function OnboardingPage() {
     }
   };
 
-  // Reliable Polling Effect
+  // Stable Polling State via useRef to survive re-renders
+  const pollJobIdRef = useRef<string | null>(null);
+  const isPollingRef = useRef(false);
+
   useEffect(() => {
-    if (!jobId || !isProcessing) return;
+    if (!jobId || !isProcessing) {
+        isPollingRef.current = false;
+        pollJobIdRef.current = null;
+        return;
+    }
     
-    console.log("[PS] POLLING INITIATED for job:", jobId);
-    let isMounted = true;
-    let pollTimeout: NodeJS.Timeout;
+    // Prevent duplicate loops for the same jobId
+    if (isPollingRef.current && pollJobIdRef.current === jobId) return;
 
-    const poll = async (count: number) => {
-      if (!isMounted || !isProcessing || !jobId) return;
+    console.log("%c[PS-FIX] POLLING LOOP STARTING", "color: #3b82f6; font-weight: bold", { jobId });
+    isPollingRef.current = true;
+    pollJobIdRef.current = jobId;
 
+    let pollCount = 0;
+    const runPoll = async () => {
+      // Check if we should still be polling
+      if (!isPollingRef.current || pollJobIdRef.current !== jobId) {
+          console.log("[PS-FIX] Stop signal received, exiting poll loop");
+          return;
+      }
+
+      pollCount++;
       try {
+        console.log(`[PS-FIX] #${pollCount} - Requesting Token...`);
         const token = await getToken();
         if (!token) {
-          console.warn("[PS] Polling: No token available");
-          if (isMounted) pollTimeout = setTimeout(() => poll(count + 1), 3000);
+          console.warn(`[PS-FIX] #${pollCount} - No token, retrying in 3s`);
+          setTimeout(runPoll, 3000);
           return;
         }
 
+        console.log(`[PS-FIX] #${pollCount} - Fetching Status & Logs for ${jobId}...`);
+        // Using separate awaits for even finer logging if needed, or Promise.all
         const [statusData, logsData] = await Promise.all([
           api.getJobStatus(token, jobId),
           api.getJobLogs(token, jobId)
         ]);
 
-        if (isMounted) {
-          console.log(`[PS] poll #${count}`, statusData?.status, "logs:", logsData?.length);
-          
-          if (logsData && logsData.length > 0) {
-            setTerminalLogs(logsData.map((l: { message: string }) => l.message));
-          }
+        console.log(`%c[PS-FIX] #${pollCount} - RESPONSE RECEIVED`, "color: #10b981", { 
+            status: statusData?.status, 
+            logs: logsData?.length 
+        });
 
-          if (statusData.status === "completed") {
-            setAuditResult(statusData);
-            // Wait 2 seconds to let the user see the "Success" logs before showing the final UI
-            setTimeout(() => {
-              if (isMounted) {
-                setCurrentStep(2);
-                setIsProcessing(false);
-                setJobId(null);
-                router.refresh();
-              }
-            }, 2000);
-            return;
-          } else if (statusData.status === "failed") {
-            setErrorMessage(statusData.error || "Audit failed unexpectedly.");
-            setShowErrorDialog(true);
-            setIsProcessing(false);
-            setJobId(null);
-            return;
-          }
+        if (logsData && logsData.length > 0) {
+          setTerminalLogs(logsData.map((l: { message: string }) => l.message));
+        }
 
-          // Continue polling if still processing or uploading
-          if (count < 400) {
-            pollTimeout = setTimeout(() => poll(count + 1), 2000);
-          } else {
-            setErrorMessage("Audit timed out.");
-            setShowErrorDialog(true);
-            setIsProcessing(false);
+        if (statusData.status === "completed") {
+          console.log("[PS-FIX] MATCH! Status completed. Finalizing UI in 2s...");
+          setAuditResult(statusData);
+          setTimeout(() => {
+            if (isPollingRef.current) {
+              setCurrentStep(2);
+              setIsProcessing(false);
+              setJobId(null);
+              router.refresh();
+            }
+          }, 2000);
+          return;
+        } else if (statusData.status === "failed") {
+          console.error("[PS-FIX] Status failed:", statusData.error);
+          setErrorMessage(statusData.error || "Audit failed.");
+          setShowErrorDialog(true);
+          setIsProcessing(false);
+          setJobId(null);
+          return;
+        }
+
+        // Recursive call for next poll
+        if (pollCount < 400 && isPollingRef.current) {
+          setTimeout(runPoll, 2000);
+        } else {
+          console.warn("[PS-FIX] Loop reached max count or was stopped.");
+          if (pollCount >= 400) {
+              setErrorMessage("Audit timed out.");
+              setShowErrorDialog(true);
+              setIsProcessing(false);
           }
         }
       } catch (err) {
-        console.error(`[PS] Polling error on #${count}:`, err);
-        if (isMounted) pollTimeout = setTimeout(() => poll(count + 1), 2500);
+        console.error(`[PS-FIX] #${pollCount} - EXCEPTION:`, err);
+        // Retry on error
+        if (isPollingRef.current) setTimeout(runPoll, 3000);
       }
     };
 
-    poll(1);
+    runPoll();
 
     return () => {
-      isMounted = false;
-      if (pollTimeout) clearTimeout(pollTimeout);
+      console.log("[PS-FIX] Effect cleanup triggered");
+      // We don't necessarily want to stop polling if it's just a re-render
+      // unless jobId changed or isProcessing became false.
     };
   }, [jobId, isProcessing, getToken, router]);
 
