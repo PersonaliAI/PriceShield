@@ -36,6 +36,8 @@ export default function SettingsPage() {
 
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [copiedInbox, setCopiedInbox] = useState(false);
@@ -105,6 +107,8 @@ export default function SettingsPage() {
     if (loading || !settings) return;
 
     const saveTimer = setTimeout(async () => {
+      setSaving(true);
+      setSaved(false);
       setError("");
       try {
         const token = await getToken();
@@ -123,6 +127,8 @@ export default function SettingsPage() {
         };
 
         await api.updateSettings(token, update);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to save settings";
         setError(msg);
@@ -349,7 +355,7 @@ export default function SettingsPage() {
 
       {/* Alert Channels */}
       <Card id="tour-settings-channels" className="bg-card/50 border-border/50">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
               <Bell className="h-5 w-5 text-amber-400" />
@@ -360,6 +366,23 @@ export default function SettingsPage() {
                 Choose how you want to receive price hike notifications
               </CardDescription>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {saving && (
+              <Badge variant="outline" className="animate-pulse flex items-center gap-1 bg-amber-500/10 text-amber-500 border-amber-500/20 px-2 py-0.5">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="text-[10px]">Saving...</span>
+              </Badge>
+            )}
+            {saved && (
+              <Badge variant="outline" className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2 py-0.5">
+                <Check className="h-3 w-3" />
+                <span className="text-[10px]">Saved</span>
+              </Badge>
+            )}
+            {!saving && !saved && (
+              <span className="text-xs text-muted-foreground italic opacity-50">Auto-save active</span>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
