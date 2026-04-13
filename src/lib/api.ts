@@ -44,6 +44,7 @@ export interface SettingsUpdate {
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Deployment Sync: 2026-04-13 14:24
 
 async function request<T>(
   path: string,
