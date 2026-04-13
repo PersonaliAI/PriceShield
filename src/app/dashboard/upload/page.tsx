@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Upload, 
@@ -33,7 +33,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { api, AuditResult, UserSettings } from "@/lib/api";
 import Link from "next/link";
-import { useEffect } from "react";
+
 
 const STEPS = [
   { title: "Upload Invoices", desc: "Upload your last 3 supplier invoices (PDF)" },
