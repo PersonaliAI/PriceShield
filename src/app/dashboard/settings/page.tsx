@@ -413,7 +413,8 @@ export default function SettingsPage() {
                 <Send className="h-5 w-5 text-sky-400" />
                 <div>
                   <p className="font-medium text-sm">Telegram</p>
-                  <p className="text-xs text-muted-foreground">Bot alerts</p>
+                  <p className="text-xs text-muted-foreground">Interactive Bot</p>
+                  <p className="text-[10px] text-sky-400 opacity-80">Supports PROOF & AI CFO chat</p>
                 </div>
               </div>
               
@@ -546,7 +547,8 @@ export default function SettingsPage() {
                 <Hash className="h-5 w-5 text-purple-400" />
                 <div>
                   <p className="font-medium text-sm">Slack</p>
-                  <p className="text-xs text-muted-foreground">Incoming Webhooks</p>
+                  <p className="text-xs text-muted-foreground">Push-only Webhooks</p>
+                  <p className="text-[10px] text-purple-400 opacity-80">Includes dashboard proof links</p>
                 </div>
               </div>
               <button
