@@ -41,85 +41,63 @@ const STEPS = [
   { title: "See Your Results", desc: "Discover exactly how much you've been overcharged" },
 ];
 
-const StatusDisplay = ({ logs, isProcessing }: { logs: string[], isProcessing: boolean }) => {
-  const [displayLog, setDisplayLog] = useState("");
-  const logQueue = useRef<string[]>([]);
-  const isTyping = useRef(false);
-
+const StatusDisplay = ({ logs, progress, isProcessing }: { logs: string[], progress: number, isProcessing: boolean }) => {
+  const lastLog = logs[logs.length - 1] || "";
+  
   // Friendly status mapper
-  const getFriendlyStatus = (log: string) => {
-    if (!log && !isProcessing) return "Ready to audit";
-    if (log.includes("Initializing")) return "Initializing PriceShield Agent...";
-    if (log.includes("Connecting")) return "Connecting to AI Engine...";
-    if (log.includes("Extracting items")) return "AI is extracting line items...";
-    if (log.includes("Success: Extracted")) return "Extraction complete!";
-    if (log.includes("Running historical comparison")) return "Analyzing price hikes...";
-    if (log.includes("Saving results")) return "Finalizing your report...";
-    if (log.includes("SUCCESS")) return "Audit Complete!";
-    if (log.includes("ERROR")) return "Something went wrong.";
-    return log || "Processing your data...";
+  const getFriendlyStatus = () => {
+    if (!isProcessing && logs.length === 0) return "Ready to audit";
+    if (lastLog.includes("Initializing")) return "Initializing PriceShield Agent...";
+    if (lastLog.includes("Connecting")) return "Connecting to AI Engine...";
+    if (lastLog.includes("Extracting items")) return "AI is extracting line items...";
+    if (lastLog.includes("Success: Extracted")) return "Extraction complete!";
+    if (lastLog.includes("Running historical comparison")) return "Analyzing price hikes...";
+    if (lastLog.includes("Saving results")) return "Finalizing your report...";
+    if (lastLog.includes("SUCCESS")) return "Audit Complete!";
+    if (lastLog.includes("ERROR")) return "Something went wrong.";
+    return lastLog || "Processing your data...";
   };
 
-  useEffect(() => {
-    // Add new logs to queue
-    const lastKnownLog = logs[logs.length - 1];
-    if (lastKnownLog && !logQueue.current.includes(lastKnownLog)) {
-      // Find logs we haven't shown yet
-      const newLogs = logs.filter(l => !logQueue.current.includes(l));
-      logQueue.current = [...logQueue.current, ...newLogs];
-    }
-
-    // Processing loop for the queue
-    if (!isTyping.current && logQueue.current.length > 0) {
-      const processNext = () => {
-        if (logQueue.current.length > 0) {
-          isTyping.current = true;
-          const next = logQueue.current[0];
-          setDisplayLog(next);
-          
-          // Show each log for at least 600ms to make it readable
-          setTimeout(() => {
-            logQueue.current.shift();
-            processNext();
-          }, 600);
-        } else {
-          isTyping.current = false;
-        }
-      };
-      processNext();
-    }
-  }, [logs]);
-
-  const status = getFriendlyStatus(displayLog);
+  const status = getFriendlyStatus();
   
   return (
-    <div className="w-full max-w-md mx-auto py-8 px-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl flex flex-col items-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
+    <div className="w-full max-w-md mx-auto py-10 px-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl flex flex-col items-center space-y-8 text-center animate-in fade-in zoom-in duration-500">
       <div className="relative">
-        <div className="h-20 w-20 rounded-full border-2 border-emerald-500/20 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+        <div className="h-24 w-24 rounded-full border-2 border-emerald-500/20 flex items-center justify-center">
+            <Loader2 className="h-10 w-10 text-emerald-500 animate-spin" />
         </div>
-        <div className="absolute top-0 left-0 h-20 w-20 rounded-full border-t-2 border-emerald-500 animate-[spin_3s_linear_infinite]" />
+        <div className="absolute top-0 left-0 h-24 w-24 rounded-full border-t-2 border-emerald-500 animate-[spin_2s_linear_infinite]" />
+        <div className="absolute inset-0 flex items-center justify-center font-bold text-emerald-500 text-sm">
+            {progress}%
+        </div>
       </div>
       
-      <div className="space-y-2">
-        <h3 className="text-xl font-bold text-white tracking-tight min-h-[1.75rem] transition-all duration-300">
+      <div className="space-y-3">
+        <h3 className="text-2xl font-bold text-white tracking-tight min-h-[2rem]">
           {status}
         </h3>
-        <p className="text-sm text-emerald-500/60 font-medium">
-            {logs.length > 0 ? `Stage ${Math.min(3, Math.ceil(logs.length / 5))} of 3: Deep Analysis` : "Connecting to Neural Link..."}
+        <p className="text-sm text-emerald-500/60 font-medium uppercase tracking-widest">
+            {progress < 70 ? "Stage 1: Neural Extraction" : progress < 90 ? "Stage 2: Market Analysis" : "Stage 3: Finalizing Report"}
         </p>
       </div>
-
-      <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-        <div 
-            className="h-full bg-emerald-500 transition-all duration-1000 ease-out" 
-            style={{ width: `${Math.min(95, (logs.length / 25) * 100)}%` }} 
-        />
+      
+      <div className="w-full space-y-4">
+        <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5 relative">
+            <div 
+                className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
+                style={{ width: `${progress}%` }} 
+            />
+        </div>
+        <div className="flex justify-between text-[10px] text-emerald-500/40 font-black uppercase tracking-tighter">
+            <span>Standby</span>
+            <span>Link Active</span>
+            <span>Complete</span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">{displayLog ? "Data Stream Active" : "Neural Link Active"}</span>
+      <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Processing Data Stream</span>
       </div>
     </div>
   );
@@ -137,6 +115,7 @@ export default function OnboardingPage() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   
   // Address Setup State
   const [addrStreet, setAddrStreet] = useState("");
@@ -295,6 +274,10 @@ export default function OnboardingPage() {
             status: statusData?.status, 
             logs: logsData?.length 
         });
+
+        if (statusData?.progress !== undefined) {
+            setProgress(statusData.progress);
+        }
 
         if (Array.isArray(logsData)) {
             // Update logs immediately
@@ -621,7 +604,11 @@ export default function OnboardingPage() {
 
           {currentStep === 1 && (
             <CardContent className="py-12">
-               <StatusDisplay logs={terminalLogs} isProcessing={isProcessing} />
+               <StatusDisplay 
+                  logs={terminalLogs} 
+                  progress={progress}
+                  isProcessing={isProcessing} 
+                />
             </CardContent>
           )}
 
@@ -658,7 +645,11 @@ export default function OnboardingPage() {
                 
                 <div className="pt-4 border-t border-white/5">
                   <p className="text-[10px] text-muted-foreground/40 uppercase tracking-widest font-bold mb-3 text-center">Process Audit Trail</p>
-                  <StatusDisplay logs={terminalLogs} isProcessing={isProcessing} />
+                  <StatusDisplay 
+                    logs={terminalLogs} 
+                    progress={progress}
+                    isProcessing={isProcessing} 
+                />
                 </div>
               </CardContent>
             </>

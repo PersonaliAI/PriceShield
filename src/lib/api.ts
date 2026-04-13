@@ -91,7 +91,7 @@ async function request<T>(
   } catch (err: unknown) {
     if (err instanceof Error && err.name === 'AbortError') {
       console.error(`[API-DEBUG] TIMEOUT: ${url}`);
-      throw new Error("Request timed out after 10 seconds");
+      throw new Error(`Request timed out after 60 seconds. Large files or many invoices may take longer.`);
     }
     console.error(`[API-DEBUG] ERROR: ${url}`, err);
     throw err;
