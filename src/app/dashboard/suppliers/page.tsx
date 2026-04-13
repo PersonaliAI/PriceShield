@@ -13,7 +13,8 @@ import {
   Plus,
   ArrowLeft,
   Loader2,
-  Trash
+  Trash,
+  Shield
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
@@ -29,7 +30,6 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner"; // Assuming sonner is used for toasts, or I'll use a fallback
 
 export default function SuppliersPage() {
   const { getToken } = useAuth();
