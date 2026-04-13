@@ -106,6 +106,20 @@ export default function SettingsPage() {
     // Only save if we have loaded the initial settings
     if (loading || !settings) return;
 
+    // Deep compare to prevent saving when initial data is fetched
+    const isDirty = 
+      whatsappNumber !== (settings.whatsapp_number || "") ||
+      JSON.stringify(forwardingEmails) !== JSON.stringify(settings.forwarding_emails || []) ||
+      JSON.stringify(alertChannels) !== JSON.stringify(settings.alert_channels || ["push", "email"]) ||
+      alertEmail !== (settings.alert_email || "") ||
+      reportDaily !== settings.report_daily ||
+      reportWeekly !== settings.report_weekly ||
+      reportMonthly !== settings.report_monthly ||
+      alertThreshold !== (settings.alert_threshold || 2.0) ||
+      slackWebhookUrl !== (settings.slack_webhook_url || "");
+
+    if (!isDirty) return;
+
     const saveTimer = setTimeout(async () => {
       setSaving(true);
       setSaved(false);
@@ -133,6 +147,7 @@ export default function SettingsPage() {
         const msg = err instanceof Error ? err.message : "Failed to save settings";
         setError(msg);
       } finally {
+        setSaving(false);
       }
     }, 1000); // 1s debounce
 
