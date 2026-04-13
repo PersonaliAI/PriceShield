@@ -66,9 +66,9 @@ async function request<T>(
   const finalPath = `${path}${separator}t=${new Date().getTime()}`;
   const url = `${API_BASE}${finalPath}`;
 
-  // 30s Timeout AbortController (10s was too short for heavy uploads)
+  // 60s Timeout AbortController (previous 30s was still tight for 5 large PDFs)
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   console.log(`[API-DEBUG] START: ${url}`);
   try {
