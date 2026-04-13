@@ -62,7 +62,7 @@ export default function DashboardPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [offset, setOffset] = useState(0);
-  const LIMIT = 50;
+  const LIMIT = 20;
 
   // AI CFO Chat State
   const [cfoQuestion, setCfoQuestion] = useState("");
