@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Bell,
   Mail,
@@ -59,6 +59,7 @@ export default function SettingsPage() {
   const [slackWebhookUrl, setSlackWebhookUrl] = useState("");
   
   const [triggeringReport, setTriggeringReport] = useState<string | null>(null);
+  const initialLoadDone = useRef(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -80,6 +81,10 @@ export default function SettingsPage() {
       setError(msg);
     } finally {
       setLoading(false);
+      // Give React a cycle to apply the state updates before letting the save EFFECT run
+      setTimeout(() => {
+        initialLoadDone.current = true;
+      }, 0);
     }
   }, [getToken]);
 
@@ -103,8 +108,8 @@ export default function SettingsPage() {
 
   // Automatically save settings when state changes (debounced)
   useEffect(() => {
-    // Only save if we have loaded the initial settings
-    if (loading || !settings) return;
+    // Only save if we have loaded the initial settings AND we are past the initial fetch
+    if (loading || !settings || !initialLoadDone.current) return;
 
     // Deep compare to prevent saving when initial data is fetched
     const isDirty = 
