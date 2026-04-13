@@ -64,18 +64,37 @@ async function request<T>(
   // Prevent Next.js or browser caching
   const separator = path.includes("?") ? "&" : "?";
   const finalPath = `${path}${separator}t=${new Date().getTime()}`;
+  const url = `${API_BASE}${finalPath}`;
 
-  const res = await fetch(`${API_BASE}${finalPath}`, {
-    ...fetchOptions,
-    headers,
-    cache: "no-store",
-  });
+  // 10s Timeout AbortController
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || "API request failed");
+  console.log(`[API-DEBUG] START: ${url}`);
+  try {
+    const res = await fetch(url, {
+      ...fetchOptions,
+      headers,
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    console.log(`[API-DEBUG] FINISH: ${url} (${res.status})`);
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(error.detail || "API request failed");
+    }
+    return res.json();
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      console.error(`[API-DEBUG] TIMEOUT: ${url}`);
+      throw new Error("Request timed out after 10 seconds");
+    }
+    console.error(`[API-DEBUG] ERROR: ${url}`, err);
+    throw err;
   }
-  return res.json();
 }
 
 
