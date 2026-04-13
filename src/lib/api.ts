@@ -16,6 +16,7 @@ export interface UserSettings {
   report_weekly: boolean;
   report_monthly: boolean;
   alert_threshold: number;
+  slack_webhook_url: string | null;
   locations: Location[];
 }
 
@@ -41,6 +42,7 @@ export interface SettingsUpdate {
   report_weekly?: boolean;
   report_monthly?: boolean;
   alert_threshold?: number;
+  slack_webhook_url?: string | null;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

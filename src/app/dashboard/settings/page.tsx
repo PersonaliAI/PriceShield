@@ -7,7 +7,6 @@ import {
   Send,
   ExternalLink,
   Loader2,
-  Save,
   Check,
   Copy,
   Shield,
@@ -15,6 +14,7 @@ import {
   X,
   Plus,
   ArrowRight,
+  Hash,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,8 +36,6 @@ export default function SettingsPage() {
 
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [copiedInbox, setCopiedInbox] = useState(false);
@@ -56,6 +54,7 @@ export default function SettingsPage() {
   const [reportWeekly, setReportWeekly] = useState(true);
   const [reportMonthly, setReportMonthly] = useState(true);
   const [alertThreshold, setAlertThreshold] = useState(2.0);
+  const [slackWebhookUrl, setSlackWebhookUrl] = useState("");
   
   const [triggeringReport, setTriggeringReport] = useState<string | null>(null);
 
@@ -73,6 +72,7 @@ export default function SettingsPage() {
       setReportWeekly(data.report_weekly);
       setReportMonthly(data.report_monthly);
       setAlertThreshold(data.alert_threshold || 2.0);
+      setSlackWebhookUrl(data.slack_webhook_url || "");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -87,19 +87,15 @@ export default function SettingsPage() {
 
   const handleDisconnectTelegram = async () => {
     setShowConfirmDisconnect(false);
-    setSaving(true);
     try {
       const token = await getToken();
       if (!token) return;
       await api.disconnectTelegram(token);
       await fetchSettings(); // Refresh to show "Not linked"
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to disconnect Telegram";
       setError(msg);
     } finally {
-      setSaving(false);
     }
   };
 
@@ -109,8 +105,6 @@ export default function SettingsPage() {
     if (loading || !settings) return;
 
     const saveTimer = setTimeout(async () => {
-      setSaving(true);
-      setSaved(false);
       setError("");
       try {
         const token = await getToken();
@@ -125,16 +119,14 @@ export default function SettingsPage() {
           report_weekly: reportWeekly,
           report_monthly: reportMonthly,
           alert_threshold: alertThreshold,
+          slack_webhook_url: slackWebhookUrl || null,
         };
 
         await api.updateSettings(token, update);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to save settings";
         setError(msg);
       } finally {
-        setSaving(false);
       }
     }, 1000); // 1s debounce
 
@@ -148,6 +140,7 @@ export default function SettingsPage() {
     reportWeekly,
     reportMonthly,
     alertThreshold,
+    slackWebhookUrl,
     loading,
     settings,
     getToken,
@@ -500,6 +493,52 @@ export default function SettingsPage() {
                   className="w-full bg-muted/20 border border-border/50 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
+            )}
+          </div>
+          
+          {/* Slack */}
+          <div className="rounded-lg border border-border/50 p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Hash className="h-5 w-5 text-purple-400" />
+                <div>
+                  <p className="font-medium text-sm">Slack</p>
+                  <p className="text-xs text-muted-foreground">Incoming Webhooks</p>
+                </div>
+              </div>
+              <button
+                onClick={() => !isFree && toggleChannel("slack")}
+                disabled={isFree}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                   alertChannels.includes("slack") ? "bg-emerald-500" : "bg-muted"
+                } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  alertChannels.includes("slack") ? "translate-x-5" : ""
+                }`} />
+              </button>
+            </div>
+            
+            {!isFree && (
+              <div className="pt-2 border-t border-border/30">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Webhook URL</p>
+                <input
+                  type="text"
+                  value={slackWebhookUrl}
+                  onChange={(e) => setSlackWebhookUrl(e.target.value)}
+                  placeholder="https://hooks.slack.com/services/..."
+                  className="w-full bg-muted/20 border border-border/50 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500"
+                />
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  Create a webhook in your Slack workspace to receive instant alerts.
+                </p>
+              </div>
+            )}
+            {isFree && (
+              <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                Slack alerts require Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
+              </p>
             )}
           </div>
 
