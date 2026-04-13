@@ -41,64 +41,53 @@ const STEPS = [
   { title: "See Your Results", desc: "Discover exactly how much you've been overcharged" },
 ];
 
-const ProcessingTerminal = ({ logs }: { logs: string[] }) => {
-  useEffect(() => {
-    const terminal = document.getElementById("terminal-logs");
-    if (terminal) terminal.scrollTop = terminal.scrollHeight;
-  }, [logs]);
+const StatusDisplay = ({ logs, isProcessing }: { logs: string[], isProcessing: boolean }) => {
+  // Map complex logs to friendly messages
+  const getFriendlyStatus = () => {
+    if (!isProcessing && logs.length === 0) return "Ready to audit";
+    const lastLog = logs[logs.length - 1] || "";
+    
+    if (lastLog.includes("Initializing")) return "Initializing PriceShield Agent...";
+    if (lastLog.includes("Waiting for invoice")) return "Waiting for uploads...";
+    if (lastLog.includes("Extracting items")) return "AI is extracting line items...";
+    if (lastLog.includes("Success: Extracted")) return "Extraction complete!";
+    if (lastLog.includes("Running historical comparison")) return "Analyzing price hikes...";
+    if (lastLog.includes("Saving results")) return "Finalizing your report...";
+    if (lastLog.includes("SUCCESS")) return "Audit Complete!";
+    if (lastLog.includes("ERROR")) return "Something went wrong.";
+    
+    return "Processing your data...";
+  };
 
-  // Extreme diagnostic log
-  console.log("%c[PS-TERMINAL] PROP UPDATE", "color: #10b981; font-weight: bold", { count: logs.length, sample: logs[0] });
-
+  const status = getFriendlyStatus();
+  
   return (
-    <div className="w-full max-w-xl mx-auto rounded-xl border-2 border-emerald-500/50 bg-black p-4 font-mono text-xs overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.2)] relative z-50">
-      <div className="flex items-center gap-1.5 mb-3 border-b border-white/20 pb-2">
-        <div className="flex gap-1.5">
-          <div className="h-3 w-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-          <div className="h-3 w-3 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
-          <div className="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+    <div className="w-full max-w-md mx-auto py-8 px-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl flex flex-col items-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
+      <div className="relative">
+        <div className="h-20 w-20 rounded-full border-2 border-emerald-500/20 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
         </div>
-        <span className="ml-2 text-[10px] text-emerald-400 uppercase tracking-widest font-black">AI_CORE_TERMINAL</span>
-        
-        {/* Diagnostic indicators */}
-        <div className="ml-auto flex items-center gap-4">
-            <div className={`px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-[9px] ${logs.length > 0 ? "text-emerald-400" : "text-zinc-600"}`}>
-                REC_COUNT: {logs.length}
-            </div>
-            <div className="flex items-center gap-1.5">
-                <div className={`h-1.5 w-1.5 rounded-full ${logs.length > 0 ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" : "bg-zinc-800"}`} />
-                <span className="text-[9px] text-emerald-500/40 font-bold">LIVE</span>
-            </div>
-        </div>
+        <div className="absolute top-0 left-0 h-20 w-20 rounded-full border-t-2 border-emerald-500 animate-[spin_3s_linear_infinite]" />
+      </div>
+      
+      <div className="space-y-2">
+        <h3 className="text-xl font-bold text-white tracking-tight">{status}</h3>
+        <p className="text-sm text-emerald-500/60 font-medium">
+            {logs.length > 0 ? `Stage ${Math.min(3, Math.ceil(logs.length / 7))} of 3: Deep Analysis` : "Starting engine..."}
+        </p>
       </div>
 
-      <div id="terminal-logs" className="h-64 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-emerald-500/40 pr-2">
-        {logs.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center space-y-3 py-10">
-            <Loader2 className="h-6 w-6 text-emerald-500/20 animate-spin" />
-            <div className="text-emerald-500/20 italic tracking-tight">Listening for AI agent events...</div>
-          </div>
-        ) : (
-          logs.map((log, i) => (
-            <div 
-              key={`${i}-${log.substring(0, 15)}`} 
-              className={`${log.startsWith(">") ? "text-emerald-300 font-bold" : "text-emerald-400"} flex gap-3 break-all animate-in fade-in slide-in-from-left-2 duration-300 border-l-2 border-emerald-500/20 pl-3 py-0.5 hover:bg-emerald-500/5 transition-colors`}
-            >
-              <span className="opacity-20 shrink-0 select-none text-[9px] pt-0.5">[{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}]</span>
-              <span className="leading-relaxed">{log}</span>
-            </div>
-          ))
-        )}
-        
-        {/* Force a visible end marker */}
-        <div className="h-px w-full bg-emerald-500/10 mt-4" />
-        <div className="text-[8px] text-emerald-500/10 mt-1 uppercase text-center tracking-tighter">End of transmission</div>
+      <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+        <div 
+            className="h-full bg-emerald-500 transition-all duration-1000 ease-out" 
+            style={{ width: `${Math.min(95, (logs.length / 25) * 100)}%` }} 
+        />
       </div>
 
-      {/* Extreme debug dump - only visible if count > 0 but nothing showing */}
-      {logs.length > 0 && (
-          <div className="hidden">DIAGNOSTIC_VERIFIED: {logs.length} lines present</div>
-      )}
+      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Neural Link Active</span>
+      </div>
     </div>
   );
 };
@@ -601,20 +590,8 @@ export default function OnboardingPage() {
           )}
 
           {currentStep === 1 && (
-            <CardContent className="flex flex-col items-center justify-center py-12 space-y-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full animate-pulse" />
-                <Loader2 className="h-12 w-12 text-emerald-400 animate-spin relative" />
-              </div>
-              
-              <div className="text-center space-y-1">
-                <p className="text-lg font-bold tracking-tight">AI Agent Processing</p>
-                <p className="text-xs text-muted-foreground px-10">
-                  Our neural engine is precisely extracting and matching every line item across {files.length} invoices.
-                </p>
-              </div>
-
-              <ProcessingTerminal logs={terminalLogs} />
+            <CardContent className="py-12">
+               <StatusDisplay logs={terminalLogs} isProcessing={isProcessing} />
             </CardContent>
           )}
 
@@ -651,7 +628,7 @@ export default function OnboardingPage() {
                 
                 <div className="pt-4 border-t border-white/5">
                   <p className="text-[10px] text-muted-foreground/40 uppercase tracking-widest font-bold mb-3 text-center">Process Audit Trail</p>
-                  <ProcessingTerminal logs={terminalLogs} />
+                  <StatusDisplay logs={terminalLogs} isProcessing={isProcessing} />
                 </div>
               </CardContent>
             </>

@@ -24,6 +24,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", id: "tour-home" },
   { href: "/dashboard/ai-cfo", icon: Shield, label: "AI CFO", id: "tour-aicfo" },
   { href: "/dashboard/upload", icon: FileText, label: "Upload Invoices", id: "tour-upload" },
+  { href: "/dashboard/suppliers", icon: Shield, label: "Suppliers", id: "tour-suppliers" },
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox", id: "tour-inbox" },
   { href: "/dashboard/locations", icon: MapPin, label: "Locations", id: "tour-locations" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing", id: "tour-billing" },

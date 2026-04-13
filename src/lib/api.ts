@@ -256,4 +256,27 @@ export const api = {
       `/reports/cron/${cycle}?test_uid=${userId}`,
       { token }
     ),
+
+  // Baselines
+  getBaselines: (token: string) =>
+    request<Record<string, Record<string, { sku: string | null; unit_price: number; unit_of_measure: string | null; updated_at: string }>>>(`/api/baselines`, { token }),
+
+  updateBaselineItem: (token: string, vendor: string, item: string, data: { sku: string | null; unit_price: number; unit_of_measure: string | null }) =>
+    request<{ status: string }>(`/api/baselines/${encodeURIComponent(vendor)}/${encodeURIComponent(item)}`, {
+      token,
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  deleteBaselineItem: (token: string, vendor: string, item: string) =>
+    request<{ status: string }>(`/api/baselines/${encodeURIComponent(vendor)}/${encodeURIComponent(item)}`, {
+      token,
+      method: "DELETE",
+    }),
+
+  deleteVendorBaseline: (token: string, vendor: string) =>
+    request<{ status: string }>(`/api/baselines/${encodeURIComponent(vendor)}`, {
+      token,
+      method: "DELETE",
+    }),
 };
