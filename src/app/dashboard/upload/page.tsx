@@ -73,7 +73,7 @@ const StatusDisplay = ({ logs, isProcessing }: { logs: string[], isProcessing: b
       <div className="space-y-2">
         <h3 className="text-xl font-bold text-white tracking-tight">{status}</h3>
         <p className="text-sm text-emerald-500/60 font-medium">
-            {logs.length > 0 ? `Stage ${Math.min(3, Math.ceil(logs.length / 7))} of 3: Deep Analysis` : "Starting engine..."}
+            {logs.length > 0 ? `Stage ${Math.min(3, Math.ceil(logs.length / 7))} of 3: Deep Analysis` : "Connecting to AI Engine..."}
         </p>
       </div>
 
@@ -267,8 +267,9 @@ export default function OnboardingPage() {
             logs: logsData?.length 
         });
 
-        if (logsData && logsData.length > 0) {
-          setTerminalLogs(logsData.map((l: { message: string }) => l.message));
+        // Always update terminalLogs if it's an array to ensure the UI has the latest
+        if (Array.isArray(logsData)) {
+            setTerminalLogs(logsData.map((l: { message: string }) => l.message));
         }
 
         if (statusData.status === "completed") {
