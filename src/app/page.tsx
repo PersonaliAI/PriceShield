@@ -318,7 +318,7 @@ export default function LandingPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
-              <li><a href="mailto:support@trypriceshield.com" className="hover:text-foreground transition-colors">Support</a></li>
+              <li><Link href="/support" className="hover:text-foreground transition-colors">Support</Link></li>
             </ul>
           </div>
 
