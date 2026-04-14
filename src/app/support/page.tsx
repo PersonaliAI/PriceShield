@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Shield, ArrowLeft, Mail, Linkedin } from "lucide-react";
+import { Shield, ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function SupportPage() {
@@ -46,7 +46,22 @@ export default function SupportPage() {
             className="flex flex-col items-center justify-center p-8 bg-card/50 border border-border/50 rounded-2xl hover:border-emerald-500/30 transition-all group"
           >
             <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Linkedin className="h-6 w-6 text-blue-400" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6 text-blue-400"
+              >
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <rect width="4" height="12" x="2" y="9"></rect>
+                <circle cx="4" cy="4" r="2"></circle>
+              </svg>
             </div>
             <h3 className="text-lg font-bold text-foreground">Follow on LinkedIn</h3>
             <p className="text-sm text-muted-foreground mt-2">PriceShield</p>
