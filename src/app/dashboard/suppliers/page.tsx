@@ -214,12 +214,16 @@ export default function SuppliersPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {Object.entries(baselines[selectedVendor] || {}).map(([name, data]: [string, any]) => (
+                      {Object.entries(baselines[selectedVendor] || {})
+                        .filter(([name]) => !name.startsWith("_"))
+                        .map(([name, data]: [string, any]) => (
                         <tr key={name} className="hover:bg-white/[0.02] transition-colors group">
                           <td className="px-6 py-4 font-medium text-white/90 max-w-[200px] truncate">{name}</td>
                           <td className="px-6 py-4 text-muted-foreground font-mono text-xs">{data.sku || "N/A"}</td>
                           <td className="px-6 py-4 text-center">
-                            <span className="text-emerald-400 font-bold">${data.unit_price.toFixed(2)}</span>
+                            <span className="text-emerald-400 font-bold">
+                                ${typeof data.unit_price === 'number' ? data.unit_price.toFixed(2) : "0.00"}
+                            </span>
                           </td>
                           <td className="px-6 py-4 text-center text-muted-foreground/60">{data.unit_of_measure || "each"}</td>
                           <td className="px-6 py-4 text-right space-x-1">
@@ -229,7 +233,7 @@ export default function SuppliersPage() {
                                 className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
                                 onClick={() => {
                                     setEditingItem({ vendor: selectedVendor, name, data });
-                                    setEditPrice(data.unit_price.toString());
+                                    setEditPrice((data.unit_price || 0).toString());
                                     setEditSku(data.sku || "");
                                 }}
                             >
