@@ -8,6 +8,14 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import BlogShare from "@/components/BlogShare";
 
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  return BLOG_POSTS.map((post) => ({
+    slug: post.slug,
+  }));
+}
+
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
