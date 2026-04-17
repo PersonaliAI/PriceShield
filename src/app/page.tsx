@@ -156,10 +156,14 @@ export default function LandingPage() {
               { icon: "🧃", label: "Beverages" },
             ].map((cat) => (
               <div key={cat.label} className="flex flex-col items-center gap-3 group cursor-default">
-                <div className="h-16 w-16 rounded-2xl bg-card/60 border border-border/30 flex items-center justify-center text-3xl group-hover:border-emerald-500/40 group-hover:bg-emerald-500/5 transition-all duration-300 group-hover:scale-110">
+                <div 
+                  role="img" 
+                  aria-label={cat.label}
+                  className="h-16 w-16 rounded-2xl bg-card/60 border border-border/30 flex items-center justify-center text-3xl group-hover:border-emerald-500/40 group-hover:bg-emerald-500/5 transition-all duration-300 group-hover:scale-110"
+                >
                   {cat.icon}
                 </div>
-                <span className="text-xs font-semibold text-muted-foreground group-hover:text-emerald-400 transition-colors">{cat.label}</span>
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-emerald-400 transition-colors uppercase tracking-wider">{cat.label}</span>
               </div>
             ))}
           </div>
@@ -171,9 +175,9 @@ export default function LandingPage() {
       <section id="features" className="py-24 border-t border-border/40">
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">How PriceShield Protects You</h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              We automate the tedious work of comparing invoices so you never miss a price hike again.
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">AI-Powered Supplier Price Increase Detection</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              PriceShield automates invoice auditing so you can catch stealth hikes and protect your restaurant's bottom line.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

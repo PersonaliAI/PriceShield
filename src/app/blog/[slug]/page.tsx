@@ -1,47 +1,83 @@
-"use client";
-
-import { use } from "react";
+import { Metadata } from "next";
 import Link from "next/link";
 import { BLOG_POSTS } from "@/lib/blog-data";
-import { ArrowLeft, Share2, MessageSquare, Clock, User, Shield, Share } from "lucide-react";
+import { ArrowLeft, Clock, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import BlogShare from "@/components/BlogShare";
 
-export default function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const post = BLOG_POSTS.find((p) => p.slug === slug);
+
+  if (!post) return {};
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      url: `https://trypriceshield.com/blog/${post.slug}`,
+      publishedTime: post.date,
+      authors: [post.author],
+      images: [
+        {
+          url: post.image,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [post.image],
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const post = BLOG_POSTS.find((p) => p.slug === slug);
 
   if (!post) {
     notFound();
   }
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareTitle = `Check out this post from PriceShield: ${post.title}`;
+  const url = `https://trypriceshield.com/blog/${post.slug}`;
 
-  const shareLinks = [
-    {
-      name: "X",
-      icon: <Share2 className="h-4 w-4" />,
-      url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`,
-      color: "hover:bg-slate-900 hover:text-white"
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "image": `https://trypriceshield.com${post.image}`,
+    "author": {
+      "@type": "Person",
+      "name": post.author
     },
-    {
-      name: "LinkedIn",
-      icon: <Share className="h-4 w-4" />,
-      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-      color: "hover:bg-blue-600 hover:text-white"
-    },
-    {
-      name: "Reddit",
-      icon: <MessageSquare className="h-4 w-4" />,
-      url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareTitle)}`,
-      color: "hover:bg-orange-600 hover:text-white"
+    "datePublished": post.date,
+    "description": post.excerpt,
+    "publisher": {
+      "@type": "Organization",
+      "name": "PriceShield",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://trypriceshield.com/logo.png"
+      }
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-background font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Mini Nav */}
       <nav className="border-b border-border/40 bg-card/30 backdrop-blur sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -53,7 +89,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
             <Link href="/" className="flex items-center gap-2 mr-4">
               <Image src="/logo.png" alt="Logo" width={24} height={24} className="h-6 w-auto" />
             </Link>
-            <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-lg shadow-lg shadow-emerald-500/20">
+            <Button size="sm" asChild className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-lg shadow-lg shadow-emerald-500/20">
               <Link href="/login">Get Started</Link>
             </Button>
           </div>
@@ -84,21 +120,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
               </div>
 
               {/* Social Share */}
-              <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-xl border border-border/50">
-                <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Share</div>
-                {shareLinks.map((link) => (
-                  <Button
-                    key={link.name}
-                    variant="ghost"
-                    size="icon"
-                    className={`h-8 w-8 rounded-lg transition-all duration-300 ${link.color}`}
-                  >
-                    <a href={link.url} target="_blank" rel="noopener noreferrer" title={link.name}>
-                      {link.icon}
-                    </a>
-                  </Button>
-                ))}
-              </div>
+              <BlogShare title={post.title} url={url} />
             </div>
           </header>
 
@@ -131,10 +153,10 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                <h3 className="text-2xl font-bold">Stop guessing, start protecting</h3>
                <p className="text-muted-foreground text-lg">PriceShield analyzes every line item of every invoice, automatically. No spreadsheet setup required.</p>
                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                 <Button size="lg" className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-xl h-12 px-8 shadow-lg shadow-emerald-500/20">
+                 <Button size="lg" asChild className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-xl h-12 px-8 shadow-lg shadow-emerald-500/20">
                    <Link href="/login">Create Free Account</Link>
                  </Button>
-                 <Button variant="ghost" className="font-bold underline text-emerald-400">
+                 <Button variant="ghost" asChild className="font-bold underline text-emerald-400">
                    <Link href="/blog">More insights</Link>
                  </Button>
                </div>

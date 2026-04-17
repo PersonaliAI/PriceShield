@@ -10,13 +10,77 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PriceShield — Supplier Price Increase Detect & Creep Monitoring",
+  metadataBase: new URL("https://trypriceshield.com"),
+  title: {
+    default: "PriceShield — Supplier Price Increase Detection & Monitoring",
+    template: "%s | PriceShield"
+  },
   description:
-    "Protect your margins with PriceShield. Automatically detect supplier price increase, stealth hikes, and price creep via AI-powered PDF extraction.",
-  keywords: ["supplier price increase detect", "price creep monitoring", "restaurant margin protection", "invoice auditing AI"],
+    "Protect your margins with PriceShield. Automatically detect supplier price increases, stealth hikes, and price creep via AI-powered PDF extraction.",
+  keywords: [
+    "supplier price increase detect", 
+    "price creep monitoring", 
+    "restaurant margin protection", 
+    "invoice auditing AI",
+    "food cost control",
+    "supply chain overhead reduction"
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://trypriceshield.com",
+    siteName: "PriceShield",
+    title: "PriceShield — Stop Supplier Price Creep Automatically",
+    description: "The AI-powered margin guardian for restaurants. Detect stealth supplier price hikes in seconds.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1024,
+        height: 1024,
+        alt: "PriceShield Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PriceShield — Stop Supplier Price Creep",
+    description: "AI-powered invoice auditing and margin protection for restaurants.",
+    images: ["/logo.png"],
+  },
   icons: {
     icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trypriceshield.com/#organization",
+      "name": "PriceShield",
+      "url": "https://trypriceshield.com",
+      "logo": "https://trypriceshield.com/logo.png",
+      "sameAs": [
+        "https://linkedin.com/company/priceshield"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://trypriceshield.com/#software",
+      "name": "PriceShield AI",
+      "url": "https://trypriceshield.com",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "49.00",
+        "priceCurrency": "USD"
+      }
+    }
+  ]
 };
 
 import { Suspense } from "react";
@@ -33,6 +97,10 @@ export default function RootLayout({
         <AuthProvider>
           <Suspense fallback={null}>
             <AnalyticsProvider>
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+              />
               {children}
             </AnalyticsProvider>
           </Suspense>
