@@ -74,6 +74,8 @@ const plans = [
   },
 ];
 
+import AudioDemoButton from "@/components/AudioDemoButton";
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
@@ -131,9 +133,7 @@ export default function LandingPage() {
                 Get Your Free Audit <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base">
-              Watch Demo
-            </Button>
+            <AudioDemoButton />
           </div>
           {/* Social proof */}
           <p className="mt-8 text-sm text-muted-foreground">
