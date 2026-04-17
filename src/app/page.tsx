@@ -1,5 +1,3 @@
-"use client";
-
 import { TrendingUp, Bell, MessageSquare, ArrowRight, Check, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -83,7 +81,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <Image src="/logo.png" alt="PriceShield Logo" width={32} height={32} className="h-8 w-auto" />
+            <Image src="/logo.png" alt="PriceShield Logo" width={32} height={32} className="h-8 w-auto" priority />
             <span className="hidden">PriceShield</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
@@ -107,8 +105,8 @@ export default function LandingPage() {
 
       {/* ───────── Hero ───────── */}
       <section className="relative pt-32 pb-24 overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 -z-10">
+        {/* Animated gradient background (Hidden on mobile for performance) */}
+        <div className="absolute inset-0 -z-10 hidden md:block">
           <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl animate-pulse-glow" />
           <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-emerald-400/8 blur-3xl animate-pulse-glow [animation-delay:1s]" />
         </div>
