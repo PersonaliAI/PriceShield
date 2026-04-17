@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -188,7 +189,7 @@ export default function AICFOPage() {
                     )}>
                       <div className="markdown-content prose prose-sm prose-invert max-w-none prose-p:leading-relaxed">
                         <ReactMarkdown 
-                          remarkPlugins={[remarkMath]} 
+                          remarkPlugins={[remarkMath, remarkGfm]} 
                           rehypePlugins={[rehypeKatex]}
                           components={{
                             b: ({...props}) => <b className="font-bold text-emerald-400" {...props} />,
@@ -307,8 +308,8 @@ export default function AICFOPage() {
           background: rgba(16, 185, 129, 0.2);
         }
         .markdown-content b, .markdown-content strong {
-          color: #34d399; /* emerald-400 */
-          font-weight: 700;
+          color: #10b981 !important; /* emerald-500 */
+          font-weight: 800 !important;
         }
         .markdown-content pre {
           background: rgba(255, 255, 255, 0.05);
