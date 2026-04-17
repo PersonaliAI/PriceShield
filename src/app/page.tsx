@@ -115,7 +115,7 @@ export default function LandingPage() {
 
         <div className="mx-auto max-w-4xl text-center px-6">
           <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium">
-            🛡️ Trusted by 500+ businesses
+            <span role="img" aria-label="shield" className="mr-1">🛡️</span> Trusted by 500+ businesses
           </Badge>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
             Stop Suppliers From{" "}
@@ -145,7 +145,7 @@ export default function LandingPage() {
 
         {/* ─── Logo Cloud ─── */}
         <div className="mx-auto max-w-6xl px-6 mt-24 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/60 mb-10">Works with every supplier category</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-10">Works with every supplier category</p>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-10">
             {[
               { icon: "🥩", label: "Meat & Poultry" },
@@ -296,11 +296,11 @@ export default function LandingPage() {
             </p>
             <div className="flex items-center gap-4">
                {/* Placeholders for social icons */}
-               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-emerald-500/20 transition-colors cursor-pointer">
-                 <span className="text-xs font-bold">X</span>
+               <div aria-label="Follow us on X" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-emerald-500/20 transition-colors cursor-pointer">
+                 <span className="text-xs font-bold leading-none">X</span>
                </div>
-               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-emerald-500/20 transition-colors cursor-pointer">
-                 <span className="text-xs font-bold">In</span>
+               <div aria-label="Follow us on LinkedIn" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center hover:bg-emerald-500/20 transition-colors cursor-pointer">
+                 <span className="text-xs font-bold leading-none">In</span>
                </div>
             </div>
           </div>
@@ -334,9 +334,10 @@ export default function LandingPage() {
               <input 
                 type="email" 
                 placeholder="email@address.com" 
+                aria-label="Newsletter email address"
                 className="flex-1 bg-background/50 border border-border/50 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-emerald-500 outline-none" 
               />
-              <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-background h-8">Join</Button>
+              <Button size="sm" aria-label="Join newsletter" className="bg-emerald-500 hover:bg-emerald-400 text-background h-8">Join</Button>
             </div>
           </div>
         </div>
