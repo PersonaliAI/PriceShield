@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { BLOG_POSTS } from "@/lib/blog-data";
 import { ArrowLeft, Clock, User, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import BlogShare from "@/components/BlogShare";
@@ -89,9 +90,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <Link href="/" className="flex items-center gap-2 mr-4">
               <Image src="/logo.png" alt="Logo" width={24} height={24} className="h-6 w-auto" />
             </Link>
-            <Button size="sm" asChild className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-lg shadow-lg shadow-emerald-500/20">
-              <Link href="/login">Get Started</Link>
-            </Button>
+            <Link 
+              href="/login"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-lg shadow-lg shadow-emerald-500/20"
+              )}
+            >
+              Get Started
+            </Link>
           </div>
         </div>
       </nav>
@@ -153,12 +160,24 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                <h3 className="text-2xl font-bold">Stop guessing, start protecting</h3>
                <p className="text-muted-foreground text-lg">PriceShield analyzes every line item of every invoice, automatically. No spreadsheet setup required.</p>
                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                 <Button size="lg" asChild className="bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-xl h-12 px-8 shadow-lg shadow-emerald-500/20">
-                   <Link href="/login">Create Free Account</Link>
-                 </Button>
-                 <Button variant="ghost" asChild className="font-bold underline text-emerald-400">
-                   <Link href="/blog">More insights</Link>
-                 </Button>
+                 <Link 
+                   href="/login"
+                   className={cn(
+                     buttonVariants({ size: "lg" }),
+                     "bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-xl h-12 px-8 shadow-lg shadow-emerald-500/20"
+                   )}
+                 >
+                   Create Free Account
+                 </Link>
+                 <Link 
+                   href="/blog"
+                   className={cn(
+                     buttonVariants({ variant: "ghost" }),
+                     "font-bold underline text-emerald-400"
+                   )}
+                 >
+                   More insights
+                 </Link>
                </div>
             </div>
           </div>
