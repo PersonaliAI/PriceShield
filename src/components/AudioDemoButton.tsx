@@ -9,8 +9,9 @@ export default function AudioDemoButton() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Initialize audio only on client side
+    // Initialize audio only on client side with no preloading for PageSpeed
     audioRef.current = new Audio("/demo-voice.mp3");
+    audioRef.current.preload = "none";
     audioRef.current.onended = () => setIsPlaying(false);
     
     return () => {

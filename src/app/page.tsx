@@ -74,7 +74,14 @@ const plans = [
   },
 ];
 
-import AudioDemoButton from "@/components/AudioDemoButton";
+import dynamic from "next/dynamic";
+
+const AudioDemoButton = dynamic(() => import("@/components/AudioDemoButton"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-12 w-[180px] rounded-lg bg-card/30 border border-border/40 animate-pulse" />
+  )
+});
 
 export default function LandingPage() {
   return (
