@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { 
   Dialog, 
   DialogContent, 
@@ -33,6 +34,7 @@ import { api, UserSettings, SettingsUpdate } from "@/lib/api";
 
 export default function SettingsPage() {
   const { getToken, user } = useAuth();
+  const searchParams = useSearchParams();
 
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,20 +46,6 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState("");
   const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
   const [showConfirmDisconnectSlack, setShowConfirmDisconnectSlack] = useState(false);
-
-  // Handle Slack OAuth redirect status
-  useEffect(() => {
-    const slackStatus = searchParams.get('slack');
-    if (slackStatus === 'success') {
-      toast.success("Slack account connected successfully!");
-      // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname);
-      fetchSettings();
-    } else if (slackStatus === 'error') {
-      toast.error("Failed to connect Slack account. Please try again.");
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, [searchParams]);
 
   // Form state
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -106,6 +94,20 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  // Handle Slack OAuth redirect status
+  useEffect(() => {
+    const slackStatus = searchParams.get('slack');
+    if (slackStatus === 'success') {
+      setSuccess("Slack account connected successfully!");
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+      fetchSettings();
+    } else if (slackStatus === 'error') {
+      setError("Failed to connect Slack account. Please try again.");
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [searchParams, fetchSettings]);
 
   const handleDisconnectTelegram = async () => {
     setShowConfirmDisconnect(false);
