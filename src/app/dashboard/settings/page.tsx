@@ -45,6 +45,20 @@ export default function SettingsPage() {
   const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
   const [showConfirmDisconnectSlack, setShowConfirmDisconnectSlack] = useState(false);
 
+  // Handle Slack OAuth redirect status
+  useEffect(() => {
+    const slackStatus = searchParams.get('slack');
+    if (slackStatus === 'success') {
+      toast.success("Slack account connected successfully!");
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+      fetchSettings();
+    } else if (slackStatus === 'error') {
+      toast.error("Failed to connect Slack account. Please try again.");
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [searchParams]);
+
   // Form state
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [forwardingEmails, setForwardingEmails] = useState<string[]>([]);
@@ -617,12 +631,17 @@ export default function SettingsPage() {
             {!settings?.slack_linked && !isFree && (
               <div className="pt-2 border-t border-border/30">
                 <p className="text-xs font-medium text-muted-foreground mb-2">Bidirectional App Setup</p>
-                <div className="rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-3 space-y-2">
+                <div className="rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-4 space-y-3">
                   <p className="text-[11px] text-indigo-400 font-bold uppercase tracking-widest">Connect to Your Workspace</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    1. Invite the **@PriceShield** bot to your Slack workspace.<br/>
-                    2. Use the command `/shield link ${user?.uid}` in any channel or DM.
+                    Automatically link your PriceShield account and enable deep interactive audits and AI CFO chat in Slack.
                   </p>
+                  <a 
+                    href={`${process.env.NEXT_PUBLIC_API_URL || 'https://priceshield-api-647257091960.us-central1.run.app'}/webhook/slack/install?uid=${user?.uid}`}
+                    className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2 rounded-md transition-all shadow-lg shadow-purple-900/20"
+                  >
+                    <Plus className="h-3 w-3" /> Connect to Slack
+                  </a>
                 </div>
               </div>
             )}
