@@ -17,6 +17,8 @@ export interface UserSettings {
   report_monthly: boolean;
   alert_threshold: number;
   slack_webhook_url: string | null;
+  slack_linked: boolean;
+  slack_team_id: string | null;
   locations: Location[];
 }
 
@@ -223,6 +225,13 @@ export const api = {
   // Telegram
   disconnectTelegram: (token: string) =>
     request<{ status: string }>(`/webhook/telegram/disconnect`, {
+      token,
+      method: "POST",
+    }),
+
+  // Slack
+  disconnectSlack: (token: string) =>
+    request<{ status: string }>(`/webhook/slack/disconnect`, {
       token,
       method: "POST",
     }),

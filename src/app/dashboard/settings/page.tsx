@@ -43,6 +43,7 @@ export default function SettingsPage() {
   const [copiedInbox, setCopiedInbox] = useState(false);
   const [success, setSuccess] = useState("");
   const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
+  const [showConfirmDisconnectSlack, setShowConfirmDisconnectSlack] = useState(false);
 
   // Form state
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -103,6 +104,19 @@ export default function SettingsPage() {
       const msg = err instanceof Error ? err.message : "Failed to disconnect Telegram";
       setError(msg);
     } finally {
+    }
+  };
+
+  const handleDisconnectSlack = async () => {
+    setShowConfirmDisconnectSlack(false);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await api.disconnectSlack(token);
+      await fetchSettings(); 
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to disconnect Slack";
+      setError(msg);
     }
   };
 
@@ -542,31 +556,80 @@ export default function SettingsPage() {
           
           {/* Slack */}
           <div className="rounded-lg border border-border/50 p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-[140px]">
                 <Hash className="h-5 w-5 text-purple-400" />
                 <div>
-                  <p className="font-medium text-sm">Slack</p>
-                  <p className="text-xs text-muted-foreground">Push-only Webhooks</p>
-                  <p className="text-[10px] text-purple-400 opacity-80">Includes dashboard proof links</p>
+                  <p className="font-medium text-sm">Slack App</p>
+                  <p className="text-xs text-muted-foreground">Snapshot & Send + AI CFO</p>
                 </div>
               </div>
-              <button
-                onClick={() => !isFree && toggleChannel("slack")}
-                disabled={isFree}
-                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                   alertChannels.includes("slack") ? "bg-emerald-500" : "bg-muted"
-                } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                  alertChannels.includes("slack") ? "translate-x-5" : ""
-                }`} />
-              </button>
+
+              <div className="flex items-center gap-3 ml-auto sm:ml-0">
+                {settings?.slack_linked ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end mr-2">
+                       <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Alerts</span>
+                       <button
+                         onClick={() => !isFree && toggleChannel("slack")}
+                         disabled={isFree}
+                         className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                           alertChannels.includes("slack") ? "bg-emerald-500" : "bg-muted"
+                         } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
+                       >
+                         <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                           alertChannels.includes("slack") ? "translate-x-5" : ""
+                         }`} />
+                       </button>
+                    </div>
+                    <div className="border-l border-border/40 h-8 mx-2 hidden sm:block" />
+                    <div className="flex flex-col items-end">
+                      <Badge className="bg-emerald-500/10 text-emerald-400 border-0 h-6 mb-1">
+                        <Check className="h-3 w-3 mr-1" /> Linked
+                      </Badge>
+                      <button 
+                        onClick={() => setShowConfirmDisconnectSlack(true)}
+                        className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[9px] uppercase tracking-wider font-bold p-1"
+                      >
+                        Disconnect Slack
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <Badge variant="secondary" className="border-0 h-6">Not linked</Badge>
+                    <button
+                      onClick={() => !isFree && toggleChannel("slack")}
+                      disabled={isFree}
+                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                        alertChannels.includes("slack") ? "bg-emerald-500" : "bg-muted"
+                      } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                        alertChannels.includes("slack") ? "translate-x-5" : ""
+                      }`} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-            
+
+            {!settings?.slack_linked && !isFree && (
+              <div className="pt-2 border-t border-border/30">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Bidirectional App Setup</p>
+                <div className="rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-3 space-y-2">
+                  <p className="text-[11px] text-indigo-400 font-bold uppercase tracking-widest">Connect to Your Workspace</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    1. Invite the **@PriceShield** bot to your Slack workspace.<br/>
+                    2. Use the command `/shield link ${user?.uid}` in any channel or DM.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {!isFree && (
               <div className="pt-2 border-t border-border/30">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Webhook URL</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Legacy Webhook URL <span className="text-[10px] opacity-60 font-normal">(Push Alerts only)</span></p>
                 <input
                   type="text"
                   value={slackWebhookUrl}
@@ -574,15 +637,13 @@ export default function SettingsPage() {
                   placeholder="https://hooks.slack.com/services/..."
                   className="w-full bg-muted/20 border border-border/50 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500"
                 />
-                <p className="text-[10px] text-muted-foreground mt-2">
-                  Create a webhook in your Slack workspace to receive instant alerts.
-                </p>
               </div>
             )}
+
             {isFree && (
               <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
-                Slack alerts require Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
+                Slack integration requires Pro Shield. <a href="/dashboard/billing" className="underline font-medium ml-1">Upgrade now</a>
               </p>
             )}
           </div>
