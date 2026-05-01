@@ -133,6 +133,7 @@ export default function DevelopersPage() {
               <span className="font-bold text-lg hidden sm:block">PriceShield</span>
             </Link>
             <Badge variant="outline" className="ml-2 font-mono text-[10px] uppercase text-emerald-400 border-emerald-500/30">API v1</Badge>
+            <span className="ml-2 text-[10px] text-emerald-500/40 font-mono">v1.2.1-live</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground">

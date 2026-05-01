@@ -1,34 +1,36 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+/**
+ * PriceShield Subdomain Proxy (Next.js 16+ Convention)
+ * Handles routing for developer.trypriceshield.com
+ */
 export function proxy(request: NextRequest) {
   const url = request.nextUrl
-  const host = request.headers.get('host') || ''
   
-  // Detect developer subdomain
-  const isDevSubdomain = host.toLowerCase().includes('developer')
+  // Try to get hostname from multiple sources for maximum compatibility
+  const host = url.hostname || request.headers.get('x-forwarded-host') || request.headers.get('host') || ''
+  
+  console.log(`[Proxy] Incoming request for: ${host}${url.pathname}`)
+
+  // Detect if we are on the developer subdomain
+  const isDevSubdomain = host.toLowerCase().startsWith('developer')
 
   if (isDevSubdomain) {
-    // 1. Root path -> Developer Portal (Docs)
+    // 1. Root path -> serve the Developer Portal (/developers)
     if (url.pathname === '/') {
       return NextResponse.rewrite(new URL('/developers', request.url))
     }
 
-    // 2. Dashboard path -> Standalone Developer Dashboard
-    // Matches /dashboard and any sub-paths of /dashboard
+    // 2. Dashboard path -> serve the standalone Developer Dashboard (/developers/dashboard)
     if (url.pathname === '/dashboard' || url.pathname.startsWith('/dashboard/')) {
-      // Reconstruct the internal path: /dashboard -> /developers/dashboard
       const internalPath = url.pathname.replace('/dashboard', '/developers/dashboard')
       return NextResponse.rewrite(new URL(internalPath, request.url))
     }
 
-    // 3. Clean up: Redirect /developers to root if visited directly on subdomain
+    // 3. Clean up: Redirect internal paths to root if accessed directly on subdomain
     if (url.pathname === '/developers') {
       return NextResponse.redirect(new URL('/', request.url))
-    }
-    if (url.pathname.startsWith('/developers/dashboard')) {
-      const externalPath = url.pathname.replace('/developers/dashboard', '/dashboard')
-      return NextResponse.redirect(new URL(externalPath, request.url))
     }
   }
 
