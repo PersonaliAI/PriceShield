@@ -177,7 +177,7 @@ export default function DevelopersPage() {
           <div className="lg:w-1/2 mt-12 lg:mt-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { icon: Zap, title: "Gemini 2.0 Powered", desc: "Sub-second extraction accuracy." },
+                { icon: Zap, title: "Advanced AI Powered", desc: "Sub-second extraction accuracy." },
                 { icon: Shield, title: "Enterprise SLA", desc: "99.99% uptime for Scale tiers." },
                 { icon: Box, title: "Structured JSON", desc: "Clean line-item arrays." },
                 { icon: CheckCircle2, title: "Confidence Scores", desc: "Built-in OCR certainty." },

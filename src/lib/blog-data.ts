@@ -340,7 +340,7 @@ export const BLOG_POSTS: BlogPost[] = [
         <section>
           <h2 class="text-2xl font-bold text-foreground mb-3">Email Forwarding vs. Manual Upload: What Happens Differently?</h2>
           <p class="text-muted-foreground leading-relaxed mb-4">
-            Both methods use the same core AI extraction engine (Gemini 2.5 Flash), but they trigger different comparison modes:
+            Both methods use the same core AI extraction engine (PriceShield AI), but they trigger different comparison modes:
           </p>
           <table style="width: 100%; border-collapse: collapse;">
             <thead>
@@ -386,7 +386,7 @@ export const BLOG_POSTS: BlogPost[] = [
           <div class="space-y-3">
             <div class="flex gap-3 items-start">
               <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full shrink-0">1</span>
-              <div><p class="text-sm text-muted-foreground"><strong class="text-foreground">Extraction:</strong> Gemini 2.5 Flash reads the raw PDF, identifies every line item, and extracts: item name, SKU, unit price, quantity, total, UOM, invoice date, and vendor name.</p></div>
+              <div><p class="text-sm text-muted-foreground"><strong class="text-foreground">Extraction:</strong> Our proprietary AI reads the raw PDF, identifies every line item, and extracts: item name, SKU, unit price, quantity, total, UOM, invoice date, and vendor name.</p></div>
             </div>
             <div class="flex gap-3 items-start">
               <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full shrink-0">2</span>
@@ -516,7 +516,7 @@ export const BLOG_POSTS: BlogPost[] = [
           <div class="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-xl">
              <h4 class="font-bold text-emerald-400 mb-3">The AI Advantage</h4>
              <ul class="space-y-4 text-sm text-muted-foreground">
-               <li class="flex gap-3"><strong class="text-foreground min-w-[120px]">Zero Data Entry:</strong> Gemini Vision AI reads the raw PDF or image instantly. No typing required.</li>
+               <li class="flex gap-3"><strong class="text-foreground min-w-[120px]">Zero Data Entry:</strong> Our Advanced AI reads the raw PDF or image instantly. No typing required.</li>
                <li class="flex gap-3"><strong class="text-foreground min-w-[120px]">100% Coverage:</strong> The AI doesn't get tired. It checks the price of the beef tenderloin with the exact same rigor as the price of a box of toothpicks.</li>
                <li class="flex gap-3"><strong class="text-foreground min-w-[120px]">Instant Leverage:</strong> Because the system alerts you via Telegram or Email the moment a hike is detected, you can contact the rep before the delivery truck even arrives or before the invoice is paid.</li>
              </ul>

@@ -13,7 +13,7 @@ const features = [
   {
     icon: TrendingUp,
     title: "AI-Powered Extraction",
-    desc: "Forward invoices. Gemini Vision AI extracts every line item — vendor, SKU, price, quantity — automatically.",
+    desc: "Forward invoices. Our Advanced AI extracts every line item — vendor, SKU, price, quantity — automatically.",
   },
   {
     icon: TrendingUp,
@@ -285,7 +285,7 @@ export default function LandingPage() {
           <div className="space-y-12">
             {[
               { step: "01", title: "Forward Your Invoices", desc: "Set up email forwarding to your unique PriceShield address. That's it — no scanning, no data entry." },
-              { step: "02", title: "AI Extracts Every Detail", desc: "Gemini Vision AI reads every line item — item name, SKU, price, quantity — and logs it to your history." },
+              { step: "02", title: "AI Extracts Every Detail", desc: "Our Advanced AI reads every line item — item name, SKU, price, quantity — and logs it to your history." },
               { step: "03", title: "Get Alerted Instantly", desc: "Whenever unit prices jump more than 2%, you get a Telegram or email alert with exact amounts and percentages." },
             ].map((s) => (
               <div key={s.step} className="flex gap-6 items-start">
