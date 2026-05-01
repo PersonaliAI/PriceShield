@@ -3,24 +3,15 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl
+  const host = request.headers.get('host') || ''
   
-  // Try to get hostname from multiple headers (important for Proxies/Firebase)
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || ''
-  
-  console.log(`[Middleware] Host: ${host}, Path: ${url.pathname}`)
-
-  // Detect developer subdomain
-  const isDevSubdomain = host.startsWith('developer.')
+  // Detect developer subdomain in host or x-forwarded-host
+  const isDevSubdomain = host.toLowerCase().includes('developer')
 
   if (isDevSubdomain) {
-    // If at root of developer subdomain, serve the /developers page
+    // If at the root of developer.trypriceshield.com, serve the portal
     if (url.pathname === '/') {
       return NextResponse.rewrite(new URL('/developers', request.url))
-    }
-
-    // Optional: Redirect /developers to / if on the developer subdomain for cleaner URLs
-    if (url.pathname === '/developers') {
-      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
