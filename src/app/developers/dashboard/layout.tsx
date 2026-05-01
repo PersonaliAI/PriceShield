@@ -105,7 +105,7 @@ export default function DeveloperLayout({ children }: { children: React.ReactNod
             </button>
           </header>
 
-          <div className="p-6 md:p-12 max-w-6xl mx-auto">{children}</div>
+          <div className="p-6 md:p-10 w-full max-w-full mx-auto">{children}</div>
         </main>
       </div>
     </ProtectedRoute>

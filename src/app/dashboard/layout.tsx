@@ -12,6 +12,7 @@ import {
   Menu,
   HelpCircle,
   Terminal,
+  Loader2,
   X 
 } from "lucide-react";
 import Link from "next/link";
@@ -40,26 +41,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sent, setSent] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [shouldHide, setShouldHide] = useState(false);
 
   // Auto-trigger tour for first-time users
   useEffect(() => {
-    const hasSeen = localStorage.getItem("priceshield_onboarding_seen");
-    if (!hasSeen) {
-      const timer = setTimeout(() => setShowTour(true), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  // Fail-safe subdomain routing
-  useEffect(() => {
+    setIsMounted(true);
     const host = window.location.hostname;
     if (host.toLowerCase().startsWith('developer')) {
+      setShouldHide(true);
       if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
         const devPath = pathname.replace('/dashboard', '/developers/dashboard');
         router.push(devPath);
       }
     }
+
+    const hasSeen = localStorage.getItem("priceshield_onboarding_seen");
+    if (!hasSeen) {
+      const timer = setTimeout(() => setShowTour(true), 1500);
+      return () => clearTimeout(timer);
+    }
   }, [pathname, router]);
+
+  if (!isMounted || shouldHide) {
+    return (
+      <div className="min-h-screen bg-[#06080a] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+      </div>
+    );
+  }
 
   const handleSendVerification = async () => {
     setVerifying(true);
