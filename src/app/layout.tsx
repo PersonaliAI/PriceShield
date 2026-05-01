@@ -85,6 +85,7 @@ const jsonLd = {
 
 import { Suspense } from "react";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
+import { ABTestProvider } from "@/components/ab-test-provider";
 
 export default function RootLayout({
   children,
@@ -97,11 +98,13 @@ export default function RootLayout({
         <AuthProvider>
           <Suspense fallback={null}>
             <AnalyticsProvider>
-              <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-              />
-              {children}
+              <ABTestProvider>
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+                {children}
+              </ABTestProvider>
             </AnalyticsProvider>
           </Suspense>
         </AuthProvider>

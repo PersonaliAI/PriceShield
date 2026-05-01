@@ -47,7 +47,7 @@ const plans = [
     period: "/mo",
     description: "Core revenue engine. Catch every stealth hike.",
     features: [
-      "1 Restaurant Location",
+      "1 Business Location",
       "Unlimited Auto-Forwarding",
       "Real-Time Telegram Alerts",
       "AI CFO Chat Access",
@@ -63,7 +63,7 @@ const plans = [
     period: "/mo",
     description: "Built for restaurant groups and multi-site owners.",
     features: [
-      "Up to 5 Restaurant Locations",
+      "Up to 5 Business Locations",
       "Combined AI CFO Insights",
       "Everything in Pro Shield",
       "Priority Email Support",
@@ -82,7 +82,13 @@ const AudioDemoButton = dynamic(() => import("@/components/AudioDemoButton"), {
   )
 });
 
+import { useABTest } from "@/components/ab-test-provider";
+import { ROICalculator } from "@/components/roi-calculator";
+import { Testimonials } from "@/components/testimonials";
+
 export default function LandingPage() {
+  const { variant } = useABTest();
+
   return (
     <div className="min-h-screen bg-background">
       {/* ───────── Nav ───────── */}
@@ -95,6 +101,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
             <Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+            <Link href="/developers" className="hover:text-emerald-400 font-medium transition-colors">Developers</Link>
             <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
             <Link href="#how" className="hover:text-foreground transition-colors">How It Works</Link>
           </div>
@@ -111,40 +118,72 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ───────── Hero ───────── */}
+      {/* ───────── Hero Section (A/B Test) ───────── */}
       <section className="relative pt-32 pb-24 overflow-hidden">
-        {/* Animated gradient background (Hidden on mobile for performance) */}
+        {/* Animated gradient background */}
         <div className="absolute inset-0 -z-10 hidden md:block">
           <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl animate-pulse-glow" />
           <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-emerald-400/8 blur-3xl animate-pulse-glow [animation-delay:1s]" />
         </div>
 
-        <div className="mx-auto max-w-4xl text-center px-6">
-          <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium">
-            <span role="img" aria-label="shield" className="mr-1">🛡️</span> Trusted by 500+ businesses
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-            Stop Suppliers From{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
-              Bleeding Your Margins
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Forward your invoices. Our AI catches every stealth price hike your suppliers sneak in.
-            Zero setup. Instant alerts. Detect supplier price increases automatically.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/login">
-              <Button size="lg" className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold px-8 h-12 text-base">
-                Get Your Free Audit <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <AudioDemoButton />
+        <div className="mx-auto max-w-6xl px-6">
+          <div className={`grid lg:grid-cols-2 gap-12 items-center ${variant === 'challenger' ? 'text-left' : 'text-center max-w-4xl mx-auto'}`}>
+            
+            {/* Left Col: Copy */}
+            <div className="space-y-8">
+              <Badge variant="secondary" className="px-4 py-1.5 text-sm font-medium">
+                <span role="img" aria-label="shield" className="mr-1">🛡️</span> Trusted by 500+ businesses
+              </Badge>
+              
+              {variant === 'control' ? (
+                <>
+                  <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
+                    Stop Suppliers From{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
+                      Bleeding Your Margins
+                    </span>
+                  </h1>
+                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                    Forward your invoices. Our AI catches every stealth price hike your suppliers sneak in.
+                    Zero setup. Instant alerts. Detect supplier price increases automatically.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
+                    Stop Overpaying Suppliers.{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
+                      Save $2,400+ Per Year.
+                    </span>
+                  </h1>
+                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                    PriceShield's AI audits every line-item of every invoice. Catch stealth price hikes 
+                    automatically before they bleed your margins.
+                  </p>
+                </>
+              )}
+
+              <div className={`flex flex-col sm:flex-row items-center gap-4 ${variant === 'control' ? 'justify-center' : ''}`}>
+                <Link href="/login">
+                  <Button size="lg" className="bg-emerald-500 hover:bg-emerald-400 text-background font-semibold px-8 h-12 text-base">
+                    {variant === 'control' ? 'Get Your Free Audit' : 'Get Your Free Savings Audit'} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <AudioDemoButton />
+              </div>
+              
+              <p className="text-sm text-muted-foreground italic">
+                Average user discovers <span className="text-emerald-400 font-semibold">$2,400/year</span> in hidden price hikes
+              </p>
+            </div>
+
+            {/* Right Col: ROI Calculator (Only on Variant B) */}
+            {variant === 'challenger' && (
+              <div className="hidden lg:block animate-in fade-in slide-in-from-right-8 duration-700">
+                <ROICalculator />
+              </div>
+            )}
           </div>
-          {/* Social proof */}
-          <p className="mt-8 text-sm text-muted-foreground">
-            Average user discovers <span className="text-emerald-400 font-semibold">$2,400/year</span> in hidden price hikes
-          </p>
         </div>
 
         {/* ─── Logo Cloud ─── */}
@@ -152,12 +191,12 @@ export default function LandingPage() {
           <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-10">Works with every supplier category</p>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-10">
             {[
+              { icon: "📦", label: "Office Supplies" },
+              { icon: "🚚", label: "Logistics & Freight" },
+              { icon: "⚡", label: "Utilities & SaaS" },
               { icon: "🥩", label: "Meat & Poultry" },
-              { icon: "🐟", label: "Seafood" },
               { icon: "🥬", label: "Produce" },
               { icon: "🧀", label: "Dairy" },
-              { icon: "🍞", label: "Bakery & Dry Goods" },
-              { icon: "🧃", label: "Beverages" },
             ].map((cat) => (
               <div key={cat.label} className="flex flex-col items-center gap-3 group cursor-default">
                 <div 
@@ -172,7 +211,24 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+      </section>
 
+      {/* ───────── ROI Calculator (Mobile/Control) ───────── */}
+      {(variant === 'control' || typeof window !== 'undefined' && window.innerWidth < 1024) && (
+        <section className="py-12 lg:hidden px-6">
+          <ROICalculator />
+        </section>
+      )}
+
+      {/* ───────── Testimonials ───────── */}
+      <section className="py-24 bg-emerald-500/5 border-y border-emerald-500/10">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Wall of Profits</h2>
+            <p className="text-muted-foreground text-lg">See how other owners are protecting their margins.</p>
+          </div>
+          <Testimonials />
+        </div>
       </section>
 
       {/* ───────── Features ───────── */}
@@ -181,7 +237,7 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">AI-Powered Supplier Price Increase Detection</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              PriceShield automates invoice auditing so you can catch stealth hikes and protect your restaurant's bottom line.
+              PriceShield automates invoice auditing so you can catch stealth hikes and protect your business's bottom line.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -315,6 +371,7 @@ export default function LandingPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="#features" className="hover:text-foreground transition-colors">Features</Link></li>
               <li><Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
+              <li><Link href="/developers" className="hover:text-emerald-400 font-medium transition-colors">API Docs</Link></li>
               <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link href="#how" className="hover:text-foreground transition-colors">How It Works</Link></li>
             </ul>
@@ -349,7 +406,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 mt-20 pt-8 border-t border-border/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">© 2026 PriceShield AI. All rights reserved.</p>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            Built for <Shield className="h-3 w-3 text-emerald-400" /> Restaurant Integrity
+            Built for <Shield className="h-3 w-3 text-emerald-400" /> Business Integrity
           </p>
         </div>
       </footer>
