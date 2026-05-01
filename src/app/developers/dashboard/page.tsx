@@ -7,6 +7,7 @@ import {
   Trash2, 
   Copy, 
   Check, 
+  Terminal,
   ExternalLink,
   Shield,
   Zap,
