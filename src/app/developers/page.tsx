@@ -135,10 +135,10 @@ export default function DevelopersPage() {
             <Badge variant="outline" className="ml-2 font-mono text-[10px] uppercase text-emerald-400 border-emerald-500/30">API v1</Badge>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard/api" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground">
               Dashboard
             </Link>
-            <Link href="/dashboard/api">
+            <Link href="/dashboard">
               <Button size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-background">
                 Get API Key
               </Button>
@@ -166,7 +166,7 @@ export default function DevelopersPage() {
                   Explore Endpoints <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/dashboard/api">
+              <Link href="/dashboard">
                 <Button variant="outline" size="lg" className="h-12 px-6">
                   Generate Key
                 </Button>

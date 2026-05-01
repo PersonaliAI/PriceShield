@@ -5,13 +5,30 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl
   const host = request.headers.get('host') || ''
   
-  // Detect developer subdomain in host or x-forwarded-host
+  // Detect developer subdomain
   const isDevSubdomain = host.toLowerCase().includes('developer')
 
   if (isDevSubdomain) {
-    // If at the root of developer.trypriceshield.com, serve the portal
+    // 1. Root path -> Developer Portal (Docs)
     if (url.pathname === '/') {
       return NextResponse.rewrite(new URL('/developers', request.url))
+    }
+
+    // 2. Dashboard path -> Standalone Developer Dashboard
+    // Matches /dashboard and any sub-paths of /dashboard
+    if (url.pathname === '/dashboard' || url.pathname.startsWith('/dashboard/')) {
+      // Reconstruct the internal path: /dashboard -> /developers/dashboard
+      const internalPath = url.pathname.replace('/dashboard', '/developers/dashboard')
+      return NextResponse.rewrite(new URL(internalPath, request.url))
+    }
+
+    // 3. Clean up: Redirect /developers to root if visited directly on subdomain
+    if (url.pathname === '/developers') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+    if (url.pathname.startsWith('/developers/dashboard')) {
+      const externalPath = url.pathname.replace('/developers/dashboard', '/dashboard')
+      return NextResponse.redirect(new URL(externalPath, request.url))
     }
   }
 
