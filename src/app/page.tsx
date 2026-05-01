@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { TrendingUp, Bell, MessageSquare, ArrowRight, Check, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -87,9 +88,26 @@ const AudioDemoButton = dynamic(() => import("@/components/AudioDemoButton"), {
 import { useABTest } from "@/components/ab-test-provider";
 import { ROICalculator } from "@/components/roi-calculator";
 import { Testimonials } from "@/components/testimonials";
+import DevelopersPage from "./developers/page";
 
 export default function LandingPage() {
   const { variant } = useABTest();
+  const [isDevSubdomain, setIsDevSubdomain] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const host = window.location.hostname;
+    if (host.toLowerCase().startsWith('developer')) {
+      setIsDevSubdomain(true);
+    }
+  }, []);
+
+  if (!isMounted) return <div className="min-h-screen bg-background" />;
+  
+  if (isDevSubdomain) {
+    return <DevelopersPage />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

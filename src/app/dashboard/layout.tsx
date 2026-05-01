@@ -50,6 +50,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, []);
 
+  // Fail-safe subdomain routing
+  useEffect(() => {
+    const host = window.location.hostname;
+    if (host.toLowerCase().startsWith('developer')) {
+      if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+        const devPath = pathname.replace('/dashboard', '/developers/dashboard');
+        router.push(devPath);
+      }
+    }
+  }, [pathname, router]);
+
   const handleSendVerification = async () => {
     setVerifying(true);
     try {
