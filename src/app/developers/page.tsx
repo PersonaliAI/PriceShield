@@ -238,6 +238,52 @@ export default function DevelopersPage() {
                 </div>
               </div>
 
+              {/* Response Example */}
+              <div className="space-y-6 pt-8 border-t border-border/20">
+                <h4 className="font-semibold text-xl flex items-center gap-2">
+                  <Box className="h-5 w-5 text-blue-400" /> Response Example
+                </h4>
+                <p className="text-muted-foreground text-sm">
+                  A successful extraction returns a <code className="text-emerald-400 font-mono">200 OK</code> with a structured JSON object.
+                </p>
+                <div className="rounded-xl overflow-hidden bg-[#0c0e12] border border-border/40 shadow-inner">
+                  <div className="px-4 py-2 border-b border-border/20 bg-[#13161c] flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">application/json</span>
+                  </div>
+                  <pre className="p-4 text-[12px] font-mono text-emerald-400/90 leading-relaxed overflow-x-auto max-h-[400px] scrollbar-thin scrollbar-thumb-border/20">
+{`{
+  "vendor_name": "Sysco Food Services",
+  "invoice_date": "2026-04-28",
+  "invoice_number": "INV-99281",
+  "currency": "USD",
+  "grand_total": 1240.50,
+  "items": [
+    {
+      "item_name": "Premium Beef Tenderloin",
+      "sku": "BEEF-001",
+      "quantity": 45.5,
+      "unit_of_measure": "lbs",
+      "unit_price": 14.50,
+      "total_price": 659.75,
+      "confidence": 0.99
+    },
+    {
+      "item_name": "Organic Roma Tomatoes",
+      "sku": "PROD-882",
+      "quantity": 5,
+      "unit_of_measure": "case",
+      "unit_price": 22.00,
+      "total_price": 110.00,
+      "confidence": 0.97
+    }
+  ],
+  "overall_confidence": 0.98
+}`}
+                  </pre>
+                </div>
+              </div>
+
             </div>
 
             {/* Right: Code Snippets */}

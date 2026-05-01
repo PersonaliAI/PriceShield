@@ -719,36 +719,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* API Access */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <Key className="h-5 w-5 text-purple-400" />
-            </div>
-            <div>
-              <CardTitle>API Access</CardTitle>
-              <CardDescription>
-                Manage your developer API keys and view documentation
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Developer Portal</p>
-              <p className="text-xs text-muted-foreground">Access keys, usage stats, and developer docs</p>
-            </div>
-            <Link href="/dashboard/api">
-              <Button variant="outline" size="sm" className="gap-2">
-                Manage Keys <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Reporting Preferences */}
       <Card id="tour-settings-reports" className="bg-card/50 border-border/50">
         <CardHeader>

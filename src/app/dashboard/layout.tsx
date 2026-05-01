@@ -29,7 +29,6 @@ const navItems = [
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox", id: "tour-inbox" },
   { href: "/dashboard/locations", icon: MapPin, label: "Locations", id: "tour-locations" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing", id: "tour-billing" },
-  { href: "/dashboard/api", icon: Terminal, label: "Developer API", id: "tour-api" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings", id: "tour-settings" },
 ];
 
