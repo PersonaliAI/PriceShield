@@ -139,7 +139,7 @@ export default function LandingPage() {
               
               {variant === 'control' ? (
                 <>
-                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-[1.2]">
+                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.2]">
                     Stop Suppliers From{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
                       Bleeding Your Margins
@@ -152,7 +152,7 @@ export default function LandingPage() {
                 </>
               ) : (
                 <>
-                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-[1.2]">
+                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.2]">
                     Stop Overpaying Suppliers.{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
                       Save $2,400+ Per Year.
