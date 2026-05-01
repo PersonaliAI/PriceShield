@@ -112,11 +112,12 @@ end`,
 };
 
 export default function DevelopersPage() {
-  const [selectedLang, setSelectedLang] = useState("curl");
+  const [selectedLang, setSelectedLang] = useState<string | null>("curl");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(snippets[selectedLang]);
+    const snippet = selectedLang ? snippets[selectedLang] : "";
+    navigator.clipboard.writeText(snippet);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -318,14 +319,14 @@ export default function DevelopersPage() {
                 
                 {/* Snippet Body */}
                 <div className="relative group">
-                  <pre className="p-5 text-[13px] font-mono text-gray-300 overflow-x-auto leading-relaxed scrollbar-thin scrollbar-thumb-border/20">
-                    {snippets[selectedLang]}
-                  </pre>
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Badge variant="outline" className="bg-[#13161c]/80 backdrop-blur-sm border-emerald-500/20 text-emerald-400 text-[10px]">
-                      {languages.find(l => l.id === selectedLang)?.name}
-                    </Badge>
-                  </div>
+                    <pre className="p-5 text-[13px] font-mono text-gray-300 overflow-x-auto leading-relaxed scrollbar-thin scrollbar-thumb-border/20">
+                      {selectedLang ? snippets[selectedLang] : ""}
+                    </pre>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Badge variant="outline" className="bg-[#13161c]/80 backdrop-blur-sm border-emerald-500/20 text-emerald-400 text-[10px]">
+                        {languages.find(l => l.id === selectedLang)?.name || "Select Language"}
+                      </Badge>
+                    </div>
                 </div>
               </div>
               
