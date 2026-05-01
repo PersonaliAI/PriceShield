@@ -208,7 +208,7 @@ export default function DevelopersPage() {
             <p className="text-muted-foreground">All endpoints are relative to <code className="bg-muted px-1.5 py-0.5 rounded text-sm text-emerald-400 font-mono">https://api.trypriceshield.com/api/v1</code></p>
           </div>
 
-          <div className="grid lg:grid-cols-12 gap-12 items-start">
+          <div className="grid lg:grid-cols-12 gap-12 items-start overflow-hidden">
             
             {/* Left: Endpoint Docs */}
             <div className="lg:col-span-7 space-y-16">
@@ -253,7 +253,7 @@ export default function DevelopersPage() {
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
                     <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">application/json</span>
                   </div>
-                  <pre className="p-4 text-[12px] font-mono text-emerald-400/90 leading-relaxed overflow-x-auto max-h-[400px] scrollbar-thin scrollbar-thumb-border/20">
+                  <pre className="p-4 text-[12px] font-mono text-emerald-400/90 leading-relaxed overflow-x-auto max-h-[400px] scrollbar-thin scrollbar-thumb-border/20 whitespace-pre">
 {`{
   "vendor_name": "Sysco Food Services",
   "invoice_date": "2026-04-28",
@@ -320,7 +320,7 @@ export default function DevelopersPage() {
                 
                 {/* Snippet Body */}
                 <div className="relative group">
-                    <pre className="p-5 text-[13px] font-mono text-gray-300 overflow-x-auto leading-relaxed scrollbar-thin scrollbar-thumb-border/20">
+                    <pre className="p-5 text-[13px] font-mono text-gray-300 overflow-x-auto leading-relaxed scrollbar-thin scrollbar-thumb-border/20 whitespace-pre">
                       {selectedLang ? snippets[selectedLang] : ""}
                     </pre>
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
