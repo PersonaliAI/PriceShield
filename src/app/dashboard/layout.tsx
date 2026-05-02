@@ -11,6 +11,8 @@ import {
   Shield,
   Menu,
   HelpCircle,
+  Terminal,
+  Loader2,
   X 
 } from "lucide-react";
 import Link from "next/link";
@@ -39,15 +41,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sent, setSent] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Auto-trigger tour for first-time users
   useEffect(() => {
+    setIsMounted(true);
+
     const hasSeen = localStorage.getItem("priceshield_onboarding_seen");
     if (!hasSeen) {
       const timer = setTimeout(() => setShowTour(true), 1500);
       return () => clearTimeout(timer);
     }
   }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-[#06080a] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+      </div>
+    );
+  }
 
   const handleSendVerification = async () => {
     setVerifying(true);

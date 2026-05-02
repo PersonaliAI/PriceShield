@@ -45,12 +45,13 @@ import {
 } from "recharts";
 import { useAuth } from "@/lib/auth-context";
 import { api, DashboardSummary, InvoiceRow, PriceTrendPoint, UserSettings } from "@/lib/api";
-
 export default function DashboardPage() {
   const { getToken } = useAuth();
 
   // State
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+
+
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [vendors, setVendors] = useState<string[]>([]);
   const [trendData, setTrendData] = useState<PriceTrendPoint[]>([]);
@@ -257,6 +258,8 @@ export default function DashboardPage() {
 
   const hasData = invoices.length > 0;
 
+
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -341,7 +344,7 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
- 
+
       {/* KPI Cards */}
       <div id="tour-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
