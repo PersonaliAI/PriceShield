@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TrendingDown, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function ROICalculator() {
   const [monthlySpend, setMonthlySpend] = useState<number>(5000);
@@ -46,9 +47,11 @@ export function ROICalculator() {
           *Based on industry average of 3-5% stealth price creep.
         </p>
 
-        <Button className="w-full bg-emerald-500 hover:bg-emerald-400 text-background font-semibold">
-          Recover Your Margins <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <Link href="/login" className="block w-full">
+          <Button className="w-full bg-emerald-500 hover:bg-emerald-400 text-background font-semibold">
+            Recover Your Margins <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );

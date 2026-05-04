@@ -94,6 +94,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} dark h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://price-shield.firebaseapp.com" />
+        <link rel="preconnect" href="https://api.dicebear.com" />
+        <link rel="dns-prefetch" href="https://price-shield.firebaseapp.com" />
+        <link rel="dns-prefetch" href="https://api.dicebear.com" />
+      </head>
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <Suspense fallback={null}>

@@ -111,7 +111,6 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
             <Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link>
-            <Link href="/developers" className="hover:text-emerald-400 font-medium transition-colors">Developers</Link>
             <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
             <Link href="#how" className="hover:text-foreground transition-colors">How It Works</Link>
           </div>
@@ -381,7 +380,6 @@ export default function LandingPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="#features" className="hover:text-foreground transition-colors">Features</Link></li>
               <li><Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
-              <li><Link href="/developers" className="hover:text-emerald-400 font-medium transition-colors">API Docs</Link></li>
               <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link href="#how" className="hover:text-foreground transition-colors">How It Works</Link></li>
             </ul>
