@@ -93,11 +93,10 @@ export default function LandingPage() {
   const { variant } = useABTest();
   const [isMounted, setIsMounted] = useState(false);
 
+  // Use isMounted only for client-side interactivity, not for initial render
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -146,7 +145,7 @@ export default function LandingPage() {
               
               {variant === 'control' ? (
                 <>
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.2]">
+                  <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2]">
                     Stop Suppliers From{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
                       Bleeding Your Margins
@@ -159,7 +158,7 @@ export default function LandingPage() {
                 </>
               ) : (
                 <>
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.2]">
+                  <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2]">
                     Stop Overpaying Suppliers.{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-500">
                       Save $2,400+ Per Year.

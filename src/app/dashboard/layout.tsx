@@ -21,6 +21,9 @@ import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
 import { useState, useEffect } from "react";
 import AppTour from "@/components/dashboard/AppTour";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import "katex/dist/katex.min.css";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", id: "tour-home" },

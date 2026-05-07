@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import "katex/dist/katex.min.css";
 import { AuthProvider } from "@/lib/auth-context";
 
 const inter = Inter({
@@ -95,8 +94,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark h-full antialiased`}>
       <head>
-        <link rel="preconnect" href="https://price-shield.firebaseapp.com" />
-        <link rel="preconnect" href="https://api.dicebear.com" />
+        <link rel="preconnect" href="https://price-shield.firebaseapp.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api.dicebear.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://price-shield.firebaseapp.com" />
         <link rel="dns-prefetch" href="https://api.dicebear.com" />
       </head>
@@ -109,7 +108,9 @@ export default function RootLayout({
                   type="application/ld+json"
                   dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
-                {children}
+                <main className="flex-1 flex flex-col">
+                  {children}
+                </main>
               </ABTestProvider>
             </AnalyticsProvider>
           </Suspense>

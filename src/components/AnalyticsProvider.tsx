@@ -29,9 +29,17 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
     };
 
     if (typeof window !== "undefined") {
-      // Defer analytics for 2 seconds to prioritize LCP/FCP
-      const timer = setTimeout(loadAnalytics, 2000);
-      return () => clearTimeout(timer);
+      // Load analytics when browser is idle or after a 3s timeout
+      const idleCallback = window.requestIdleCallback || ((cb: any) => setTimeout(cb, 3000));
+      const handle = idleCallback(loadAnalytics);
+      
+      return () => {
+        if (window.cancelIdleCallback) {
+          window.cancelIdleCallback(handle);
+        } else {
+          clearTimeout(handle as any);
+        }
+      };
     }
   }, [pathname, searchParams]);
 
