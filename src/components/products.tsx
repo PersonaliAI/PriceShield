@@ -6,9 +6,13 @@ import {
   ArrowUpRight,
   Bell,
   Brain,
+  Chrome,
   FileSearch,
+  LineChart,
   MessageSquare,
   ShieldCheck,
+  ShoppingBag,
+  Sparkles,
   Workflow,
 } from "lucide-react";
 
@@ -18,20 +22,23 @@ export function Products() {
       <div className="mx-auto max-w-5xl px-6">
         <p className="text-sm font-medium text-muted-foreground mb-3">Products</p>
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-          Meet <span className="text-emerald-500">PriceShield</span>
+          Two products. One <span className="text-emerald-500">PriceShield</span>.
         </h2>
-        <p className="text-muted-foreground max-w-lg mb-12">
-          The invoice-monitoring engine for restaurants and food-service
-          operators. Forward your suppliers' emails once — every future hike
-          gets caught, flagged, and surfaced before you reorder.
+        <p className="text-muted-foreground max-w-xl mb-12">
+          The same price-intelligence engine, two surfaces: an invoice auditor
+          for restaurants and food-service operators, and a Chrome extension
+          that brings real price history to every shopper.
         </p>
 
+        {/* ---------------------------------------------------------------- */}
+        {/* Product 1 — PriceShield (B2B invoice auditor)                     */}
+        {/* ---------------------------------------------------------------- */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="rounded-xl border border-border bg-card p-8 md:p-10 mb-16"
+          className="rounded-xl border border-border bg-card p-8 md:p-10 mb-8"
         >
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-10">
             <div>
@@ -40,7 +47,7 @@ export function Products() {
                   <ShieldCheck className="size-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">PriceShield</h3>
+                  <h3 className="text-xl font-semibold">PriceShield for Operators</h3>
                   <p className="text-xs text-muted-foreground">
                     trypriceshield.com/dashboard
                   </p>
@@ -93,6 +100,105 @@ export function Products() {
                 icon: Brain,
                 title: "Semantic SKU Matching",
                 desc: "Suppliers rename items between invoices. The AI knows 'Prime Tenderloin' is the same as 'USDA Beef Tenderloin'.",
+              },
+            ].map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="flex gap-3"
+              >
+                <div className="size-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <f.icon className="size-4 text-foreground" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">{f.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {f.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Product 2 — PriceShield Shopper (B2C Chrome extension)            */}
+        {/* ---------------------------------------------------------------- */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+          className="rounded-xl border border-border bg-card p-8 md:p-10 mb-16"
+        >
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-10">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="size-10 rounded-lg bg-violet-500 flex items-center justify-center">
+                  <ShoppingBag className="size-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-semibold">PriceShield Shopper</h3>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
+                      <Sparkles className="size-2.5" /> New
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Chrome extension · Free
+                  </p>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-sm max-w-md">
+                CamelCamelCamel for the entire internet. See the real price
+                history of any product on Amazon, Walmart, Best Buy, eBay,
+                AliExpress and any Shopify store — and spot fake "50% off"
+                discounts the second you land on the page.
+              </p>
+            </div>
+            <Link
+              href="/shopper"
+              className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline underline-offset-4 shrink-0"
+            >
+              Get the extension
+              <ArrowUpRight className="size-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: LineChart,
+                title: "Real 90-Day Price History",
+                desc: "Every product page gets a live chart of the actual price over time — not the store's marketing.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Fake-Discount Detection",
+                desc: "Catches the 'was $499, now $249' trick when the price was never actually $499 in the last 90 days.",
+              },
+              {
+                icon: Chrome,
+                title: "Cross-Store Comparison",
+                desc: "Instantly see if Walmart, Target, or eBay sells the same product cheaper — with shipping included.",
+              },
+              {
+                icon: Bell,
+                title: "Drop Alerts",
+                desc: "One click: 'notify me when this drops below $200.' We ping you on email, push, or Telegram.",
+              },
+              {
+                icon: Brain,
+                title: "AI Buy-or-Wait",
+                desc: "Predicts likely price drops based on seasonality, inventory cycles and historical patterns.",
+              },
+              {
+                icon: Sparkles,
+                title: "Smart Wishlist",
+                desc: "Tracks restocks, resale value, popularity trends and historical lows — not just a dumb bookmark.",
               },
             ].map((f, i) => (
               <motion.div
