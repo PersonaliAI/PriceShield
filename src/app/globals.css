@@ -96,8 +96,25 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
   }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Premium dot-grid background (ported from personaliai) */
+body {
+  background-image: radial-gradient(circle, oklch(0.26 0.01 260) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  animation: dotDrift 20s linear infinite;
+}
+
+@keyframes dotDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 24px 24px; }
 }
 
 /* Custom animations */

@@ -3,44 +3,33 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+// Page-view tracker. Firebase Analytics was removed during the Supabase migration —
+// hook into your analytics provider of choice (PostHog, Plausible, Vercel Analytics)
+// inside `track()` below if you want page views recorded.
+function track(_path: string, _query: string, _title: string) {
+  // no-op until an analytics provider is wired up
+}
+
 export default function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Only load analytics on client side when idle to prevent blocking FCP
-    const loadAnalytics = async () => {
-      try {
-        const { analytics } = await import("@/lib/firebase");
-        if (!analytics) return;
-        
-        const instance = await analytics;
-        if (instance) {
-          const { logEvent } = await import("firebase/analytics");
-          logEvent(instance, "page_view", {
-            page_path: pathname,
-            page_search: searchParams.toString(),
-            page_title: document.title,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load analytics:", error);
+    if (typeof window === "undefined") return;
+    const fire = () => track(pathname, searchParams.toString(), document.title);
+
+    const idleCallback =
+      (window as Window & typeof globalThis).requestIdleCallback ||
+      ((cb: IdleRequestCallback) => setTimeout(cb, 3000) as unknown as number);
+    const handle = idleCallback(fire as IdleRequestCallback);
+
+    return () => {
+      if ((window as Window & typeof globalThis).cancelIdleCallback) {
+        (window as Window & typeof globalThis).cancelIdleCallback(handle as number);
+      } else {
+        clearTimeout(handle as unknown as number);
       }
     };
-
-    if (typeof window !== "undefined") {
-      // Load analytics when browser is idle or after a 3s timeout
-      const idleCallback = window.requestIdleCallback || ((cb: any) => setTimeout(cb, 3000));
-      const handle = idleCallback(loadAnalytics);
-      
-      return () => {
-        if (window.cancelIdleCallback) {
-          window.cancelIdleCallback(handle);
-        } else {
-          clearTimeout(handle as any);
-        }
-      };
-    }
   }, [pathname, searchParams]);
 
   return <>{children}</>;

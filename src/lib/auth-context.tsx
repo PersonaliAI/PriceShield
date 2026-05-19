@@ -2,22 +2,15 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
-  ReactNode,
-  useCallback,
+  type ReactNode,
 } from "react";
-import {
-  User,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut as firebaseSignOut,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import type { Session, User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
 interface AuthContextType {
   user: User | null;
@@ -34,51 +27,71 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const googleProvider = new GoogleAuthProvider();
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [idToken, setIdToken] = useState<string | null>(null);
+  const supabase = useMemo(() => createClient(), []);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        const token = await firebaseUser.getIdToken();
-        setIdToken(token);
-      } else {
-        setIdToken(null);
-      }
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setSession(data.session);
       setLoading(false);
     });
-    return unsubscribe;
-  }, []);
 
-  const getToken = useCallback(async (): Promise<string | null> => {
-    if (!user) return null;
-    // Always get a fresh token (auto-refresh if expired)
-    const token = await user.getIdToken(true);
-    setIdToken(token);
-    return token;
-  }, [user]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!mounted) return;
+      setSession(newSession);
+      setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const user = session?.user ?? null;
+  const idToken = session?.access_token ?? null;
+
+  const getToken = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  }, [supabase]);
 
   const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
   const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/action?mode=verify`,
+      },
+    });
+    if (error) throw error;
   };
 
   const signInWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
   };
 
   const signOut = async () => {
-    await firebaseSignOut(auth);
-    setUser(null);
-    setIdToken(null);
+    await supabase.auth.signOut();
+    setSession(null);
   };
 
   const resetPassword = async (email: string) => {
@@ -108,7 +121,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, idToken, signIn, signUp, signInWithGoogle, signOut, getToken, resetPassword, sendVerification }}
+      value={{
+        user,
+        loading,
+        idToken,
+        signIn,
+        signUp,
+        signInWithGoogle,
+        signOut,
+        getToken,
+        resetPassword,
+        sendVerification,
+      }}
     >
       {children}
     </AuthContext.Provider>

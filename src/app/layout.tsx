@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 
 const inter = Inter({
   variable: "--font-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -85,6 +90,7 @@ const jsonLd = {
 import { Suspense } from "react";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import { ABTestProvider } from "@/components/ab-test-provider";
+import { QueryProvider } from "@/lib/query-client";
 
 export default function RootLayout({
   children,
@@ -92,29 +98,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} dark h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${geistMono.variable} dark h-full antialiased`}>
       <head>
-        <link rel="preconnect" href="https://price-shield.firebaseapp.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://kgzkienmztbbwyvywxit.supabase.co" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.dicebear.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://price-shield.firebaseapp.com" />
+        <link rel="dns-prefetch" href="https://kgzkienmztbbwyvywxit.supabase.co" />
         <link rel="dns-prefetch" href="https://api.dicebear.com" />
       </head>
       <body className="min-h-full flex flex-col">
-        <AuthProvider>
-          <Suspense fallback={null}>
-            <AnalyticsProvider>
-              <ABTestProvider>
-                <script
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-                />
-                <main className="flex-1 flex flex-col">
-                  {children}
-                </main>
-              </ABTestProvider>
-            </AnalyticsProvider>
-          </Suspense>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <Suspense fallback={null}>
+              <AnalyticsProvider>
+                <ABTestProvider>
+                  <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                  />
+                  <main className="flex-1 flex flex-col">
+                    {children}
+                  </main>
+                </ABTestProvider>
+              </AnalyticsProvider>
+            </Suspense>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );
