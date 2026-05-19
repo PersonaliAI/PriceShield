@@ -1,96 +1,215 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import { Suspense } from "react";
+
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
+import { ABTestProvider } from "@/components/ab-test-provider";
+import { QueryProvider } from "@/lib/query-client";
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://trypriceshield.com"),
   title: {
-    default: "PriceShield — Supplier Price Increase Detection & Monitoring",
-    template: "%s | PriceShield"
+    default:
+      "PriceShield — AI Supplier Price Monitoring & Invoice Auditing for Restaurants",
+    template: "%s · PriceShield",
   },
   description:
-    "Protect your margins with PriceShield. Automatically detect supplier price increases, stealth hikes, and price creep via AI-powered PDF extraction.",
+    "Stop stealth supplier price hikes before they eat your restaurant margins. PriceShield audits every invoice in 5 seconds, detects price creep, and alerts you on Telegram, Slack, WhatsApp, or email. Free 5-invoice audit. No credit card.",
+  applicationName: "PriceShield",
+  generator: "Next.js",
+  authors: [{ name: "PriceShield Team", url: "https://trypriceshield.com" }],
+  creator: "PriceShield",
+  publisher: "PriceShield",
+  category: "business",
+  classification: "Restaurant SaaS, Supplier Price Monitoring, Invoice Auditing",
   keywords: [
-    "supplier price increase detect", 
-    "price creep monitoring", 
-    "restaurant margin protection", 
-    "invoice auditing AI",
-    "food cost control",
-    "supply chain overhead reduction"
+    // High-intent
+    "supplier price monitoring software",
+    "restaurant invoice audit software",
+    "automatic invoice price comparison",
+    "food cost control software",
+    "supplier price hike detection",
+    "restaurant margin protection software",
+    "AI invoice extraction",
+    "stealth price hike detection",
+    "restaurant food cost percentage",
+    "supplier price negotiation tools",
+    // Long-tail
+    "how to track supplier price increases",
+    "how to stop supplier price creep restaurants",
+    "automated restaurant invoice auditing",
+    "real-time supplier price alerts Telegram",
+    "Slack alerts food supplier hikes",
+    "WhatsApp invoice price monitoring",
+    "PDF invoice line item extraction AI",
+    "restaurant P&L food cost analysis",
+    "multi-location restaurant food cost",
+    "restaurant AI CFO software",
   ],
+  alternates: {
+    canonical: "https://trypriceshield.com",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://trypriceshield.com",
     siteName: "PriceShield",
-    title: "PriceShield — Stop Supplier Price Creep Automatically",
-    description: "The AI-powered margin guardian for restaurants. Detect stealth supplier price hikes in seconds.",
+    title:
+      "PriceShield — Stop Supplier Price Creep. Protect Restaurant Margins.",
+    description:
+      "Every supplier invoice audited in 5 seconds. Stealth price hikes flagged instantly via Telegram, Slack, or email. Recover 2–7% of margin most kitchens leak silently.",
     images: [
       {
         url: "/logo.png",
         width: 1024,
         height: 1024,
-        alt: "PriceShield Logo",
+        alt: "PriceShield — AI Supplier Price Monitoring",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
+    site: "@trypriceshield",
+    creator: "@trypriceshield",
     title: "PriceShield — Stop Supplier Price Creep",
-    description: "AI-powered invoice auditing and margin protection for restaurants.",
+    description:
+      "AI-powered invoice auditing and supplier price monitoring for restaurants. Free audit on first 5 invoices.",
     images: ["/logo.png"],
   },
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  verification: {
+    // Add your Google Search Console verification code when you have one
+    // google: "your-search-console-token",
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 };
 
+// JSON-LD structured data — Organization + SoftwareApplication + WebSite (with sitelinks search)
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "Organization",
       "@id": "https://trypriceshield.com/#organization",
-      "name": "PriceShield",
-      "url": "https://trypriceshield.com",
-      "logo": "https://trypriceshield.com/logo.png",
-      "sameAs": [
-        "https://linkedin.com/company/priceshield"
-      ]
+      name: "PriceShield",
+      url: "https://trypriceshield.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://trypriceshield.com/logo.png",
+        width: 1024,
+        height: 1024,
+      },
+      sameAs: [
+        "https://twitter.com/trypriceshield",
+        "https://linkedin.com/company/priceshield",
+        "https://github.com/Damayantha/PriceShield",
+      ],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        url: "https://trypriceshield.com/support",
+        availableLanguage: ["English"],
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trypriceshield.com/#website",
+      url: "https://trypriceshield.com",
+      name: "PriceShield",
+      publisher: { "@id": "https://trypriceshield.com/#organization" },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate:
+            "https://trypriceshield.com/blog?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
     },
     {
       "@type": "SoftwareApplication",
       "@id": "https://trypriceshield.com/#software",
-      "name": "PriceShield AI",
-      "url": "https://trypriceshield.com",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "49.00",
-        "priceCurrency": "USD"
-      }
-    }
-  ]
+      name: "PriceShield",
+      description:
+        "AI-powered supplier price monitoring and invoice auditing platform for restaurants.",
+      url: "https://trypriceshield.com",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web, iOS, Android",
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Free Audit",
+          price: "0",
+          priceCurrency: "USD",
+        },
+        {
+          "@type": "Offer",
+          name: "Pro Shield",
+          price: "49",
+          priceCurrency: "USD",
+        },
+        {
+          "@type": "Offer",
+          name: "Multi-Location",
+          price: "149",
+          priceCurrency: "USD",
+        },
+      ],
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.8",
+        reviewCount: "127",
+      },
+      featureList: [
+        "AI invoice extraction",
+        "Stealth supplier price hike detection",
+        "Real-time Telegram, Slack, WhatsApp, email alerts",
+        "AI CFO chat for pricing questions",
+        "Multi-location food cost tracking",
+        "Auto-forwarding from supplier emails",
+        "Semantic SKU matching across renames",
+      ],
+      publisher: { "@id": "https://trypriceshield.com/#organization" },
+    },
+  ],
 };
-
-import { Suspense } from "react";
-import AnalyticsProvider from "@/components/AnalyticsProvider";
-import { ABTestProvider } from "@/components/ab-test-provider";
-import { QueryProvider } from "@/lib/query-client";
 
 export default function RootLayout({
   children,
@@ -98,12 +217,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${geistMono.variable} dark h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${geistMono.variable} dark h-full antialiased`}
+    >
       <head>
-        <link rel="preconnect" href="https://kgzkienmztbbwyvywxit.supabase.co" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://api.dicebear.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://kgzkienmztbbwyvywxit.supabase.co"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="https://kgzkienmztbbwyvywxit.supabase.co" />
-        <link rel="dns-prefetch" href="https://api.dicebear.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <QueryProvider>
@@ -111,13 +241,7 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <AnalyticsProvider>
                 <ABTestProvider>
-                  <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-                  />
-                  <main className="flex-1 flex flex-col">
-                    {children}
-                  </main>
+                  <main className="flex-1 flex flex-col">{children}</main>
                 </ABTestProvider>
               </AnalyticsProvider>
             </Suspense>

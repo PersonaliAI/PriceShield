@@ -2,7 +2,6 @@
 # Reference: https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Min instances kept warm to avoid cold starts on the marketing pages
   minInstances: 0
   maxInstances: 10
   concurrency: 80
@@ -10,6 +9,7 @@ runConfig:
   memoryMiB: 512
 
 env:
+  # ----- Supabase (auth + database) -----
   - variable: NEXT_PUBLIC_SUPABASE_URL
     value: "https://kgzkienmztbbwyvywxit.supabase.co"
     availability:
@@ -22,9 +22,46 @@ env:
       - BUILD
       - RUNTIME
 
+  # ----- Cloud Run backend URL -----
   - variable: NEXT_PUBLIC_API_URL
-    # Cloud Run backend — update after the priceshield-api service is redeployed if the URL changes.
     value: "https://priceshield-api-647257091960.us-central1.run.app"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # ----- Firebase Analytics (GA4) — analytics only, not auth/db -----
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyDS-H0X8vYMTtteiBtNGuirY-wjwAjReZA"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "price-shield.firebaseapp.com"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "price-shield"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "price-shield.firebasestorage.app"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "647257091960"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:647257091960:web:be3eff83012bcf9143628d"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-WGVRXEZ405"
     availability:
       - BUILD
       - RUNTIME

@@ -35,9 +35,9 @@ function CloseIcon() {
 
 function Logo() {
   return (
-    <span className="inline-flex items-center gap-2">
-      <Image src="/logo.png" alt="" width={28} height={28} className="size-6 shrink-0" priority />
-      <span className="font-semibold tracking-tight text-base">PriceShield</span>
+    <span className="inline-flex items-center gap-2.5">
+      <Image src="/logo.png" alt="" width={36} height={36} className="size-8 shrink-0" priority />
+      <span className="font-semibold tracking-tight text-lg">PriceShield</span>
     </span>
   );
 }
@@ -69,7 +69,7 @@ export function Navbar() {
           : "bg-transparent",
       )}
     >
-      <nav className="mx-auto max-w-5xl px-6 h-12 grid grid-cols-2 md:grid-cols-3 items-center">
+      <nav className="mx-auto max-w-5xl px-6 h-16 grid grid-cols-2 md:grid-cols-3 items-center">
         {/* Left */}
         <div className="flex items-center gap-3">
           <button
@@ -108,7 +108,7 @@ export function Navbar() {
           </Link>
           <Button
             size="sm"
-            className="cursor-pointer text-xs md:text-sm h-8 px-4 font-semibold"
+            className="cursor-pointer text-xs md:text-sm h-9 px-4 font-semibold"
             render={<Link href="/login" />}
           >
             Sign up

@@ -28,9 +28,9 @@ export function Footer() {
       <div className="mx-auto max-w-5xl px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <Image src="/logo.png" alt="" width={28} height={28} className="size-6 shrink-0" />
-              <span className="font-semibold tracking-tight">PriceShield</span>
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <Image src="/logo.png" alt="" width={36} height={36} className="size-8 shrink-0" />
+              <span className="font-semibold tracking-tight text-lg">PriceShield</span>
             </Link>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed max-w-[220px]">
               The margin guardian for restaurants. Detect stealth supplier

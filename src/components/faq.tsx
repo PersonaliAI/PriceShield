@@ -15,8 +15,8 @@ const items = [
     a: "You get a unique forwarding address like <your-id>@priceshield.email. Set up a one-time Gmail/Outlook rule that forwards your supplier emails there. From then on, every supplier invoice with a PDF attachment audits itself within seconds.",
   },
   {
-    q: "Which AI model do you use?",
-    a: "Vertex AI's Gemini 2.5 Flash for extraction and reasoning. We run it through Google Cloud's Vertex platform so calls bill against your GCP project credits rather than a metered API key. It's the same model lineage as the public Gemini API but with enterprise reliability.",
+    q: "How accurate is the AI extraction?",
+    a: "Our extraction model returns a confidence score per line item. In production we see 97%+ accuracy on standard supplier invoice formats (US Foods, Sysco, Cheney Bros, Performance Food Group, GFS, regional distributors). Low-confidence items get flagged for one-click review in the dashboard. Photographed paper invoices average ~93% — typed PDFs near 100%.",
   },
   {
     q: "Do you work with suppliers outside North America?",

@@ -19,7 +19,7 @@ export function Hero() {
               href="#products"
               className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors mb-8"
             >
-              Now powered by Vertex AI Gemini — invoices audited in 5 seconds
+              Invoices audited in 5 seconds — see how it works
               <ArrowRight className="size-3.5" />
             </Link>
           </motion.div>

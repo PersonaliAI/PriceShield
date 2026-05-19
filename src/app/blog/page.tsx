@@ -10,14 +10,25 @@ import { CategoryFilteredGrid } from "@/components/blog/category-filter";
 import { FEATURED_POSTS, POSTS_BY_DATE } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: "Resources & Playbooks",
+  title: "Restaurant Margin Playbooks, Food Cost Guides & Supplier Negotiation",
   description:
-    "How operators use PriceShield to catch supplier price hikes, set up auto-forwarding, and run the AI CFO — with real numbers from real kitchens.",
+    "Restaurant operations playbooks: how to calculate food cost percentage, negotiate with food suppliers, catch stealth price hikes, and run a multi-location food cost program. Real numbers, real workflows.",
+  keywords: [
+    "restaurant food cost percentage",
+    "how to negotiate with food suppliers",
+    "supplier price increase detection",
+    "restaurant margin recovery",
+    "multi-location restaurant food cost",
+    "restaurant P&L analysis",
+    "automated invoice audit",
+    "hidden supplier invoice fees",
+    "restaurant AI CFO",
+  ],
   alternates: { canonical: "https://trypriceshield.com/blog" },
   openGraph: {
-    title: "PriceShield — Resources & Playbooks",
+    title: "PriceShield — Restaurant Margin Playbooks & Guides",
     description:
-      "Real examples of how restaurant operators stop supplier price creep.",
+      "How operators stop supplier price creep, calculate food cost, and renegotiate vendors. Real numbers from real kitchens.",
     url: "https://trypriceshield.com/blog",
     siteName: "PriceShield",
     locale: "en_US",
@@ -25,9 +36,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PriceShield — Resources & Playbooks",
+    title: "PriceShield — Restaurant Margin Playbooks",
     description:
-      "Real examples of how restaurant operators stop supplier price creep.",
+      "Food cost playbooks, supplier negotiation tactics, and invoice audit guides.",
   },
 };
 

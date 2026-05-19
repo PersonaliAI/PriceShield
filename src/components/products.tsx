@@ -47,10 +47,10 @@ export function Products() {
                 </div>
               </div>
               <p className="text-muted-foreground text-sm max-w-md">
-                Vertex AI extracts every line item from every invoice you
-                forward, compares against your vendor baseline, and pings you
-                the moment a price moves more than your threshold. One setup,
-                weekly margin recovery.
+                Our AI extracts every line item from every invoice you forward,
+                compares against your vendor baseline, and pings you the moment
+                a price moves more than your threshold. One setup, weekly
+                margin recovery.
               </p>
             </div>
             <Link
@@ -67,7 +67,7 @@ export function Products() {
               {
                 icon: FileSearch,
                 title: "AI Invoice Extraction",
-                desc: "Vertex AI Gemini reads every line — vendor, SKU, qty, unit price — with confidence scores. 5 seconds per PDF.",
+                desc: "Advanced OCR reads every line — vendor, SKU, qty, unit price — with confidence scores. 5 seconds per PDF.",
               },
               {
                 icon: ShieldCheck,
@@ -135,7 +135,7 @@ export function Products() {
               {
                 step: "2",
                 title: "AI extracts every line",
-                desc: "Vertex AI Gemini parses the document — vendor, SKU, unit price, quantity — in ~5 seconds.",
+                desc: "Our AI parses the document — vendor, SKU, unit price, quantity — in ~5 seconds.",
               },
               {
                 step: "3",
