@@ -1,207 +1,213 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { BLOG_POSTS } from "@/lib/blog-data";
-import { ArrowLeft, Clock, User, Shield } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import BlogShare from "@/components/BlogShare";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
-export const dynamicParams = false;
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/markdown";
+import { PostCard } from "@/components/blog/post-card";
+import { CATEGORY_META, POSTS, getPost, relatedPosts } from "@/lib/blog";
+
+type RouteProps = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
-  return BLOG_POSTS.map((post) => ({
-    slug: post.slug,
-  }));
+  return POSTS.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> }
-): Promise<Metadata> {
+export async function generateMetadata({ params }: RouteProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
-
+  const post = getPost(slug);
   if (!post) return {};
-
+  const url = `https://trypriceshield.com/blog/${slug}`;
   return {
     title: post.title,
-    description: post.excerpt,
+    description: post.description,
+    alternates: { canonical: url },
     openGraph: {
       title: post.title,
-      description: post.excerpt,
+      description: post.description,
       type: "article",
-      url: `https://trypriceshield.com/blog/${post.slug}`,
+      url,
+      siteName: "PriceShield",
+      locale: "en_US",
       publishedTime: post.date,
-      authors: [post.author],
-      images: [
-        {
-          url: post.image,
-          alt: post.title,
-        },
-      ],
+      authors: ["PriceShield Team"],
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
-      description: post.excerpt,
-      images: [post.image],
+      description: post.description,
     },
   };
 }
 
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export default async function BlogPostPage({ params }: RouteProps) {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const post = getPost(slug);
+  if (!post) notFound();
 
-  if (!post) {
-    notFound();
-  }
-
-  const url = `https://trypriceshield.com/blog/${post.slug}`;
+  const meta = CATEGORY_META[post.category];
+  const related = relatedPosts(slug, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": post.title,
-    "image": `https://trypriceshield.com${post.image}`,
-    "author": {
-      "@type": "Person",
-      "name": post.author
-    },
-    "datePublished": post.date,
-    "description": post.excerpt,
-    "publisher": {
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: {
       "@type": "Organization",
-      "name": "PriceShield",
-      "logo": {
+      name: "PriceShield",
+      url: "https://trypriceshield.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "PriceShield",
+      logo: {
         "@type": "ImageObject",
-        "url": "https://trypriceshield.com/logo.png"
-      }
-    }
+        url: "https://trypriceshield.com/logo.png",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://trypriceshield.com/blog/${post.slug}`,
+    },
+    articleSection: meta.label,
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <>
+      <Navbar />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Mini Nav */}
-      <nav className="border-b border-border/40 bg-card/30 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/blog" className="flex items-center gap-2 group text-sm font-medium text-muted-foreground hover:text-emerald-400 transition-colors">
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Blog
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2 mr-4">
-              <Image src="/logo.png" alt="Logo" width={24} height={24} className="h-6 w-auto" />
-            </Link>
-            <Link 
-              href="/login"
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-lg shadow-lg shadow-emerald-500/20"
-              )}
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-3xl mx-auto px-6 py-16">
-        <article className="space-y-12">
+      <main className="flex-1 pt-24 pb-20">
+        <article>
           {/* Hero */}
-          <header className="space-y-6">
-            <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">
-              <span className="bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">{post.category}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {post.readTime}</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[1.1] text-foreground">
-              {post.title}
-            </h1>
-            <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-border/30">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                  <User className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">{post.author}</p>
-                  <p className="text-xs text-muted-foreground">{post.date}</p>
-                </div>
+          <header className="border-b border-border pb-12">
+            <div className="mx-auto max-w-3xl px-6">
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-6"
+              >
+                <ArrowLeft className="size-3" />
+                All articles
+              </Link>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                <span
+                  className={`px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider text-[10px] ${meta.tone}`}
+                >
+                  {meta.label}
+                </span>
+                <span>·</span>
+                <span>{formatDate(post.date)}</span>
+                <span>·</span>
+                <span>{post.readingMinutes} min read</span>
               </div>
-
-              {/* Social Share */}
-              <BlogShare title={post.title} url={url} />
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1]">
+                {post.title}
+              </h1>
+              <p className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-2xl">
+                {post.description}
+              </p>
             </div>
           </header>
 
-          {/* Decorative Image area */}
-          <div className="aspect-[21/9] w-full rounded-[2.5rem] bg-emerald-500/5 border border-emerald-500/10 relative overflow-hidden flex items-center justify-center group shadow-2xl">
-             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-transparent to-transparent opacity-50" />
-             <div className="absolute -bottom-32 -left-32 h-64 w-64 bg-emerald-500/10 blur-3xl animate-pulse" />
-             <Shield className="h-24 w-24 text-emerald-500/10 group-hover:scale-110 transition-transform duration-1000" />
-             <div className="absolute inset-0 flex items-center justify-center px-12 text-center select-none pointer-events-none">
-                <p className="text-2xl font-black text-emerald-500/5 uppercase tracking-[0.5em]">{post.title.split(' ')[0]}</p>
-             </div>
-          </div>
+          {/* Body */}
+          <div className="mx-auto max-w-3xl px-6 py-14">
+            <Markdown>{post.body}</Markdown>
 
-          {/* Body Content */}
-          <div 
-             className="prose prose-emerald prose-invert max-w-none 
-                        prose-headings:font-black prose-headings:tracking-tight prose-headings:text-foreground
-                        prose-p:text-muted-foreground prose-p:leading-[1.8] prose-p:text-lg
-                        prose-strong:text-emerald-400 prose-strong:font-bold
-                        prose-li:text-muted-foreground prose-li:text-lg
-                        prose-ol:list-decimal prose-ul:list-disc
-                        animate-in fade-in slide-in-from-bottom-4 duration-1000"
-             dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-
-          {/* CTA Footer */}
-          <div className="pt-16 border-t border-border/30">
-            <div className="rounded-[2.5rem] bg-emerald-500/5 border border-emerald-500/10 p-10 text-center space-y-6 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-500/10 blur-[80px] rounded-full group-hover:scale-125 transition-transform" />
-               <h3 className="text-2xl font-bold">Stop guessing, start protecting</h3>
-               <p className="text-muted-foreground text-lg">PriceShield analyzes every line item of every invoice, automatically. No spreadsheet setup required.</p>
-               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                 <Link 
-                   href="/login"
-                   className={cn(
-                     buttonVariants({ size: "lg" }),
-                     "bg-emerald-500 hover:bg-emerald-400 text-background font-bold rounded-xl h-12 px-8 shadow-lg shadow-emerald-500/20"
-                   )}
-                 >
-                   Create Free Account
-                 </Link>
-                 <Link 
-                   href="/blog"
-                   className={cn(
-                     buttonVariants({ variant: "ghost" }),
-                     "font-bold underline text-emerald-400"
-                   )}
-                 >
-                   More insights
-                 </Link>
-               </div>
+            {/* Byline / share */}
+            <div className="mt-14 pt-8 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-full bg-emerald-500 text-white grid place-items-center text-sm font-semibold">
+                  PS
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">PriceShield Team</div>
+                  <div className="text-xs text-muted-foreground">
+                    Building the margin guardian for restaurants.
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs">
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    post.title,
+                  )}&url=${encodeURIComponent(
+                    `https://trypriceshield.com/blog/${post.slug}`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Share on X
+                </a>
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+                    `https://trypriceshield.com/blog/${post.slug}`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Share on LinkedIn
+                </a>
+              </div>
             </div>
           </div>
         </article>
-      </main>
 
-      {/* Basic Footer */}
-      <footer className="border-t border-border/40 py-12 mt-20 bg-card/10">
-        <div className="max-w-4xl mx-auto px-6 text-center text-sm text-muted-foreground font-medium">
-             <p>© 2026 PriceShield AI. Protecting restaurant margins with precision.</p>
-             <div className="mt-4 flex items-center justify-center gap-6">
-                <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy</Link>
-                <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms</Link>
-             </div>
-        </div>
-      </footer>
-    </div>
+        {/* Related */}
+        {related.length > 0 && (
+          <section className="py-14 border-t border-border">
+            <div className="mx-auto max-w-5xl px-6">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+                Keep reading
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {related.map((p, i) => (
+                  <PostCard key={p.slug} post={p} index={i} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* CTA */}
+        <section className="py-16 border-t border-border">
+          <div className="mx-auto max-w-3xl px-6 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
+              Try PriceShield on your own invoices
+            </h2>
+            <p className="text-muted-foreground mb-7 max-w-md mx-auto">
+              Free to start. Forward 5 supplier invoices and see what you've
+              been overpaying.
+            </p>
+            <Button
+              size="lg"
+              className="h-11 px-6 text-sm cursor-pointer"
+              render={<Link href="/login" />}
+            >
+              Get started free
+              <ArrowUpRight className="size-3.5 ml-1" />
+            </Button>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
   );
 }
