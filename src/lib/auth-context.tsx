@@ -38,14 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Force-clear `loading` after a hard timeout. getSession() can hang if the
     // Supabase storage adapter is in a weird state (corrupted cookie, network
     // hiccup). Without this fallback, ProtectedRoute spins forever.
-    // 8s gives a slow refresh-token network call enough time to finish before
+    // 15s gives a slow refresh-token network call enough time to finish before
     // we proceed without a session.
     const safetyTimeout = setTimeout(() => {
       if (mounted) {
         console.warn("[auth] getSession timed out — proceeding without session");
         setLoading(false);
       }
-    }, 8000);
+    }, 15_000);
 
     supabase.auth
       .getSession()
