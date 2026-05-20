@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, ChevronDown, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_META, FEATURED_POSTS } from "@/lib/blog";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -47,6 +48,8 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const isAuthed = !loading && !!user;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -101,19 +104,39 @@ export function Navbar() {
 
         {/* Right */}
         <div className="flex items-center justify-end gap-3">
-          <Link
-            href="/login"
-            className="hidden md:inline-flex text-sm font-medium hover:text-foreground/80 transition-colors"
-          >
-            Log in
-          </Link>
-          <Button
-            size="sm"
-            className="cursor-pointer text-xs md:text-sm h-9 px-4 font-semibold"
-            render={<Link href="/login" />}
-          >
-            Sign up
-          </Button>
+          {isAuthed ? (
+            <>
+              <Link
+                href="/shopper/dashboard"
+                className="hidden md:inline-flex text-sm font-medium hover:text-foreground/80 transition-colors"
+              >
+                Shopper
+              </Link>
+              <Button
+                size="sm"
+                className="cursor-pointer text-xs md:text-sm h-9 px-4 font-semibold"
+                render={<Link href="/dashboard" />}
+              >
+                My dashboard
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden md:inline-flex text-sm font-medium hover:text-foreground/80 transition-colors"
+              >
+                Log in
+              </Link>
+              <Button
+                size="sm"
+                className="cursor-pointer text-xs md:text-sm h-9 px-4 font-semibold"
+                render={<Link href="/login" />}
+              >
+                Sign up
+              </Button>
+            </>
+          )}
         </div>
       </nav>
 
