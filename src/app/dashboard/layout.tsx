@@ -1,19 +1,20 @@
 "use client";
 
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Settings, 
-  LogOut, 
-  Mail, 
-  CreditCard, 
-  MapPin, 
+import {
+  LayoutDashboard,
+  FileText,
+  Settings,
+  LogOut,
+  Mail,
+  CreditCard,
+  MapPin,
   Shield,
+  ShoppingBag,
   Menu,
   HelpCircle,
   Terminal,
   Loader2,
-  X 
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/dashboard/suppliers", icon: Shield, label: "Suppliers", id: "tour-suppliers" },
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox", id: "tour-inbox" },
   { href: "/dashboard/locations", icon: MapPin, label: "Locations", id: "tour-locations" },
+  { href: "/dashboard/competitors", icon: ShoppingBag, label: "Competitors", id: "tour-competitors" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing", id: "tour-billing" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings", id: "tour-settings" },
 ];
