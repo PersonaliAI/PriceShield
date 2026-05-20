@@ -4,7 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, ChevronDown, Shield } from "lucide-react";
+import {
+  ArrowUpRight,
+  Building2,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Shield,
+  ShoppingBag,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_META, FEATURED_POSTS } from "@/lib/blog";
 import { useAuth } from "@/lib/auth-context";
@@ -48,7 +56,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const isAuthed = !loading && !!user;
 
   useEffect(() => {
@@ -105,27 +113,7 @@ export function Navbar() {
         {/* Right */}
         <div className="flex items-center justify-end gap-3">
           {isAuthed ? (
-            <>
-              <Link
-                href="/shopper/dashboard"
-                className="hidden md:inline-flex text-sm font-medium hover:text-foreground/80 transition-colors"
-              >
-                Shopper
-              </Link>
-              <Link
-                href="/shopper/competitors"
-                className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Competitors
-              </Link>
-              <Button
-                size="sm"
-                className="cursor-pointer text-xs md:text-sm h-9 px-4 font-semibold"
-                render={<Link href="/dashboard" />}
-              >
-                My dashboard
-              </Button>
-            </>
+            <UserMenu email={user?.email ?? ""} onSignOut={signOut} />
           ) : (
             <>
               <Link
@@ -244,6 +232,128 @@ export function Navbar() {
         )}
       </AnimatePresence>
     </header>
+  );
+}
+
+/**
+ * Compact account dropdown shown to signed-in users. Replaces the cluttered
+ * row of Shopper/Competitors/My-dashboard links that overlapped the center
+ * nav. Hosts the user's email + the two Shopper destinations + sign-out.
+ *
+ * Notably we DO NOT link to /dashboard here — that's the separate invoice
+ * product. Linking from this Shopper-flavoured dropdown would be confusing.
+ */
+function UserMenu({ email, onSignOut }: { email: string; onSignOut: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function show() {
+    if (timer.current) clearTimeout(timer.current);
+    setOpen(true);
+  }
+  function hide() {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setOpen(false), 150);
+  }
+
+  // Render the user's first initial as a coloured circle — cheap avatar.
+  const initial = (email[0] || "?").toUpperCase();
+
+  return (
+    <div className="relative" onMouseEnter={show} onMouseLeave={hide}>
+      <button
+        onClick={() => setOpen((s) => !s)}
+        onFocus={show}
+        onBlur={hide}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="flex items-center gap-2 rounded-full bg-card border border-border px-2.5 py-1 hover:border-foreground/30 transition-colors cursor-pointer"
+      >
+        <span className="grid size-7 place-items-center rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold">
+          {initial}
+        </span>
+        <ChevronDown className={cn("size-3.5 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.14 }}
+            className="absolute right-0 top-full pt-3 z-50"
+            onMouseEnter={show}
+            onMouseLeave={hide}
+          >
+            <div className="w-64 rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  Signed in as
+                </p>
+                <p className="text-sm font-medium truncate mt-0.5">{email}</p>
+              </div>
+              <div className="p-1.5">
+                <UserMenuItem
+                  href="/shopper/dashboard"
+                  icon={ShoppingBag}
+                  label="Shopper Dashboard"
+                  desc="Wishlist & drop alerts"
+                />
+                <UserMenuItem
+                  href="/shopper/competitors"
+                  icon={Building2}
+                  label="Competitor Watchlists"
+                  desc="B2B price intelligence"
+                />
+                <UserMenuItem
+                  href="/dashboard"
+                  icon={LayoutDashboard}
+                  label="Invoice Dashboard"
+                  desc="Restaurant operators only"
+                  muted
+                />
+              </div>
+              <div className="border-t border-border p-1.5">
+                <button
+                  onClick={() => onSignOut()}
+                  className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <LogOut className="size-4" />
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function UserMenuItem({
+  href, icon: Icon, label, desc, muted = false,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  desc: string;
+  muted?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-start gap-2.5 rounded-md px-3 py-2 hover:bg-muted transition-colors group",
+        muted && "opacity-70 hover:opacity-100",
+      )}
+    >
+      <Icon className="size-4 mt-0.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium">{label}</div>
+        <div className="text-[11px] text-muted-foreground leading-tight">{desc}</div>
+      </div>
+    </Link>
   );
 }
 
