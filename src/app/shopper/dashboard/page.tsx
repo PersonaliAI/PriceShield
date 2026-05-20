@@ -25,6 +25,8 @@ interface Product {
   image_url?: string | null;
   observation_count: number;
   last_seen_at?: string | null;
+  product_url?: string | null;
+  aliases?: Array<{ product_url: string; store: string }> | null;
 }
 interface WishlistItem {
   id: string;
@@ -48,6 +50,13 @@ interface Entitlements {
   alerts: number;
   b2b_items: number;
   predictions_per_day: number;
+}
+interface UserSettings {
+  email: string;
+  telegram_chat_id: string | null;
+  telegram_linked: boolean;
+  alert_email: string | null;
+  alert_channels: string[];
 }
 
 export default function ShopperDashboardPage() {
@@ -92,18 +101,35 @@ function DashboardBody() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [ent, setEnt] = useState<Entitlements | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [alertEmail, setAlertEmail] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const data = await authed<UserSettings>("/api/settings");
+      setSettings(data);
+      setAlertEmail(data.alert_email || data.email || "");
+    } catch (err) {
+      console.error("Failed to load settings:", err);
+    }
+  }, [authed]);
 
   useEffect(() => {
     (async () => {
       try {
-        const [w, a, e] = await Promise.all([
+        const [w, a, e, s] = await Promise.all([
           authed<WishlistItem[]>("/shopper/wishlist"),
           authed<AlertRow[]>("/shopper/alerts"),
           authed<Entitlements>("/shopper/me/entitlements"),
+          authed<UserSettings>("/api/settings"),
         ]);
         setWishlist(w);
         setAlerts(a);
         setEnt(e);
+        setSettings(s);
+        setAlertEmail(s.alert_email || s.email || "");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -119,6 +145,40 @@ function DashboardBody() {
   async function cancelAlert(id: string) {
     await authed(`/shopper/alerts/${id}`, { method: "DELETE" });
     setAlerts((cur) => cur.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a)));
+  }
+
+  async function saveNotificationSettings(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingSettings(true);
+    setSaveSuccess(false);
+    try {
+      await authed("/api/settings", {
+        method: "PUT",
+        body: JSON.stringify({
+          alert_email: alertEmail || null,
+        }),
+      });
+      setSettings(prev => prev ? { ...prev, alert_email: alertEmail } : null);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
+  async function disconnectTelegram() {
+    try {
+      await authed("/webhook/telegram/disconnect", { method: "POST" });
+      await fetchSettings();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  async function refreshTelegramStatus() {
+    await fetchSettings();
   }
 
   if (loading) {
@@ -211,21 +271,47 @@ function DashboardBody() {
           ) : (
             <ul className="divide-y divide-border">
               {wishlist.map((w) => (
-                <li key={w.id} className="flex items-center gap-3 py-3">
-                  {w.product.image_url ? (
-                    <img src={w.product.image_url} alt="" className="size-12 rounded-md object-cover border border-border" />
+                <li key={w.id} className="flex items-center gap-3 py-3 group">
+                  {w.product.product_url ? (
+                    <a
+                      href={w.product.product_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-90 transition-opacity"
+                    >
+                      {w.product.image_url ? (
+                        <img src={w.product.image_url} alt="" className="size-12 rounded-md object-cover border border-border shrink-0" />
+                      ) : (
+                        <div className="size-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"><ShoppingBag className="size-5" /></div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate flex items-center gap-1.5 text-foreground group-hover:text-violet-400 transition-colors">
+                          {w.product.canonical_title}
+                          <ExternalLink className="size-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-violet-400 shrink-0" />
+                        </p>
+                        {w.product.brand && (
+                          <p className="text-xs text-muted-foreground">{w.product.brand}</p>
+                        )}
+                      </div>
+                    </a>
                   ) : (
-                    <div className="size-12 rounded-md bg-muted" />
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {w.product.image_url ? (
+                        <img src={w.product.image_url} alt="" className="size-12 rounded-md object-cover border border-border shrink-0" />
+                      ) : (
+                        <div className="size-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"><ShoppingBag className="size-5" /></div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{w.product.canonical_title}</p>
+                        {w.product.brand && (
+                          <p className="text-xs text-muted-foreground">{w.product.brand}</p>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{w.product.canonical_title}</p>
-                    {w.product.brand && (
-                      <p className="text-xs text-muted-foreground">{w.product.brand}</p>
-                    )}
-                  </div>
                   <button
                     onClick={() => removeWishlist(w.product.id)}
-                    className="p-2 text-muted-foreground hover:text-rose-400"
+                    className="p-2 text-muted-foreground hover:text-rose-400 shrink-0"
                     title="Remove"
                   >
                     <Trash2 className="size-4" />
@@ -304,6 +390,93 @@ function DashboardBody() {
           </CardContent>
         </Card>
       )}
+      {/* Alerts & Notification Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="size-5 text-violet-400" />
+            Alert & Notification Preferences
+          </CardTitle>
+          <CardDescription>
+            Configure where you receive price drop and restock alerts.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form onSubmit={saveNotificationSettings} className="space-y-4 max-w-xl">
+            <div className="space-y-1.5">
+              <label htmlFor="alert-email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Alert Email Address
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="alert-email"
+                  type="email"
+                  required
+                  value={alertEmail}
+                  onChange={(e) => setAlertEmail(e.target.value)}
+                  placeholder="alerts@example.com"
+                  className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500"
+                />
+                <Button type="submit" disabled={savingSettings} size="sm">
+                  {savingSettings && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+                  Save Email
+                </Button>
+              </div>
+              {saveSuccess && (
+                <p className="text-xs text-emerald-400 font-medium">Alert email updated successfully.</p>
+              )}
+            </div>
+          </form>
+
+          <div className="border-t border-border pt-6 max-w-xl">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Telegram Bot Channel
+            </h4>
+            {settings?.telegram_chat_id ? (
+              <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-400">Telegram Bot Linked</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Receiving instant notifications on Telegram.
+                  </p>
+                </div>
+                <button
+                  onClick={disconnectTelegram}
+                  className="px-3 py-1.5 text-xs font-medium border border-rose-500/30 hover:border-rose-500/50 rounded-md text-rose-400 hover:text-rose-300 transition-colors"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-violet-500/5 border border-violet-500/10 p-4 space-y-3">
+                <div>
+                  <p className="text-sm font-medium">Connect with Telegram</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Link your Telegram account to get instant push alerts on price drops.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href={`https://t.me/PriceShieldBot?start=${user?.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-violet-500 hover:bg-violet-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-colors"
+                  >
+                    Open Bot Chat
+                    <ExternalLink className="size-3" />
+                  </a>
+                  <button
+                    onClick={refreshTelegramStatus}
+                    className="px-3 py-1.5 text-xs font-semibold border border-border hover:border-muted-foreground rounded-md text-foreground transition-colors"
+                  >
+                    Refresh Status
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
