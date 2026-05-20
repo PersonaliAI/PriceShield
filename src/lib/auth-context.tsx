@@ -108,11 +108,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Preserve where the user was trying to go before they hit /login.
     const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
     const callback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`;
-    const { error } = await supabase.auth.signInWithOAuth({
+    // Take explicit control of the navigation. The default behaviour of
+    // signInWithOAuth is to call window.location.assign internally, but that
+    // can silently fail when the OAuth URL ends up empty (e.g. provider not
+    // enabled, redirect URL not whitelisted). By asking for skipBrowserRedirect
+    // and navigating ourselves, the error surface is loud and obvious.
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: callback },
+      options: {
+        redirectTo: callback,
+        skipBrowserRedirect: true,
+      },
     });
     if (error) throw error;
+    if (!data?.url) {
+      throw new Error(
+        "Supabase returned no OAuth URL. The Google provider is probably " +
+          "disabled in your Supabase project, or the redirect URL isn't " +
+          "whitelisted. See https://supabase.com/dashboard/project/_/auth/providers",
+      );
+    }
+    window.location.href = data.url;
   };
 
   const signOut = async () => {
