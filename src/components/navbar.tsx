@@ -112,6 +112,12 @@ export function Navbar() {
               >
                 Shopper
               </Link>
+              <Link
+                href="/shopper/competitors"
+                className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Competitors
+              </Link>
               <Button
                 size="sm"
                 className="cursor-pointer text-xs md:text-sm h-9 px-4 font-semibold"

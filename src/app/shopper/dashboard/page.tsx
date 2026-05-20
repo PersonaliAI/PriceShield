@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, ShoppingBag, Bell, TrendingDown, ExternalLink, Trash2 } from "lucide-react";
+import { Loader2, ShoppingBag, Bell, TrendingDown, ExternalLink, Trash2, Building2, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,38 @@ function DashboardBody() {
         <Stat label="Active alerts" value={String(activeAlerts.length)} icon={Bell} />
         <Stat label="Drops caught" value={String(triggered.length)} icon={TrendingDown} highlight />
       </div>
+
+      {/* B2B Competitor Watchlists — entry card. Shown to everyone, but the
+          actual feature requires a Pro plan (gated server-side on insert). */}
+      <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-card">
+        <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+          <div className="flex items-start gap-3">
+            <div className="size-10 grid place-items-center rounded-lg bg-violet-500/10 text-violet-400 shrink-0">
+              <Building2 className="size-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                Competitor Watchlists
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                  B2B
+                </span>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5 max-w-md">
+                For brands and sellers: monitor competitor prices across all stores in one
+                dashboard. Daily move tracking with your-price comparison.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            render={
+              <Link href="/shopper/competitors" className="inline-flex items-center gap-1.5">
+                Open <ArrowRight className="size-3.5" />
+              </Link>
+            }
+          />
+        </CardContent>
+      </Card>
 
       {/* Wishlist */}
       <Card>
