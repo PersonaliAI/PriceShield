@@ -18,7 +18,7 @@ interface AuthContextType {
   idToken: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (next?: string) => Promise<void>;
   signOut: () => Promise<void>;
   getToken: () => Promise<string | null>;
   resetPassword: (email: string) => Promise<void>;
@@ -104,12 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (next?: string) => {
+    // Preserve where the user was trying to go before they hit /login.
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+    const callback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: callback },
     });
     if (error) throw error;
   };

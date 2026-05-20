@@ -79,8 +79,15 @@ export default function LoginPage() {
     setError("");
     setSubmitting(true);
     try {
-      await signInWithGoogle();
-      router.push(nextPath);
+      // signInWithGoogle triggers a full-page redirect to Google. The
+      // router.push below is unreachable on a healthy flow — we keep it
+      // only as a fallback for cases where the redirect is blocked.
+      await signInWithGoogle(nextPath);
+      // If we got here without navigating, something's wrong (popup blocker,
+      // misconfigured Supabase provider). Surface it.
+      setError(
+        "Google sign-in didn't redirect. Check that Google is enabled in Supabase Auth providers and that https://trypriceshield.com/auth/callback is whitelisted.",
+      );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Google sign-in failed";
       setError(message);
