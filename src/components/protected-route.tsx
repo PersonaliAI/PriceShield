@@ -40,7 +40,7 @@ function clearSupabaseCookiesAndStorage(): void {
   const host = location.hostname;
   const root = host.replace(/^www\./, "");
   const domains = new Set([host, `.${host}`, root, `.${root}`]);
-  const paths = ["/", "/dashboard", "/shopper"];
+  const paths = ["/", "/dashboard"];
   for (const name of names) {
     for (const domain of domains) {
       for (const path of paths) {

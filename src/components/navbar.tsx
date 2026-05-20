@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/#products", label: "Products" },
-  { href: "/shopper", label: "Extension" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
@@ -295,23 +294,10 @@ function UserMenu({ email, onSignOut }: { email: string; onSignOut: () => Promis
               </div>
               <div className="p-1.5">
                 <UserMenuItem
-                  href="/shopper/dashboard"
-                  icon={ShoppingBag}
-                  label="Shopper Dashboard"
-                  desc="Wishlist & drop alerts"
-                />
-                <UserMenuItem
-                  href="/shopper/competitors"
-                  icon={Building2}
-                  label="Competitor Watchlists"
-                  desc="B2B price intelligence"
-                />
-                <UserMenuItem
                   href="/dashboard"
                   icon={LayoutDashboard}
                   label="Invoice Dashboard"
-                  desc="Restaurant operators only"
-                  muted
+                  desc="Detect stealth supplier creep"
                 />
               </div>
               <div className="border-t border-border p-1.5">
