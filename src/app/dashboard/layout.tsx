@@ -9,7 +9,6 @@ import {
   CreditCard,
   MapPin,
   Shield,
-  ShoppingBag,
   Menu,
   HelpCircle,
   Terminal,
@@ -31,7 +30,6 @@ const navItems = [
   { href: "/dashboard/suppliers", icon: Shield, label: "Suppliers", id: "tour-suppliers" },
   { href: "/dashboard/inbox", icon: Mail, label: "Inbox", id: "tour-inbox" },
   { href: "/dashboard/locations", icon: MapPin, label: "Locations", id: "tour-locations" },
-  { href: "/dashboard/competitors", icon: ShoppingBag, label: "Competitors", id: "tour-competitors" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing", id: "tour-billing" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings", id: "tour-settings" },
 ];

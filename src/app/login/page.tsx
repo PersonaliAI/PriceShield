@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,6 +12,15 @@ import Link from "next/link";
 export default function LoginPage() {
   const { signIn, signUp, signInWithGoogle, resetPassword, sendVerification, user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Where to redirect after sign-in. Defaults to the invoice product dashboard.
+  // Set via ?next=/some/path (used by ProtectedRoute and the extension popup).
+  const nextPath = (() => {
+    const raw = searchParams.get("next");
+    if (!raw) return "/dashboard";
+    // Only allow internal paths to prevent open-redirect.
+    return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
+  })();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
   const [email, setEmail] = useState("");
@@ -23,7 +32,7 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/dashboard");
+      router.replace(nextPath);
     }
   }, [loading, user, router]);
 
@@ -45,10 +54,10 @@ export default function LoginPage() {
         await signUp(email, password);
         // Best effort: send verification right away
         try { await sendVerification(); } catch (e) { console.error("Auto-verification failed:", e); }
-        router.push("/dashboard");
+        router.push(nextPath);
       } else {
         await signIn(email, password);
-        router.push("/dashboard");
+        router.push(nextPath);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Authentication failed";
@@ -71,7 +80,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signInWithGoogle();
-      router.push("/dashboard");
+      router.push(nextPath);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Google sign-in failed";
       setError(message);

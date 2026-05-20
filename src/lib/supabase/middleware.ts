@@ -45,7 +45,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && AUTH_PAGES.includes(path)) {
-    return NextResponse.redirect(`${origin}/dashboard`);
+    // Honor ?next= so the extension popup (and any other deep-link) can land
+    // users on the right product after sign-in. Only allow internal paths.
+    const next = request.nextUrl.searchParams.get("next") ?? "";
+    const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+    return NextResponse.redirect(`${origin}${safeNext}`);
   }
 
   return supabaseResponse;

@@ -14,6 +14,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Plus, Trash2, TrendingDown, TrendingUp } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import ProtectedRoute from "@/components/protected-route";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,6 +55,18 @@ interface CompetitorMove {
 }
 
 export default function CompetitorsPage() {
+  return (
+    <ProtectedRoute>
+      <Navbar />
+      <main className="flex-1 pt-24 pb-16">
+        <CompetitorsBody />
+      </main>
+      <Footer />
+    </ProtectedRoute>
+  );
+}
+
+function CompetitorsBody() {
   const { getToken } = useAuth();
 
   const authedFetch = useCallback(
@@ -208,7 +223,7 @@ export default function CompetitorsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-8 max-w-6xl mx-auto px-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Competitor Watchlists</h1>
         <p className="text-sm text-muted-foreground">
