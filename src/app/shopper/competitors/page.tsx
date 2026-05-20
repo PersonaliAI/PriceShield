@@ -11,8 +11,8 @@
  * Phase 3 keeps this to a single-watchlist-per-user UX. Multi-workspace will
  * come with the team-memberships migration.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, Plus, Search, ShoppingBag, Trash2, TrendingDown, TrendingUp } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
 import { Navbar } from "@/components/navbar";
@@ -41,6 +41,16 @@ interface WatchlistItem {
   label: string | null;
   own_price: number | null;
   added_at: string;
+  product_title: string | null;
+  product_brand: string | null;
+  product_image_url: string | null;
+}
+interface ProductResult {
+  id: string;
+  canonical_title: string;
+  brand: string | null;
+  image_url: string | null;
+  observation_count: number;
 }
 interface CompetitorMove {
   product_id: string;
@@ -105,9 +115,38 @@ function CompetitorsBody() {
 
   // add-item form
   const [newProductId, setNewProductId] = useState("");
+  const [newProductTitle, setNewProductTitle] = useState("");
+  const [newProductImage, setNewProductImage] = useState<string | null>(null);
   const [newLabel, setNewLabel] = useState("");
   const [newOwnPrice, setNewOwnPrice] = useState("");
   const [addingItem, setAddingItem] = useState(false);
+  // product search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<ProductResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = useCallback((q: string) => {
+    setSearchQuery(q);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (!q || q.trim().length < 2) { setSearchResults([]); return; }
+    searchTimer.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await authedFetch<ProductResult[]>(`/shopper/products/search?q=${encodeURIComponent(q.trim())}&limit=8`);
+        setSearchResults(res);
+      } catch { setSearchResults([]); }
+      finally { setSearching(false); }
+    }, 300);
+  }, [authedFetch]);
+
+  function selectProduct(p: ProductResult) {
+    setNewProductId(p.id);
+    setNewProductTitle(p.canonical_title);
+    setNewProductImage(p.image_url);
+    setSearchQuery(p.canonical_title);
+    setSearchResults([]);
+  }
 
   // initial load
   useEffect(() => {
@@ -384,38 +423,71 @@ function CompetitorsBody() {
                 <CardHeader>
                   <CardTitle>Tracked products ({items.length})</CardTitle>
                   <CardDescription>
-                    Paste a product UUID from the Shopper catalog. The Chrome extension
-                    surfaces the UUID after the first page visit (see the panel footer).
+                    Search for any product already in the PriceShield catalog by name, or
+                    use the extension on the product page to add it first.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <form onSubmit={addItem} className="grid sm:grid-cols-4 gap-3 items-end">
-                    <div className="sm:col-span-2 space-y-1">
-                      <Label htmlFor="product-id">Product UUID</Label>
-                      <Input
-                        id="product-id" required value={newProductId}
-                        onChange={(e) => setNewProductId(e.target.value)}
-                        placeholder="00000000-…"
-                      />
-                    </div>
+                  <form onSubmit={addItem} className="space-y-3 max-w-2xl">
+                    {/* Product search */}
                     <div className="space-y-1">
-                      <Label htmlFor="label">Your label</Label>
-                      <Input
-                        id="label" value={newLabel}
-                        onChange={(e) => setNewLabel(e.target.value)}
-                        placeholder="SKU 142-A"
-                      />
+                      <Label htmlFor="product-search">Search product</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        <input
+                          id="product-search"
+                          autoComplete="off"
+                          value={searchQuery}
+                          onChange={(e) => handleSearchChange(e.target.value)}
+                          placeholder="Type a product name…"
+                          className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                        {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />}
+                      </div>
+                      {searchResults.length > 0 && (
+                        <ul className="mt-1 border border-border rounded-md bg-card shadow-md divide-y divide-border overflow-hidden">
+                          {searchResults.map((p) => (
+                            <li key={p.id}>
+                              <button
+                                type="button"
+                                onClick={() => selectProduct(p)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
+                              >
+                                {p.image_url
+                                  ? <img src={p.image_url} alt="" className="size-9 rounded object-cover shrink-0 border border-border" />
+                                  : <div className="size-9 rounded bg-muted flex items-center justify-center shrink-0"><ShoppingBag className="size-4 text-muted-foreground" /></div>
+                                }
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">{p.canonical_title}</p>
+                                  {p.brand && <p className="text-xs text-muted-foreground">{p.brand}</p>}
+                                </div>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {newProductTitle && (
+                        <div className="flex items-center gap-2 mt-2 p-2 rounded-md bg-emerald-500/5 border border-emerald-500/20">
+                          {newProductImage
+                            ? <img src={newProductImage} alt="" className="size-8 rounded object-cover border border-border shrink-0" />
+                            : <ShoppingBag className="size-5 text-muted-foreground shrink-0" />
+                          }
+                          <p className="text-xs font-medium truncate text-emerald-400">{newProductTitle}</p>
+                          <button type="button" onClick={() => { setNewProductId(""); setNewProductTitle(""); setSearchQuery(""); setNewProductImage(null); }} className="ml-auto text-xs text-muted-foreground hover:text-foreground">✕</button>
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="own-price">Your price ($)</Label>
-                      <Input
-                        id="own-price" type="number" step="0.01" min="0"
-                        value={newOwnPrice}
-                        onChange={(e) => setNewOwnPrice(e.target.value)}
-                        placeholder="249.99"
-                      />
+                    <div className="flex gap-3 items-end">
+                      <div className="space-y-1 flex-1">
+                        <Label htmlFor="label">Your label (optional)</Label>
+                        <Input id="label" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="SKU 142-A" />
+                      </div>
+                      <div className="space-y-1 flex-1">
+                        <Label htmlFor="own-price">Your price ($)</Label>
+                        <Input id="own-price" type="number" step="0.01" min="0" value={newOwnPrice} onChange={(e) => setNewOwnPrice(e.target.value)} placeholder="249.99" />
+                      </div>
                     </div>
-                    <Button type="submit" disabled={addingItem} className="sm:col-span-4 w-fit">
+                    <Button type="submit" disabled={addingItem || !newProductId} className="w-fit">
                       {addingItem && <Loader2 className="size-3.5 animate-spin mr-2" />}
                       <Plus className="size-3.5 mr-1" /> Track product
                     </Button>
@@ -425,8 +497,8 @@ function CompetitorsBody() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Product</TableHead>
                           <TableHead>Label</TableHead>
-                          <TableHead>Product UUID</TableHead>
                           <TableHead className="text-right">Your price</TableHead>
                           <TableHead className="text-right">Added</TableHead>
                           <TableHead />
@@ -435,8 +507,19 @@ function CompetitorsBody() {
                       <TableBody>
                         {items.map((i) => (
                           <TableRow key={i.id}>
-                            <TableCell>{i.label || "—"}</TableCell>
-                            <TableCell className="font-mono text-xs text-muted-foreground">{i.product_id}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 min-w-0">
+                                {i.product_image_url
+                                  ? <img src={i.product_image_url} alt="" className="size-8 rounded object-cover border border-border shrink-0" />
+                                  : <div className="size-8 rounded bg-muted flex items-center justify-center shrink-0"><ShoppingBag className="size-3.5 text-muted-foreground" /></div>
+                                }
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate max-w-[200px]">{i.product_title || "Unknown product"}</p>
+                                  {i.product_brand && <p className="text-xs text-muted-foreground">{i.product_brand}</p>}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{i.label || "—"}</TableCell>
                             <TableCell className="text-right tabular-nums">
                               {i.own_price == null ? "—" : `$${i.own_price.toFixed(2)}`}
                             </TableCell>
