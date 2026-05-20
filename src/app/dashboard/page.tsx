@@ -80,7 +80,13 @@ export default function DashboardPage() {
     setOffset(0);
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        // No session — turn off the loading state so the page doesn't spin forever.
+        // Middleware will redirect unauthenticated users to /login anyway.
+        setLoading(false);
+        setInboxLoading(false);
+        return;
+      }
 
       const [summaryData, vendorsData, invoicesData, inboxData, s] = await Promise.all([
         api.getDashboardSummary(token),

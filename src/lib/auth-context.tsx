@@ -35,11 +35,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setSession(data.session);
-      setLoading(false);
-    });
+    // Force-clear `loading` after a hard timeout. getSession() can hang if the
+    // Supabase storage adapter is in a weird state (corrupted cookie, network
+    // hiccup). Without this fallback, ProtectedRoute spins forever.
+    const safetyTimeout = setTimeout(() => {
+      if (mounted) {
+        console.warn("[auth] getSession timed out — proceeding without session");
+        setLoading(false);
+      }
+    }, 4000);
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!mounted) return;
+        setSession(data.session);
+        setLoading(false);
+        clearTimeout(safetyTimeout);
+      })
+      .catch((err) => {
+        // Don't trap the UI on auth failures — surface and proceed.
+        console.error("[auth] getSession failed:", err);
+        if (!mounted) return;
+        setSession(null);
+        setLoading(false);
+        clearTimeout(safetyTimeout);
+      });
 
     const {
       data: { subscription },
@@ -47,10 +68,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(newSession);
       setLoading(false);
+      clearTimeout(safetyTimeout);
     });
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, [supabase]);
