@@ -326,7 +326,7 @@ async function run() {
 
   if (isSse) {
     const portArgIndex = process.argv.indexOf("--port");
-    const port = portArgIndex !== -1 ? parseInt(process.argv[portArgIndex + 1], 10) : 3000;
+    const port = portArgIndex !== -1 ? parseInt(process.argv[portArgIndex + 1], 10) : parseInt(process.env.PORT || "3000", 10);
 
     const app = express();
     app.use(express.json());

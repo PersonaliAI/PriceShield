@@ -70,3 +70,50 @@ To integrate this server with Claude Desktop, add it to your `claude_desktop_con
    - **Type**: `stdio`
    - **Command**: `node d:/Projects/PriceShield/mcp-server/build/index.js`
 4. Click **Save**.
+
+---
+
+## Remote Cloud Run Deployment
+
+To deploy this MCP server to **Google Cloud Run** (allowing remote clients to connect via SSE):
+
+### 1. Build and Push Container
+Submit the build to GCP Cloud Build (which packages it using the `Dockerfile`):
+```bash
+# 1. Set the target project (if not already set)
+gcloud config set project price-shield
+
+# 2. Build the image
+gcloud builds submit --tag gcr.io/price-shield/priceshield-mcp ./mcp-server
+```
+
+### 2. Deploy to Cloud Run
+Deploy the container with the environment variables referencing database credentials:
+
+**Option A: Using Environment Variables Directly**
+```bash
+gcloud run deploy priceshield-mcp \
+  --image gcr.io/price-shield/priceshield-mcp \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars SUPABASE_URL="YOUR_SUPABASE_URL",SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+```
+
+**Option B: Using Secret Manager Secrets (Recommended for production)**
+If you already have `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` stored in GCP Secret Manager, you can bind them directly:
+```bash
+gcloud run deploy priceshield-mcp \
+  --image gcr.io/price-shield/priceshield-mcp \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-secrets=SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest
+```
+
+Once deployed, Cloud Run will print the Service URL (e.g. `https://priceshield-mcp-xxxxxx-uc.a.run.app`).
+
+### 3. Connect to the Remote Server
+For clients (like Claude Desktop or Cursor) to use the remote server over SSE:
+- **Type**: `sse`
+- **URL**: `https://<your-cloud-run-url>/sse`
