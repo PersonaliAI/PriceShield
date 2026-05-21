@@ -1,0 +1,21 @@
+{
+  "name": "priceshield-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for querying PriceShield supplier invoice data",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "@supabase/supabase-js": "^2.39.8",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  }
+}
