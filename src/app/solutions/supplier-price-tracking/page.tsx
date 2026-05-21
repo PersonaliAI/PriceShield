@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
+import { InlineCalculator } from "./InlineCalculator";
 import {
   TrendingDown,
   TrendingUp,
@@ -94,35 +95,37 @@ export default function SupplierPriceTrackingPage() {
           </nav>
 
           {/* Hero Section */}
-          <div className="text-center md:text-left md:flex md:items-center md:gap-12 py-8 md:py-16">
+          <div className="text-center md:text-left md:flex md:items-center md:gap-12 py-10 md:py-20">
             <div className="flex-1 space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/5 text-blue-400 text-xs font-semibold">
-                <Sparkles className="size-3.5" />
-                <span>Supplier Price Track Solution</span>
+              <div className="flex items-center gap-2 justify-center md:justify-start">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-blue-400">
+                  Supplier Price Tracking
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500/40 animate-pulse-glow" />
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
-                Track Supplier Prices <br />
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">
-                  Without spreadsheets.
+              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-white/95 leading-tight">
+                Track Supplier Prices{" "}
+                <span className="font-normal bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-300 bg-clip-text text-transparent">
+                  without spreadsheets.
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+              <p className="text-xs md:text-[13px] text-zinc-400/90 leading-relaxed max-w-md">
                 Manual tracking is a chore that never gets done. PriceShield automates food distributor price tracking, revealing stealth inflation and item-by-item drift automatically.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center md:justify-start">
+              <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
-                  size="lg"
-                  className="cursor-pointer font-semibold shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20"
+                  size="sm"
+                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-lg transition-all"
                   render={<Link href="/login" />}
                 >
                   Start Tracking Free
-                  <ArrowRight className="size-4 ml-2" />
                 </Button>
                 <Link
-                  href="/#products"
-                  className="inline-flex items-center justify-center text-sm font-semibold hover:text-white transition-colors py-3"
+                  href="#roi-calc"
+                  className="inline-flex items-center text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
                 >
-                  How it works
+                  Calculate Savings
+                  <ArrowRight className="size-3.5 ml-1" />
                 </Link>
               </div>
             </div>
@@ -130,21 +133,24 @@ export default function SupplierPriceTrackingPage() {
             {/* Interactive Live Mockup Panel */}
             <div className="flex-1 mt-12 md:mt-0">
               <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
-                <div className="relative rounded-2xl border border-border/80 bg-card p-6 shadow-2xl">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity" />
+                <div className="relative rounded-2xl border border-white/[0.06] bg-zinc-950/40 backdrop-blur-xl p-5 shadow-2xl shadow-black/80">
                   {/* Mockup Header */}
-                  <div className="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
-                    <div>
-                      <h2 className="text-sm font-semibold text-white">Live Supplier Price Track</h2>
-                      <p className="text-xs text-muted-foreground">Sysco vs US Foods · May 2026</p>
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      <div>
+                        <h2 className="text-[11px] font-semibold text-zinc-200 uppercase tracking-wider">Live Price Track</h2>
+                        <p className="text-[10px] text-zinc-500">Sysco vs US Foods • Active</p>
+                      </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] uppercase font-bold tracking-wide">
-                      Active Monitoring
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-medium tracking-wide">
+                      Monitoring 42 SKUs
                     </span>
                   </div>
 
                   {/* Mockup Items */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {[
                       {
                         name: "Prime Beef Tenderloin (1855)",
@@ -171,31 +177,31 @@ export default function SupplierPriceTrackingPage() {
                         status: "up",
                       },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-black/40 border border-border/40 hover:border-blue-500/30 transition-all">
+                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
                         <div>
-                          <div className="text-xs font-semibold text-white">{item.name}</div>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                          <div className="text-[11px] font-medium text-zinc-200">{item.name}</div>
+                          <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
                             <span>{item.supplier}</span>
-                            <span>•</span>
+                            <span className="text-zinc-700">•</span>
                             <span>per {item.unit}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs font-mono font-semibold text-white">
+                          <div className="text-[11px] font-mono font-medium text-zinc-200">
                             ${item.curr.toFixed(2)}
                           </div>
                           <div className="flex items-center gap-1 justify-end mt-0.5">
                             {item.status === "up" ? (
                               <>
-                                <TrendingUp className="size-3 text-rose-500" />
-                                <span className="text-[10px] font-semibold text-rose-500 font-mono">
+                                <TrendingUp className="size-3 text-rose-400" />
+                                <span className="text-[9px] font-medium text-rose-400 font-mono">
                                   +{(((item.curr - item.base) / item.base) * 100).toFixed(0)}%
                                 </span>
                               </>
                             ) : (
                               <>
-                                <span className="text-[10px] font-semibold text-muted-foreground font-mono">
-                                  0.0%
+                                <span className="text-[9px] font-medium text-zinc-500 font-mono">
+                                  Stable
                                 </span>
                               </>
                             )}
@@ -206,9 +212,9 @@ export default function SupplierPriceTrackingPage() {
                   </div>
 
                   {/* Micro-insight Footer inside Card */}
-                  <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2 text-xs text-muted-foreground bg-blue-500/5 -mx-6 -mb-6 p-4 rounded-b-2xl">
-                    <Info className="size-3.5 text-blue-400 shrink-0" />
-                    <span>Olive Oil increase detected at Cheney Bros. Sysco is offering $68.00.</span>
+                  <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-start gap-2 text-[10px] text-zinc-400">
+                    <Info className="size-3.5 text-blue-400 shrink-0 mt-0.5" />
+                    <span>Olive Oil increase detected at Cheney Bros. Alternate supplier (Sysco) is offering $68.00.</span>
                   </div>
                 </div>
               </div>
@@ -261,44 +267,7 @@ export default function SupplierPriceTrackingPage() {
 
           {/* Interactive ROI Calculator Section */}
           <section id="roi-calc" className="py-12 border-t border-border/60">
-            <div className="rounded-2xl border border-border bg-gradient-to-b from-card to-card/50 p-6 md:p-10 flex flex-col md:flex-row items-center gap-10">
-              <div className="flex-1 space-y-4">
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Interactive Calculator</span>
-                <h2 className="text-2xl md:text-3xl font-bold text-white">Calculate your leaks</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Industry estimates show restaurants leak 2% to 4% of total supplier spend to stealth price hikes. Try our fully interactive <Link href="/tools/margin-leakage-calculator" className="text-emerald-400 underline hover:text-emerald-300">Margin Leakage Calculator</Link> to customize error rates, invoice volume, and audit times.
-                </p>
-                <div className="pt-2">
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Average Monthly Supplier Spend</div>
-                  <div className="flex items-center gap-2 max-w-[240px] bg-black/40 rounded-lg p-2.5 border border-border">
-                    <span className="text-muted-foreground font-semibold">$</span>
-                    <input
-                      id="spend-input"
-                      type="number"
-                      defaultValue="25000"
-                      className="bg-transparent border-none outline-none w-full text-sm font-semibold font-mono text-white"
-                      placeholder="e.g. 25000"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="w-full md:w-80 rounded-xl bg-black/60 border border-border/80 p-6 space-y-6 shrink-0 text-center md:text-left">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase font-bold">Estimated Monthly Leakage</div>
-                  <div className="text-3xl font-mono font-bold text-rose-500 mt-1">$750 - $1,500</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Based on 3% to 6% variance</p>
-                </div>
-                <div className="border-t border-border/40 pt-4">
-                  <div className="text-xs text-muted-foreground uppercase font-bold">Potential Annual Savings</div>
-                  <div className="text-4xl font-mono font-bold text-emerald-400 mt-1">$9,000+</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">When tracking supplier prices daily</p>
-                </div>
-                <Button className="w-full font-semibold cursor-pointer" render={<Link href="/login" />}>
-                  Stop the Leakage
-                </Button>
-              </div>
-            </div>
+            <InlineCalculator />
           </section>
 
           {/* FAQ Block */}

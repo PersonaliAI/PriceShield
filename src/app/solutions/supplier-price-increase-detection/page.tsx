@@ -95,35 +95,37 @@ export default function SupplierPriceIncreaseDetectionPage() {
           </nav>
 
           {/* Hero Section */}
-          <div className="text-center md:text-left md:flex md:items-center md:gap-12 py-8 md:py-16">
+          <div className="text-center md:text-left md:flex md:items-center md:gap-12 py-10 md:py-20">
             <div className="flex-1 space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-400 text-xs font-semibold">
-                <Sparkles className="size-3.5" />
-                <span>Real-Time Alert Solution</span>
+              <div className="flex items-center gap-2 justify-center md:justify-start">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-amber-400">
+                  Price Hike Alerts
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500/40 animate-pulse-glow" />
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
-                Supplier Price Increase <br />
-                <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 bg-clip-text text-transparent">
-                  Detected instantly.
+              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-white/95 leading-tight">
+                Supplier Price Increase{" "}
+                <span className="font-normal bg-gradient-to-r from-amber-400 via-orange-300 to-rose-300 bg-clip-text text-transparent">
+                  detected instantly.
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+              <p className="text-xs md:text-[13px] text-zinc-400/90 leading-relaxed max-w-md">
                 Purveyors rely on you not noticing small price increases. PriceShield is your margin guardian—detecting price creep and alerting your team the moment it happens.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center md:justify-start">
+              <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
-                  size="lg"
-                  className="cursor-pointer font-semibold shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 bg-amber-600 hover:bg-amber-500 text-white border-none"
+                  size="sm"
+                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-lg transition-all border-none"
                   render={<Link href="/login" />}
                 >
                   Configure Price Alerts
-                  <ArrowRight className="size-4 ml-2" />
                 </Button>
                 <Link
                   href="/#products"
-                  className="inline-flex items-center justify-center text-sm font-semibold hover:text-white transition-colors py-3"
+                  className="inline-flex items-center text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
                 >
-                  See Notification Channels
+                  Notification Channels
+                  <ArrowRight className="size-3.5 ml-1" />
                 </Link>
               </div>
             </div>
@@ -131,44 +133,44 @@ export default function SupplierPriceIncreaseDetectionPage() {
             {/* Interactive Alert Mockup Panel */}
             <div className="flex-1 mt-12 md:mt-0">
               <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-rose-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
-                <div className="relative rounded-2xl border border-border/80 bg-card p-6 shadow-2xl">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-rose-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity" />
+                <div className="relative rounded-2xl border border-white/[0.06] bg-zinc-950/40 backdrop-blur-xl p-5 shadow-2xl shadow-black/80">
                   {/* Mockup Channels Tab Preview */}
-                  <div className="flex items-center gap-1 border-b border-border/60 pb-3 mb-4">
+                  <div className="flex items-center gap-1 border-b border-white/[0.06] pb-3 mb-4">
                     <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/20 flex items-center gap-1">
                       <MessageSquare className="size-3" /> Telegram Alert
                     </span>
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
                       <Zap className="size-3" /> Slack
                     </span>
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
                       <Mail className="size-3" /> Email
                     </span>
                   </div>
 
                   {/* Simulated Mobile Notification */}
                   <div className="space-y-4">
-                    <div className="bg-black/60 border border-border/80 rounded-xl p-4 shadow-inner relative overflow-hidden">
+                    <div className="bg-zinc-950/60 border border-white/[0.04] rounded-xl p-4 shadow-inner relative overflow-hidden">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div className="size-5 rounded bg-amber-500/20 flex items-center justify-center text-[10px] font-bold text-amber-300">
                             PS
                           </div>
-                          <span className="text-xs font-bold text-white">PriceShield Bot</span>
+                          <span className="text-[11px] font-bold text-zinc-200">PriceShield Bot</span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground">Just now</span>
+                        <span className="text-[10px] text-zinc-500">Just now</span>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-xs text-white leading-relaxed font-medium">
+                        <p className="text-[11px] text-zinc-200 leading-relaxed font-medium">
                           ⚠️ **Price Increase Detected** at **US Foods**
                         </p>
                         <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/20 text-xs font-mono">
-                          <div className="flex justify-between text-white font-semibold">
+                          <div className="flex justify-between text-zinc-200 font-semibold">
                             <span>Bacon 18/22 Layout</span>
                             <span className="text-rose-400">+$18.50 (Case)</span>
                           </div>
-                          <div className="flex justify-between text-muted-foreground text-[10px] mt-1">
+                          <div className="flex justify-between text-zinc-500 text-[10px] mt-1">
                             <span>Old Price: $62.00</span>
                             <span>New Price: $80.50</span>
                           </div>
@@ -181,7 +183,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                   </div>
 
                   {/* Mockup Config Actions */}
-                  <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-400">
                     <span className="flex items-center gap-1">
                       <Sliders className="size-3.5 text-amber-400" /> Threshold Limit: 2.0%
                     </span>
