@@ -6,6 +6,16 @@ export async function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
+  if (!url || !key) {
+    return {
+      auth: {
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        getSession: async () => ({ data: { session: null } }),
+        getUser: async () => ({ data: { user: null }, error: null }),
+      },
+    } as any;
+  }
+
   return createServerClient(url, key, {
     cookies: {
       getAll() {

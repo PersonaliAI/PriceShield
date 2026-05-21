@@ -5,13 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertTriangle,
   ArrowUpRight,
   Building2,
   ChevronDown,
   LayoutDashboard,
   LogOut,
+  ReceiptText,
   Shield,
   ShoppingBag,
+  TrendingDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_META, FEATURED_POSTS } from "@/lib/blog";
@@ -55,6 +58,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
+  const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
   const isAuthed = !loading && !!user;
 
@@ -106,6 +110,7 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          <SolutionsMenu />
           <ResourcesMenu />
         </div>
 
@@ -154,6 +159,73 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+
+              {/* Expandable Solutions section */}
+              <div>
+                <button
+                  onClick={() => setMobileSolutionsOpen((s) => !s)}
+                  className="w-full flex items-center justify-between text-base text-foreground py-1 cursor-pointer"
+                  aria-expanded={mobileSolutionsOpen}
+                >
+                  Solutions
+                  <ChevronDown
+                    className={cn(
+                      "size-4 text-muted-foreground transition-transform",
+                      mobileSolutionsOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {mobileSolutionsOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pl-3 mt-2 mb-2 space-y-2 border-l border-border">
+                        <Link
+                          href="/solutions/supplier-price-tracking"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Supplier Price Tracking
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Track vendor price drift & control costs
+                          </div>
+                        </Link>
+                        <Link
+                          href="/solutions/invoice-audit"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Invoice Auditing
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Automate checks on line items in seconds
+                          </div>
+                        </Link>
+                        <Link
+                          href="/solutions/supplier-price-increase-detection"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Price Hike Detection
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Get instant alerts on stealth vendor adjustments
+                          </div>
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Expandable Resources section */}
               <div>
@@ -340,6 +412,112 @@ function UserMenuItem({
         <div className="text-[11px] text-muted-foreground leading-tight">{desc}</div>
       </div>
     </Link>
+  );
+}
+
+/**
+ * Hover-triggered Solutions menu.
+ */
+function SolutionsMenu() {
+  const [open, setOpen] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function show() {
+    if (timer.current) clearTimeout(timer.current);
+    setOpen(true);
+  }
+  function hide() {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setOpen(false), 150);
+  }
+
+  const solutions = [
+    {
+      href: "/solutions/supplier-price-tracking",
+      label: "Supplier Price Tracking",
+      desc: "Track vendor price drift and secure your food margins.",
+      icon: TrendingDown,
+      tone: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    },
+    {
+      href: "/solutions/invoice-audit",
+      label: "Invoice Auditing",
+      desc: "Extract line items and audit every supplier invoice instantly.",
+      icon: ReceiptText,
+      tone: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    },
+    {
+      href: "/solutions/supplier-price-increase-detection",
+      label: "Price Hike Detection",
+      desc: "Get immediate alerts on any stealth pricing adjustments.",
+      icon: AlertTriangle,
+      tone: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    },
+  ];
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+    >
+      <Link
+        href="/solutions/supplier-price-tracking"
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      >
+        Solutions
+        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
+      </Link>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.14 }}
+            className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50"
+            onMouseEnter={show}
+            onMouseLeave={hide}
+          >
+            <div className="w-[320px] sm:w-[400px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden p-2">
+              <div className="px-3 pt-3 pb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">What We Solve</h3>
+              </div>
+              <div className="space-y-1">
+                {solutions.map((sol) => {
+                  const Icon = sol.icon;
+                  return (
+                    <Link
+                      key={sol.href}
+                      href={sol.href}
+                      className="group flex items-start gap-3 rounded-xl p-3 hover:bg-muted transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <div className={cn("p-2 rounded-lg border shrink-0", sol.tone)}>
+                        <Icon className="size-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-foreground group-hover:text-emerald-400 transition-colors">
+                          {sol.label}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5 leading-normal">
+                          {sol.desc}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

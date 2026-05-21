@@ -24,19 +24,28 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://trypriceshield.com"),
   title: {
     default:
-      "PriceShield — AI Supplier Price Monitoring & Invoice Auditing for Restaurants",
+      "PriceShield — AI Supplier Price Tracking, Invoice Auditing & Price Creep Detection",
     template: "%s · PriceShield",
   },
   description:
-    "Stop stealth supplier price hikes before they eat your restaurant margins. PriceShield audits every invoice in 5 seconds, detects price creep, and alerts you on Telegram, Slack, WhatsApp, or email. Free 5-invoice audit. No credit card.",
+    "Stop stealth supplier price hikes. PriceShield performs automatic invoice audits in 5 seconds, lets you track supplier prices, and helps you detect supplier price increases instantly with real-time alerts.",
   applicationName: "PriceShield",
   generator: "Next.js",
   authors: [{ name: "PriceShield Team", url: "https://trypriceshield.com" }],
   creator: "PriceShield",
   publisher: "PriceShield",
   category: "business",
-  classification: "Restaurant SaaS, Supplier Price Monitoring, Invoice Auditing",
+  classification: "Restaurant SaaS, Supplier Price Tracking, Invoice Audit, Price Hike Detection",
   keywords: [
+    // Core Target Keywords
+    "supplier price track",
+    "invoice audit",
+    "supplier price increase detect",
+    "supplier price tracking",
+    "invoice auditing",
+    "supplier price increase detection",
+    "detect supplier price increase",
+    "track supplier prices",
     // High-intent
     "supplier price monitoring software",
     "restaurant invoice audit software",

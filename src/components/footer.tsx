@@ -9,6 +9,11 @@ const links = {
     { label: "FAQ", href: "/#faq" },
     { label: "Dashboard", href: "/dashboard" },
   ],
+  Solutions: [
+    { label: "Supplier Price Track", href: "/solutions/supplier-price-tracking" },
+    { label: "Invoice Audit", href: "/solutions/invoice-audit" },
+    { label: "Price Hike Detect", href: "/solutions/supplier-price-increase-detection" },
+  ],
   Resources: [
     { label: "Blog", href: "/blog" },
     { label: "Setup guide", href: "/blog/ultimate-guide-to-priceshield" },
@@ -26,7 +31,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5">
               <Image src="/logo.png" alt="" width={36} height={36} className="size-8 shrink-0" />
