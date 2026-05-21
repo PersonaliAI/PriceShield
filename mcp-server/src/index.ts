@@ -29,296 +29,300 @@ if (!supabaseUrl || !supabaseKey) {
 // Create Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Create MCP server
-const server = new Server(
-  {
-    name: "priceshield-mcp-server",
-    version: "1.0.0",
-  },
-  {
-    capabilities: {
-      tools: {},
+// Create MCP server factory function
+function createMcpServer(): Server {
+  const server = new Server(
+    {
+      name: "priceshield-mcp-server",
+      version: "1.0.0",
     },
-  }
-);
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
-// Register tools list
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: "list_invoices",
-        description: "List recent invoices. Can filter by vendor name.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            vendor_name: {
-              type: "string",
-              description: "Optional vendor name to filter by (case-insensitive)",
-            },
-            limit: {
-              type: "number",
-              description: "Maximum number of invoices to return (default 20)",
+  // Register tools list
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+      tools: [
+        {
+          name: "list_invoices",
+          description: "List recent invoices. Can filter by vendor name.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              vendor_name: {
+                type: "string",
+                description: "Optional vendor name to filter by (case-insensitive)",
+              },
+              limit: {
+                type: "number",
+                description: "Maximum number of invoices to return (default 20)",
+              },
             },
           },
         },
-      },
-      {
-        name: "get_invoice_details",
-        description: "Get detailed information about a specific invoice including all of its line items.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            invoice_id: {
-              type: "string",
-              description: "The unique UUID of the invoice",
+        {
+          name: "get_invoice_details",
+          description: "Get detailed information about a specific invoice including all of its line items.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              invoice_id: {
+                type: "string",
+                description: "The unique UUID of the invoice",
+              },
             },
-          },
-          required: ["invoice_id"],
-        },
-      },
-      {
-        name: "get_price_trends",
-        description: "Retrieve unit price trend points for a given supplier item to see how price changes over time.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            item_name: {
-              type: "string",
-              description: "Name or partial name of the supplier item",
-            },
-            vendor_name: {
-              type: "string",
-              description: "Optional vendor name to restrict search",
-            },
-            limit: {
-              type: "number",
-              description: "Maximum number of price points to return (default 50)",
-            },
-          },
-          required: ["item_name"],
-        },
-      },
-      {
-        name: "get_supplier_baselines",
-        description: "Retrieve target price baselines (i.e. line items from baseline invoices) to check standard pricing.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            vendor_name: {
-              type: "string",
-              description: "Optional vendor name to filter baseline items",
-            },
+            required: ["invoice_id"],
           },
         },
-      },
-      {
-        name: "search_products",
-        description: "Search for competitor or market products in the local shopper catalog.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: "Search query for product title or brand",
+        {
+          name: "get_price_trends",
+          description: "Retrieve unit price trend points for a given supplier item to see how price changes over time.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              item_name: {
+                type: "string",
+                description: "Name or partial name of the supplier item",
+              },
+              vendor_name: {
+                type: "string",
+                description: "Optional vendor name to restrict search",
+              },
+              limit: {
+                type: "number",
+                description: "Maximum number of price points to return (default 50)",
+              },
             },
-            limit: {
-              type: "number",
-              description: "Maximum number of products to return (default 20)",
+            required: ["item_name"],
+          },
+        },
+        {
+          name: "get_supplier_baselines",
+          description: "Retrieve target price baselines (i.e. line items from baseline invoices) to check standard pricing.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              vendor_name: {
+                type: "string",
+                description: "Optional vendor name to filter baseline items",
+              },
             },
           },
-          required: ["query"],
         },
-      },
-    ],
-  };
-});
+        {
+          name: "search_products",
+          description: "Search for competitor or market products in the local shopper catalog.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description: "Search query for product title or brand",
+              },
+              limit: {
+                type: "number",
+                description: "Maximum number of products to return (default 20)",
+              },
+            },
+            required: ["query"],
+          },
+        },
+      ],
+    };
+  });
 
-// Handle tool execution calls
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  // Handle tool execution calls
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
 
-  try {
-    switch (name) {
-      case "list_invoices": {
-        const vendorName = args?.vendor_name as string | undefined;
-        const limit = (args?.limit as number) || 20;
+    try {
+      switch (name) {
+        case "list_invoices": {
+          const vendorName = args?.vendor_name as string | undefined;
+          const limit = (args?.limit as number) || 20;
 
-        let query = supabase
-          .from("invoices")
-          .select("id, vendor_name, invoice_date, is_baseline, created_at")
-          .order("invoice_date", { ascending: false })
-          .limit(limit);
+          let query = supabase
+            .from("invoices")
+            .select("id, vendor_name, invoice_date, is_baseline, created_at")
+            .order("invoice_date", { ascending: false })
+            .limit(limit);
 
-        if (vendorName) {
-          query = query.ilike("vendor_name", `%${vendorName}%`);
+          if (vendorName) {
+            query = query.ilike("vendor_name", `%${vendorName}%`);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(data, null, 2),
+              },
+            ],
+          };
         }
 
-        const { data, error } = await query;
-        if (error) throw error;
+        case "get_invoice_details": {
+          const invoiceId = args?.invoice_id as string;
+          if (!invoiceId) {
+            throw new McpError(ErrorCode.InvalidParams, "invoice_id is required");
+          }
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(data, null, 2),
-            },
-          ],
-        };
-      }
+          const { data, error } = await supabase
+            .from("invoices")
+            .select("*, line_items(*)")
+            .eq("id", invoiceId)
+            .single();
 
-      case "get_invoice_details": {
-        const invoiceId = args?.invoice_id as string;
-        if (!invoiceId) {
-          throw new McpError(ErrorCode.InvalidParams, "invoice_id is required");
+          if (error) throw error;
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(data, null, 2),
+              },
+            ],
+          };
         }
 
-        const { data, error } = await supabase
-          .from("invoices")
-          .select("*, line_items(*)")
-          .eq("id", invoiceId)
-          .single();
+        case "get_price_trends": {
+          const itemName = args?.item_name as string;
+          const vendorName = args?.vendor_name as string | undefined;
+          const limit = (args?.limit as number) || 50;
 
-        if (error) throw error;
+          if (!itemName) {
+            throw new McpError(ErrorCode.InvalidParams, "item_name is required");
+          }
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(data, null, 2),
-            },
-          ],
-        };
-      }
+          // Fetch line_items matching the name, joined with invoices to get date/vendor
+          let query = supabase
+            .from("line_items")
+            .select("id, item_name, unit_price, quantity, unit_of_measure, invoices!inner(vendor_name, invoice_date)")
+            .ilike("item_name", `%${itemName}%`)
+            .limit(limit);
 
-      case "get_price_trends": {
-        const itemName = args?.item_name as string;
-        const vendorName = args?.vendor_name as string | undefined;
-        const limit = (args?.limit as number) || 50;
+          if (vendorName) {
+            query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
+          }
 
-        if (!itemName) {
-          throw new McpError(ErrorCode.InvalidParams, "item_name is required");
+          const { data, error } = await query;
+          if (error) throw error;
+
+          // Process data to sort by invoice date client-side
+          const formattedData = (data as any[] || [])
+            .map((item: any) => ({
+              id: item.id,
+              item_name: item.item_name,
+              unit_price: item.unit_price,
+              quantity: item.quantity,
+              unit_of_measure: item.unit_of_measure,
+              vendor_name: item.invoices?.vendor_name,
+              invoice_date: item.invoices?.invoice_date,
+            }))
+            .sort((a: any, b: any) => {
+              const dateA = new Date(a.invoice_date || 0).getTime();
+              const dateB = new Date(b.invoice_date || 0).getTime();
+              return dateA - dateB; // Chronological order
+            });
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(formattedData, null, 2),
+              },
+            ],
+          };
         }
 
-        // Fetch line_items matching the name, joined with invoices to get date/vendor
-        let query = supabase
-          .from("line_items")
-          .select("id, item_name, unit_price, quantity, unit_of_measure, invoices!inner(vendor_name, invoice_date)")
-          .ilike("item_name", `%${itemName}%`)
-          .limit(limit);
+        case "get_supplier_baselines": {
+          const vendorName = args?.vendor_name as string | undefined;
 
-        if (vendorName) {
-          query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
-        }
+          let query = supabase
+            .from("line_items")
+            .select("id, item_name, unit_price, unit_of_measure, invoices!inner(vendor_name, is_baseline, invoice_date)")
+            .eq("invoices.is_baseline", true);
 
-        const { data, error } = await query;
-        if (error) throw error;
+          if (vendorName) {
+            query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
+          }
 
-        // Process data to sort by invoice date client-side
-        const formattedData = (data as any[] || [])
-          .map((item: any) => ({
+          const { data, error } = await query;
+          if (error) throw error;
+
+          const formattedData = (data as any[] || []).map((item: any) => ({
             id: item.id,
             item_name: item.item_name,
             unit_price: item.unit_price,
-            quantity: item.quantity,
             unit_of_measure: item.unit_of_measure,
             vendor_name: item.invoices?.vendor_name,
-            invoice_date: item.invoices?.invoice_date,
-          }))
-          .sort((a: any, b: any) => {
-            const dateA = new Date(a.invoice_date || 0).getTime();
-            const dateB = new Date(b.invoice_date || 0).getTime();
-            return dateA - dateB; // Chronological order
-          });
+            established_at: item.invoices?.invoice_date,
+          }));
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(formattedData, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "get_supplier_baselines": {
-        const vendorName = args?.vendor_name as string | undefined;
-
-        let query = supabase
-          .from("line_items")
-          .select("id, item_name, unit_price, unit_of_measure, invoices!inner(vendor_name, is_baseline, invoice_date)")
-          .eq("invoices.is_baseline", true);
-
-        if (vendorName) {
-          query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(formattedData, null, 2),
+              },
+            ],
+          };
         }
 
-        const { data, error } = await query;
-        if (error) throw error;
+        case "search_products": {
+          const searchQuery = args?.query as string;
+          const limit = (args?.limit as number) || 20;
 
-        const formattedData = (data as any[] || []).map((item: any) => ({
-          id: item.id,
-          item_name: item.item_name,
-          unit_price: item.unit_price,
-          unit_of_measure: item.unit_of_measure,
-          vendor_name: item.invoices?.vendor_name,
-          established_at: item.invoices?.invoice_date,
-        }));
+          if (!searchQuery) {
+            throw new McpError(ErrorCode.InvalidParams, "query is required");
+          }
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(formattedData, null, 2),
-            },
-          ],
-        };
-      }
+          const { data, error } = await supabase
+            .from("shopper_products")
+            .select("id, canonical_title, brand, gtin, mpn, image_url")
+            .or(`canonical_title.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`)
+            .limit(limit);
 
-      case "search_products": {
-        const searchQuery = args?.query as string;
-        const limit = (args?.limit as number) || 20;
+          if (error) throw error;
 
-        if (!searchQuery) {
-          throw new McpError(ErrorCode.InvalidParams, "query is required");
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(data, null, 2),
+              },
+            ],
+          };
         }
 
-        const { data, error } = await supabase
-          .from("shopper_products")
-          .select("id, canonical_title, brand, gtin, mpn, image_url")
-          .or(`canonical_title.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`)
-          .limit(limit);
-
-        if (error) throw error;
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(data, null, 2),
-            },
-          ],
-        };
+        default:
+          throw new McpError(
+            ErrorCode.MethodNotFound,
+            `Unknown tool: ${name}`
+          );
       }
-
-      default:
-        throw new McpError(
-          ErrorCode.MethodNotFound,
-          `Unknown tool: ${name}`
-        );
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error executing tool: ${error.message || error}`,
+          },
+        ],
+        isError: true,
+      };
     }
-  } catch (error: any) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error executing tool: ${error.message || error}`,
-        },
-      ],
-      isError: true,
-    };
-  }
-});
+  });
+
+  return server;
+}
 
 // Run server using Stdio or SSE transport
 async function run() {
@@ -332,13 +336,17 @@ async function run() {
     app.use(express.json());
 
     const activeTransports = new Map<string, SSEServerTransport>();
+    const activeServers = new Map<string, Server>();
 
     app.get("/sse", async (req, res) => {
       const transport = new SSEServerTransport("/messages", res);
+      const server = createMcpServer();
       activeTransports.set(transport.sessionId, transport);
+      activeServers.set(transport.sessionId, server);
 
       res.on("close", () => {
         activeTransports.delete(transport.sessionId);
+        activeServers.delete(transport.sessionId);
       });
 
       await server.connect(transport);
@@ -359,6 +367,7 @@ async function run() {
       console.error(`PriceShield MCP Server running on SSE at http://localhost:${port}/sse`);
     });
   } else {
+    const server = createMcpServer();
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("PriceShield MCP Server running on stdio");
