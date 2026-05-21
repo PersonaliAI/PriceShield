@@ -101,7 +101,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                 <Sparkles className="size-3.5" />
                 <span>Real-Time Alert Solution</span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
                 Supplier Price Increase <br />
                 <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 bg-clip-text text-transparent">
                   Detected instantly.
@@ -244,7 +244,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                   Detect supplier price increase hikes before payments clear
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Once an invoice gets paid, recovering money is difficult. PriceShield detects price spikes within minutes of receiving invoices, allowing you to flag errors and request credit memos before closing statements.
+                  Once an invoice gets paid, recovering money is difficult. Use our free <Link href="/tools/margin-leakage-calculator" className="text-amber-400 underline hover:text-amber-300">Margin Leakage Calculator</Link> to see how much margin drift costs you annually.
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">

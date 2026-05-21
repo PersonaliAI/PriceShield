@@ -100,7 +100,7 @@ export default function SupplierPriceTrackingPage() {
                 <Sparkles className="size-3.5" />
                 <span>Supplier Price Track Solution</span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
                 Track Supplier Prices <br />
                 <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">
                   Without spreadsheets.
@@ -266,7 +266,7 @@ export default function SupplierPriceTrackingPage() {
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Interactive Calculator</span>
                 <h2 className="text-2xl md:text-3xl font-bold text-white">Calculate your leaks</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Industry estimates show restaurants leak 2% to 4% of total supplier spend to stealth price hikes. See how much automated tracking recovers for your restaurant size.
+                  Industry estimates show restaurants leak 2% to 4% of total supplier spend to stealth price hikes. Try our fully interactive <Link href="/tools/margin-leakage-calculator" className="text-emerald-400 underline hover:text-emerald-300">Margin Leakage Calculator</Link> to customize error rates, invoice volume, and audit times.
                 </p>
                 <div className="pt-2">
                   <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Average Monthly Supplier Spend</div>

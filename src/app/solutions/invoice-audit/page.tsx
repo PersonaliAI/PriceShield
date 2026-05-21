@@ -99,7 +99,7 @@ export default function InvoiceAuditPage() {
                 <Sparkles className="size-3.5" />
                 <span>Automated Invoice Audit</span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
                 Run an Invoice Audit <br />
                 <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
                   In just 5 seconds.
@@ -246,7 +246,7 @@ export default function InvoiceAuditPage() {
                   Why restaurant invoice audits fail when done manually
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Reviewing supplier pricing manually is incredibly tedious. A typical food delivery contains 30 to 80 line items. Prices change on a weekly basis, and purveyors often use different SKU names.
+                  Reviewing supplier pricing manually is incredibly tedious. A typical food delivery contains 30 to 80 line items. Try our free <Link href="/tools/margin-leakage-calculator" className="text-emerald-400 underline hover:text-emerald-300">Margin Leakage Calculator</Link> to estimate how much labor time you save by automating audits.
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
