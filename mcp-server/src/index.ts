@@ -1,5 +1,6 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -7,6 +8,7 @@ import {
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 import { createClient } from "@supabase/supabase-js";
+import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -318,11 +320,49 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// Run server using Stdio transport
+// Run server using Stdio or SSE transport
 async function run() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("PriceShield MCP Server running on stdio");
+  const isSse = process.argv.includes("--sse");
+
+  if (isSse) {
+    const portArgIndex = process.argv.indexOf("--port");
+    const port = portArgIndex !== -1 ? parseInt(process.argv[portArgIndex + 1], 10) : 3000;
+
+    const app = express();
+    app.use(express.json());
+
+    const activeTransports = new Map<string, SSEServerTransport>();
+
+    app.get("/sse", async (req, res) => {
+      const transport = new SSEServerTransport("/messages", res);
+      activeTransports.set(transport.sessionId, transport);
+
+      res.on("close", () => {
+        activeTransports.delete(transport.sessionId);
+      });
+
+      await server.connect(transport);
+    });
+
+    app.post("/messages", async (req, res) => {
+      const sessionId = req.query.sessionId as string;
+      const transport = activeTransports.get(sessionId);
+
+      if (transport) {
+        await transport.handlePostMessage(req, res, req.body);
+      } else {
+        res.status(400).send("Session not found or expired");
+      }
+    });
+
+    app.listen(port, () => {
+      console.error(`PriceShield MCP Server running on SSE at http://localhost:${port}/sse`);
+    });
+  } else {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("PriceShield MCP Server running on stdio");
+  }
 }
 
 run().catch((error) => {
