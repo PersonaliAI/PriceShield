@@ -22,6 +22,43 @@ export default function OAuthAuthorizePage() {
 
   const [authorizing, setAuthorizing] = useState(false);
   const [error, setError] = useState("");
+  const [loadingClient, setLoadingClient] = useState(true);
+  const [clientMetadata, setClientMetadata] = useState<{
+    client_name: string;
+    logo_uri?: string;
+    client_uri?: string;
+  } | null>(null);
+
+  // Fetch client details from MCP server
+  useEffect(() => {
+    if (!clientId) {
+      setError("Missing required OAuth parameter: client_id");
+      setLoadingClient(false);
+      return;
+    }
+
+    const fetchClientDetails = async () => {
+      try {
+        const mcpServerUrl = process.env.NEXT_PUBLIC_MCP_URL || "https://priceshield-mcp-647257091960.us-central1.run.app";
+        const response = await fetch(`${mcpServerUrl}/authorize/client-details?client_id=${clientId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("The requesting application is not registered or was not found.");
+          }
+          throw new Error("Failed to load requesting application details.");
+        }
+        const data = await response.json();
+        setClientMetadata(data);
+      } catch (err: any) {
+        console.error("Error fetching client details:", err);
+        setError(err.message || "Could not retrieve integration details.");
+      } finally {
+        setLoadingClient(false);
+      }
+    };
+
+    fetchClientDetails();
+  }, [clientId]);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -31,11 +68,13 @@ export default function OAuthAuthorizePage() {
     }
   }, [loading, user, router]);
 
-  if (loading || !user) {
+  if (loading || (loadingClient && !error) || !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#09090b] text-white space-y-4">
         <Loader2 className="h-8 w-8 text-emerald-400 animate-spin" />
-        <p className="text-sm text-zinc-400">Verifying session...</p>
+        <p className="text-sm text-zinc-400">
+          {loading ? "Verifying session..." : "Fetching connection details..."}
+        </p>
       </div>
     );
   }
@@ -121,16 +160,27 @@ export default function OAuthAuthorizePage() {
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
             </div>
-            <div className="h-14 w-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-lg shadow-purple-950/20">
-              <Cpu className="h-7 w-7 text-purple-400" />
+            <div className="h-14 w-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-lg shadow-purple-950/20 overflow-hidden shrink-0">
+              {clientMetadata?.logo_uri ? (
+                <img
+                  src={clientMetadata.logo_uri}
+                  alt={clientMetadata.client_name}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <Cpu className="h-7 w-7 text-purple-400" />
+              )}
             </div>
           </div>
           <div>
             <CardTitle className="text-xl font-bold tracking-tight text-white">
-              Connect PriceShield to Claude
+              Connect PriceShield to {clientMetadata?.client_name || "Application"}
             </CardTitle>
             <CardDescription className="text-zinc-400 text-xs mt-1.5">
-              Claude is requesting permission to access your PriceShield invoice database.
+              {clientMetadata?.client_name || "The application"} is requesting permission to access your PriceShield invoice database.
             </CardDescription>
           </div>
         </CardHeader>
@@ -145,7 +195,7 @@ export default function OAuthAuthorizePage() {
 
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              This connector will allow Claude to:
+              This connector will allow {clientMetadata?.client_name || "the application"} to:
             </p>
             <div className="space-y-2.5">
               <div className="flex items-start gap-3">
@@ -195,7 +245,7 @@ export default function OAuthAuthorizePage() {
             </Button>
             <Button
               onClick={handleGrantAccess}
-              disabled={authorizing}
+              disabled={authorizing || !clientMetadata}
               className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold shadow-lg shadow-emerald-500/10 transition-all flex items-center justify-center"
             >
               {authorizing ? (

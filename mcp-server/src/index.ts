@@ -20,6 +20,7 @@ import type { Response } from "express";
 import dotenv from "dotenv";
 import path from "path";
 import crypto from "crypto";
+import fs from "fs";
 
 // Initialize environment variables
 dotenv.config();
@@ -348,6 +349,43 @@ const accessTokens = new Map<string, { token: string; clientId: string; userId: 
 // Client registration store - Claude uses dynamic client registration
 class SupabaseClientsStore implements OAuthRegisteredClientsStore {
   private clients = new Map<string, any>();
+  private filePath = "/tmp/oauth_clients.json";
+
+  constructor() {
+    // Pre-populate with default Claude client metadata for development/production fallback
+    this.clients.set("ae9af087-e690-4f20-8b48-ebf4a32aa9c2", {
+      client_id: "ae9af087-e690-4f20-8b48-ebf4a32aa9c2",
+      client_name: "Claude",
+      client_uri: "https://claude.ai",
+      logo_uri: "https://claude.ai/images/logo.png",
+      redirect_uris: ["https://claude.ai/oauth/callback"],
+    });
+    this.loadClients();
+  }
+
+  private loadClients() {
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const data = fs.readFileSync(this.filePath, "utf-8");
+        const list = JSON.parse(data);
+        for (const client of list) {
+          this.clients.set(client.client_id, client);
+        }
+        console.log(`Loaded ${this.clients.size} clients from persistent storage.`);
+      }
+    } catch (err) {
+      console.error("Failed to load clients from persistent storage:", err);
+    }
+  }
+
+  private saveClients() {
+    try {
+      const list = Array.from(this.clients.values());
+      fs.writeFileSync(this.filePath, JSON.stringify(list, null, 2), "utf-8");
+    } catch (err) {
+      console.error("Failed to save clients to persistent storage:", err);
+    }
+  }
 
   async getClient(clientId: string) {
     return this.clients.get(clientId);
@@ -355,6 +393,7 @@ class SupabaseClientsStore implements OAuthRegisteredClientsStore {
 
   async registerClient(clientMetadata: any) {
     this.clients.set(clientMetadata.client_id, clientMetadata);
+    this.saveClients();
     return clientMetadata;
   }
 }
@@ -491,6 +530,35 @@ async function run() {
       resourceName: "PriceShield MCP Server",
       scopesSupported: [],
     }));
+
+    // Endpoint to retrieve client metadata dynamically for the authorize screen
+    app.get("/authorize/client-details", async (req, res) => {
+      const { client_id } = req.query;
+      if (!client_id || typeof client_id !== "string") {
+        res.status(400).json({ error: "Missing or invalid client_id" });
+        return;
+      }
+
+      try {
+        const client = await oauthProvider.clientsStore.getClient(client_id);
+        if (!client) {
+          res.status(404).json({ error: "Client not found" });
+          return;
+        }
+
+        // Return safe metadata (no client secret or sensitive fields)
+        res.json({
+          client_id: client.client_id,
+          client_name: client.client_name || "Unknown Application",
+          client_uri: client.client_uri,
+          logo_uri: client.logo_uri,
+          redirect_uris: client.redirect_uris,
+        });
+      } catch (err: any) {
+        console.error("Error retrieving client metadata:", err);
+        res.status(500).json({ error: `Server error: ${err.message}` });
+      }
+    });
 
     // Custom POST handler for /authorize/confirm — handles authorization consent from frontend
     app.post("/authorize/confirm", async (req, res) => {
