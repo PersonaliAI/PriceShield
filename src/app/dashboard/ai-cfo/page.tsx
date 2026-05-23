@@ -12,7 +12,11 @@ import {
   ChevronRight,
   TrendingUp,
   AlertTriangle,
-  History
+  History,
+  Brain,
+  Check as CheckIcon,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -29,6 +33,14 @@ interface ChatMessage {
   created_at?: string;
 }
 
+const THINKING_STEPS = [
+  "Analyzing query intent & parameters...",
+  "Scanning invoice database for relevant records...",
+  "Comparing pricing points with baseline targets...",
+  "Running margin variance and leakage calculations...",
+  "Formulating financial recommendations...",
+];
+
 export default function AICFOPage() {
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -36,6 +48,10 @@ export default function AICFOPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  
+  // Real-time simulated thinking steps
+  const [thinkingStep, setThinkingStep] = useState(0);
+  const [showThinkingDetails, setShowThinkingDetails] = useState(true);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -71,6 +87,24 @@ export default function AICFOPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  // Run thinking steps simulation
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      setThinkingStep(0);
+      interval = setInterval(() => {
+        setThinkingStep((prev) => {
+          if (prev < THINKING_STEPS.length - 1) {
+            return prev + 1;
+          }
+          clearInterval(interval);
+          return prev;
+        });
+      }, 950);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleSendMessage = async (e?: React.FormEvent, customInput?: string) => {
     if (e) e.preventDefault();
@@ -219,14 +253,81 @@ export default function AICFOPage() {
           )}
           
           {isLoading && (
-            <div className="flex justify-start items-center gap-4 mt-8 animate-pulse">
-              <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                <Loader2 className="h-4 w-4 text-emerald-400 animate-spin" />
-              </div>
-              <div className="flex gap-1.5 px-4 py-3 rounded-2xl bg-muted/10 border border-border/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"></span>
+            <div className="flex flex-col items-start gap-4 mt-8 animate-in fade-in slide-in-from-bottom-3 duration-300 w-full">
+              <div className="flex max-w-[85%] sm:max-w-[75%] gap-4 w-full">
+                <div className="mt-1 flex-shrink-0">
+                  <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-lg shadow-purple-500/5">
+                    <Brain className="h-4 w-4 text-purple-400 animate-pulse" />
+                  </div>
+                </div>
+                
+                <div className="flex-1 rounded-3xl bg-zinc-950/40 border border-purple-500/20 shadow-xl shadow-purple-950/5 overflow-hidden">
+                  {/* Accordion Trigger Header */}
+                  <button
+                    type="button"
+                    onClick={() => setShowThinkingDetails(!showThinkingDetails)}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-purple-500/5 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="h-4 w-4 text-purple-400 animate-spin" />
+                      <span className="text-sm font-bold tracking-tight text-purple-400">
+                        Thinking Process...
+                      </span>
+                    </div>
+                    {showThinkingDetails ? (
+                      <ChevronUp className="h-4 w-4 text-purple-400/50 group-hover:text-purple-400 transition-colors" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-purple-400/50 group-hover:text-purple-400 transition-colors" />
+                    )}
+                  </button>
+
+                  {/* Accordion Detail Steps */}
+                  {showThinkingDetails && (
+                    <div className="px-5 pb-5 pt-1 space-y-3 border-t border-purple-500/10 bg-purple-950/5">
+                      {THINKING_STEPS.map((step, idx) => {
+                        const isCompleted = thinkingStep > idx;
+                        const isActive = thinkingStep === idx;
+                        const isPending = thinkingStep < idx;
+
+                        return (
+                          <div
+                            key={idx}
+                            className={cn(
+                              "flex items-center gap-3 text-xs transition-opacity duration-300",
+                              isPending ? "opacity-30" : "opacity-100"
+                            )}
+                          >
+                            {isCompleted ? (
+                              <div className="h-4.5 w-4.5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                                <CheckIcon className="h-2.5 w-2.5" />
+                              </div>
+                            ) : isActive ? (
+                              <div className="h-4.5 w-4.5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/30 animate-pulse">
+                                <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                              </div>
+                            ) : (
+                              <div className="h-4.5 w-4.5 rounded-full bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 border border-zinc-700">
+                                <span className="text-[9px] font-bold">{idx + 1}</span>
+                              </div>
+                            )}
+                            <span
+                              className={cn(
+                                "font-medium",
+                                isCompleted
+                                  ? "text-zinc-400 line-through decoration-zinc-700/80"
+                                  : isActive
+                                  ? "text-purple-300 font-bold"
+                                  : "text-zinc-500"
+                              )}
+                            >
+                              {step}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
