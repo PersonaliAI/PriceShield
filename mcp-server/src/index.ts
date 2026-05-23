@@ -329,6 +329,168 @@ function createMcpServer(userId: string): Server {
   return server;
 }
 
+const ENCRYPTION_KEY = crypto.createHash('sha256').update(process.env.SUPABASE_SERVICE_ROLE_KEY || 'default-secret').digest(); // 32 bytes
+const IV_LENGTH = 16;
+
+function encrypt(text: string): string {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text: string): string {
+  const textParts = text.split(':');
+  const iv = Buffer.from(textParts.shift()!, 'hex');
+  const encryptedText = Buffer.from(textParts.join(':'), 'hex');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+  let decrypted = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
+
+function renderLoginPage(redirectUri: string, state: string, error?: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authorize PriceShield MCP</title>
+  <style>
+    body {
+      background-color: #09090b;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .card {
+      background-color: rgba(24, 24, 27, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .logo {
+      background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      margin: 0 auto 16px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2);
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+    }
+    p {
+      color: #a1a1aa;
+      font-size: 13px;
+      margin: 0;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #a1a1aa;
+    }
+    input {
+      width: 100%;
+      background-color: rgba(9, 9, 11, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 10px 12px;
+      box-sizing: border-box;
+      color: white;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+    }
+    button {
+      width: 100%;
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    button:hover {
+      background-color: #059669;
+    }
+    .error-msg {
+      color: #f43f5e;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">PS</div>
+      <h1>Connect to Claude</h1>
+      <p>Authorize Claude to audit invoices and track supplier prices on your behalf.</p>
+    </div>
+    
+    ${error ? `<div class="error-msg">❌ ${error}</div>` : ""}
+    
+    <form action="/oauth/authorize" method="POST">
+      <input type="hidden" name="redirect_uri" value="${redirectUri}">
+      <input type="hidden" name="state" value="${state || ""}">
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="••••••••">
+      </div>
+      
+      <button type="submit">Authorize Connector</button>
+    </form>
+  </div>
+</body>
+</html>
+  `;
+}
+
 // Run server using Stdio or SSE transport
 async function run() {
   const isSse = process.argv.includes("--sse");
@@ -339,35 +501,113 @@ async function run() {
 
     const app = express();
     app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
     const activeTransports = new Map<string, SSEServerTransport>();
     const activeServers = new Map<string, Server>();
 
-    app.get("/sse", async (req, res) => {
-      const apiKey = req.query.api_key as string;
-      if (!apiKey) {
-        res.status(401).send("Unauthorized: Missing api_key parameter");
+    // GET /oauth/authorize endpoint
+    app.get("/oauth/authorize", (req, res) => {
+      const { redirect_uri, state } = req.query;
+      if (!redirect_uri) {
+        res.status(400).send("Missing redirect_uri parameter");
+        return;
+      }
+      res.send(renderLoginPage(redirect_uri as string, state as string));
+    });
+
+    // POST /oauth/authorize endpoint
+    app.post("/oauth/authorize", async (req, res) => {
+      const { email, password, redirect_uri, state } = req.body;
+      if (!redirect_uri) {
+        res.status(400).send("Missing redirect_uri parameter");
         return;
       }
 
-      // Hash the key using SHA-256
-      const keyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error || !data.session) {
+          res.send(renderLoginPage(redirect_uri, state, error?.message || "Invalid credentials"));
+          return;
+        }
 
-      // Verify key in Supabase
-      const { data: keyData, error: keyErr } = await supabase
-        .from("api_keys")
-        .select("user_id, is_active")
-        .eq("key_hash", keyHash)
-        .eq("is_active", true)
-        .single();
+        const tokenPayload = JSON.stringify({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        });
+        const code = encrypt(tokenPayload);
 
-      if (keyErr || !keyData || !keyData.user_id) {
-        res.status(401).send("Unauthorized: Invalid or inactive api_key");
+        const redirectUrl = new URL(redirect_uri);
+        redirectUrl.searchParams.set("code", code);
+        if (state) {
+          redirectUrl.searchParams.set("state", state);
+        }
+        res.redirect(redirectUrl.toString());
+      } catch (err: any) {
+        res.status(500).send(`Server error: ${err.message}`);
+      }
+    });
+
+    // POST /oauth/token endpoint
+    app.post("/oauth/token", async (req, res) => {
+      const { code } = req.body;
+      if (!code) {
+        res.status(400).json({ error: "invalid_request", error_description: "Missing code parameter" });
+        return;
+      }
+
+      try {
+        const decrypted = decrypt(code);
+        const payload = JSON.parse(decrypted);
+        res.json({
+          access_token: payload.access_token,
+          refresh_token: payload.refresh_token,
+          token_type: "bearer",
+          expires_in: 3600
+        });
+      } catch (err) {
+        res.status(400).json({ error: "invalid_grant", error_description: "Invalid or expired authorization code" });
+      }
+    });
+
+    app.get("/sse", async (req, res) => {
+      let userId: string | null = null;
+
+      // Try reading token from Authorization header (OAuth / Claude native connector)
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split(" ")[1];
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (!error && user) {
+          userId = user.id;
+        }
+      }
+
+      // Fall back to query param key hash check
+      if (!userId) {
+        const apiKey = req.query.api_key as string;
+        if (apiKey) {
+          const keyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
+          const { data: keyData } = await supabase
+            .from("api_keys")
+            .select("user_id, is_active")
+            .eq("key_hash", keyHash)
+            .eq("is_active", true)
+            .single();
+
+          if (keyData && keyData.user_id) {
+            userId = keyData.user_id;
+          }
+        }
+      }
+
+      if (!userId) {
+        res.status(401).send("Unauthorized: Invalid, expired, or missing credentials");
         return;
       }
 
       const transport = new SSEServerTransport("/messages", res);
-      const server = createMcpServer(keyData.user_id);
+      const server = createMcpServer(userId);
       activeTransports.set(transport.sessionId, transport);
       activeServers.set(transport.sessionId, server);
 
