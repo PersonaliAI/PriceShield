@@ -161,6 +161,26 @@ export interface AuditJobStatus extends AuditResult {
   error?: string;
 }
 
+export interface APIKeyListItem {
+  id: string;
+  name: string;
+  key_prefix: string;
+  tier: string;
+  is_active: boolean;
+  created_at: string;
+  last_used_at: string | null;
+  total_requests: number;
+  monthly_requests: number;
+}
+
+export interface APIKeyResponse {
+  id: string;
+  raw_key: string;
+  name: string;
+  tier: string;
+  created_at: string;
+}
+
 /* ─── API methods ─── */
 export const api = {
   getDashboardSummary: (token: string) =>
@@ -307,6 +327,23 @@ export const api = {
 
   deleteVendorBaseline: (token: string, vendor: string) =>
     request<{ status: string }>(`/api/baselines/${encodeURIComponent(vendor)}`, {
+      token,
+      method: "DELETE",
+    }),
+
+  // API Keys
+  getKeys: (token: string) =>
+    request<APIKeyListItem[]>(`/api/keys`, { token }),
+
+  createKey: (token: string, name: string, tier: string = "api_free") =>
+    request<APIKeyResponse>(`/api/keys`, {
+      token,
+      method: "POST",
+      body: JSON.stringify({ name, tier }),
+    }),
+
+  deleteKey: (token: string, keyId: string) =>
+    request<{ status: string }>(`/api/keys/${keyId}`, {
       token,
       method: "DELETE",
     }),

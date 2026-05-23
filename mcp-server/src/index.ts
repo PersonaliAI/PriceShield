@@ -11,6 +11,7 @@ import { createClient } from "@supabase/supabase-js";
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
+import crypto from "crypto";
 
 // Initialize environment variables
 dotenv.config();
@@ -30,7 +31,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Create MCP server factory function
-function createMcpServer(): Server {
+function createMcpServer(userId: string): Server {
   const server = new Server(
     {
       name: "priceshield-mcp-server",
@@ -148,6 +149,7 @@ function createMcpServer(): Server {
           let query = supabase
             .from("invoices")
             .select("id, vendor_name, invoice_date, is_baseline, created_at")
+            .eq("user_id", userId)
             .order("invoice_date", { ascending: false })
             .limit(limit);
 
@@ -178,6 +180,7 @@ function createMcpServer(): Server {
             .from("invoices")
             .select("*, line_items(*)")
             .eq("id", invoiceId)
+            .eq("user_id", userId)
             .single();
 
           if (error) throw error;
@@ -204,8 +207,9 @@ function createMcpServer(): Server {
           // Fetch line_items matching the name, joined with invoices to get date/vendor
           let query = supabase
             .from("line_items")
-            .select("id, item_name, unit_price, quantity, unit_of_measure, invoices!inner(vendor_name, invoice_date)")
+            .select("id, item_name, unit_price, quantity, unit_of_measure, invoices!inner(vendor_name, invoice_date, user_id)")
             .ilike("item_name", `%${itemName}%`)
+            .eq("invoices.user_id", userId)
             .limit(limit);
 
           if (vendorName) {
@@ -247,8 +251,9 @@ function createMcpServer(): Server {
 
           let query = supabase
             .from("line_items")
-            .select("id, item_name, unit_price, unit_of_measure, invoices!inner(vendor_name, is_baseline, invoice_date)")
-            .eq("invoices.is_baseline", true);
+            .select("id, item_name, unit_price, unit_of_measure, invoices!inner(vendor_name, is_baseline, invoice_date, user_id)")
+            .eq("invoices.is_baseline", true)
+            .eq("invoices.user_id", userId);
 
           if (vendorName) {
             query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
@@ -339,8 +344,30 @@ async function run() {
     const activeServers = new Map<string, Server>();
 
     app.get("/sse", async (req, res) => {
+      const apiKey = req.query.api_key as string;
+      if (!apiKey) {
+        res.status(401).send("Unauthorized: Missing api_key parameter");
+        return;
+      }
+
+      // Hash the key using SHA-256
+      const keyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
+
+      // Verify key in Supabase
+      const { data: keyData, error: keyErr } = await supabase
+        .from("api_keys")
+        .select("user_id, is_active")
+        .eq("key_hash", keyHash)
+        .eq("is_active", true)
+        .single();
+
+      if (keyErr || !keyData || !keyData.user_id) {
+        res.status(401).send("Unauthorized: Invalid or inactive api_key");
+        return;
+      }
+
       const transport = new SSEServerTransport("/messages", res);
-      const server = createMcpServer();
+      const server = createMcpServer(keyData.user_id);
       activeTransports.set(transport.sessionId, transport);
       activeServers.set(transport.sessionId, server);
 
@@ -367,10 +394,24 @@ async function run() {
       console.error(`PriceShield MCP Server running on SSE at http://localhost:${port}/sse`);
     });
   } else {
-    const server = createMcpServer();
+    // Look for DEFAULT_USER_ID in env, or fall back to the first profile in the DB
+    let userId = process.env.DEFAULT_USER_ID;
+    if (!userId) {
+      const { data: profiles } = await supabase.from("profiles").select("id").limit(1);
+      if (profiles && profiles.length > 0) {
+        userId = profiles[0].id;
+      }
+    }
+
+    if (!userId) {
+      console.error("Error: DEFAULT_USER_ID not configured and no profiles found in DB.");
+      process.exit(1);
+    }
+
+    const server = createMcpServer(userId);
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("PriceShield MCP Server running on stdio");
+    console.error(`PriceShield MCP Server running on stdio (scoped to user: ${userId})`);
   }
 }
 

@@ -31,7 +31,7 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
-import { api, UserSettings, SettingsUpdate } from "@/lib/api";
+import { api, UserSettings, SettingsUpdate, APIKeyListItem, APIKeyResponse } from "@/lib/api";
 
 export default function SettingsPage() {
   const { getToken, user } = useAuth();
@@ -65,6 +65,27 @@ export default function SettingsPage() {
   const [triggeringReport, setTriggeringReport] = useState<string | null>(null);
   const initialLoadDone = useRef(false);
 
+  // API Keys state
+  const [apiKeys, setApiKeys] = useState<APIKeyListItem[]>([]);
+  const [loadingKeys, setLoadingKeys] = useState(true);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyResponse, setNewKeyResponse] = useState<APIKeyResponse | null>(null);
+  const [isCreatingKey, setIsCreatingKey] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+
+  const fetchKeys = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const data = await api.getKeys(token);
+      setApiKeys(data || []);
+    } catch (err) {
+      console.error("Failed to load API keys", err);
+    } finally {
+      setLoadingKeys(false);
+    }
+  }, [getToken]);
+
   const fetchSettings = useCallback(async () => {
     try {
       const token = await getToken();
@@ -94,7 +115,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSettings();
-  }, [fetchSettings]);
+    fetchKeys();
+  }, [fetchSettings, fetchKeys]);
 
   // Handle Slack OAuth redirect status
   useEffect(() => {
@@ -253,6 +275,45 @@ export default function SettingsPage() {
     navigator.clipboard.writeText(inboxEmail);
     setCopiedInbox(true);
     setTimeout(() => setCopiedInbox(false), 2000);
+  };
+
+  const handleCreateKey = async () => {
+    const keyName = newKeyName.trim() || "Default";
+    setIsCreatingKey(true);
+    setError("");
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const data = await api.createKey(token, keyName, "api_free");
+      setNewKeyResponse(data);
+      setNewKeyName("");
+      await fetchKeys();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create API key");
+    } finally {
+      setIsCreatingKey(false);
+    }
+  };
+
+  const handleRevokeKey = async (keyId: string) => {
+    setError("");
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await api.deleteKey(token, keyId);
+      await fetchKeys();
+      setSuccess("API key revoked successfully.");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to revoke API key");
+    }
+  };
+
+  const copyRawKey = () => {
+    if (!newKeyResponse?.raw_key) return;
+    navigator.clipboard.writeText(newKeyResponse.raw_key);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
   };
 
   if (loading) {
@@ -834,6 +895,98 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Developer API Keys */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+              <Key className="h-5 w-5 text-indigo-400" />
+            </div>
+            <div>
+              <CardTitle>Developer API Keys</CardTitle>
+              <CardDescription>
+                Generate and manage API keys to connect external AI tools (like Claude Desktop or Cursor) via MCP
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* List of active keys */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium">Your API Keys</h3>
+            {loadingKeys ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 text-indigo-400 animate-spin" />
+              </div>
+            ) : apiKeys.length === 0 ? (
+              <p className="text-xs text-muted-foreground bg-muted/10 border border-border/40 p-4 rounded-lg">
+                No API keys generated yet. Generate a key below to connect your local IDE or AI client.
+              </p>
+            ) : (
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-muted/30 border-b border-border/50">
+                      <th className="p-3 font-semibold text-muted-foreground">Name</th>
+                      <th className="p-3 font-semibold text-muted-foreground">Prefix</th>
+                      <th className="p-3 font-semibold text-muted-foreground">Created</th>
+                      <th className="p-3 font-semibold text-muted-foreground">Last Used</th>
+                      <th className="p-3 font-semibold text-muted-foreground text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {apiKeys.map((key) => (
+                      <tr key={key.id} className="border-b border-border/40 hover:bg-muted/10 transition-colors">
+                        <td className="p-3 font-medium">{key.name}</td>
+                        <td className="p-3"><code className="bg-muted/40 px-1.5 py-0.5 rounded font-mono text-[11px]">{key.key_prefix}...</code></td>
+                        <td className="p-3 text-muted-foreground">{new Date(key.created_at).toLocaleDateString()}</td>
+                        <td className="p-3 text-muted-foreground">
+                          {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : "Never"}
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleRevokeKey(key.id)}
+                            className="text-rose-400 hover:text-rose-300 font-medium transition-colors"
+                          >
+                            Revoke
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Key Generator Form */}
+          <div className="pt-4 border-t border-border/30 space-y-3">
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Generate New API Key</h4>
+              <p className="text-xs text-muted-foreground">API keys let your custom MCP clients pull data for your user account.</p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newKeyName}
+                onChange={(e) => setNewKeyName(e.target.value)}
+                placeholder="e.g. Cursor IDE"
+                disabled={isCreatingKey}
+                className="flex-1 rounded-lg border border-border/50 bg-background/50 px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all disabled:opacity-50"
+              />
+              <Button
+                onClick={handleCreateKey}
+                disabled={isCreatingKey}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-[36px]"
+              >
+                {isCreatingKey ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
+                Generate
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Connection Status */}
       <Card className="bg-card/50 border-border/50">
         <CardHeader>
@@ -888,6 +1041,74 @@ export default function SettingsPage() {
               className="bg-rose-500 hover:bg-rose-600"
             >
               Disconnect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generated API Key Dialog */}
+      <Dialog open={!!newKeyResponse} onOpenChange={(open) => !open && setNewKeyResponse(null)}>
+        <DialogContent className="max-w-lg bg-zinc-950 border border-zinc-800/80">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-indigo-400 text-lg">
+              <Check className="h-5 w-5 text-emerald-400 animate-pulse" /> API Key Generated!
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs">
+              Copy this key and save it in a safe place. You will **not** be able to see it again.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 my-2">
+            <div className="flex items-stretch gap-2">
+              <div className="flex-1 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5 font-mono text-xs text-emerald-400 tracking-wide break-all min-w-0 select-all">
+                {newKeyResponse?.raw_key}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyRawKey}
+                className="h-[38px] px-3 shrink-0 flex items-center justify-center border-zinc-700/50 hover:bg-zinc-900"
+              >
+                {copiedKey ? <Check className="h-4 w-4 text-emerald-400 mr-1.5" /> : <Copy className="h-4 w-4 mr-1.5" />}
+                <span>{copiedKey ? "Copied" : "Copy"}</span>
+              </Button>
+            </div>
+
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-4 space-y-3">
+              <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest">MCP Configuration Guides</p>
+              
+              <div className="space-y-2">
+                <p className="text-[11px] text-zinc-400 font-semibold">1. Claude Desktop Config</p>
+                <p className="text-[10px] text-zinc-500">Add this to your <code className="bg-zinc-900/60 px-1 py-0.5 rounded">claude_desktop_config.json</code> file:</p>
+                <pre className="bg-zinc-950 border border-zinc-800/80 p-2.5 rounded-lg text-[9px] font-mono text-zinc-300 overflow-x-auto select-all">
+{`{
+  "mcpServers": {
+    "priceshield-mcp": {
+      "type": "sse",
+      "url": "https://priceshield-mcp-647257091960.us-central1.run.app/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}"
+    }
+  }
+}`}
+                </pre>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[11px] text-zinc-400 font-semibold">2. Cursor IDE Config</p>
+                <ul className="text-[10px] text-zinc-500 list-disc list-inside space-y-0.5 pl-1">
+                  <li>Open Cursor Settings → **Features** → **MCP**.</li>
+                  <li>Click **+ Add New MCP Server**.</li>
+                  <li>Name: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400">priceshield-mcp</code></li>
+                  <li>Type: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400">sse</code></li>
+                  <li>URL: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400 font-mono text-[9px]">https://priceshield-mcp-647257091960.us-central1.run.app/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-2">
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs w-full sm:w-auto h-[36px]"
+              onClick={() => setNewKeyResponse(null)}
+            >
+              Done
             </Button>
           </DialogFooter>
         </DialogContent>
