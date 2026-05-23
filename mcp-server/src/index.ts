@@ -506,6 +506,31 @@ async function run() {
     const activeTransports = new Map<string, SSEServerTransport>();
     const activeServers = new Map<string, Server>();
 
+    // GET /.well-known/oauth-protected-resource endpoint
+    app.get("/.well-known/oauth-protected-resource", (req, res) => {
+      res.json({
+        resource: "https://priceshield-mcp-647257091960.us-central1.run.app/sse",
+        authorization_servers: [
+          "https://priceshield-mcp-647257091960.us-central1.run.app"
+        ],
+        scopes_supported: [],
+        bearer_methods_supported: [
+          "header"
+        ]
+      });
+    });
+
+    // GET /.well-known/oauth-authorization-server endpoint
+    app.get("/.well-known/oauth-authorization-server", (req, res) => {
+      res.json({
+        issuer: "https://priceshield-mcp-647257091960.us-central1.run.app",
+        authorization_endpoint: "https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize",
+        token_endpoint: "https://priceshield-mcp-647257091960.us-central1.run.app/oauth/token",
+        response_types_supported: ["code"],
+        grant_types_supported: ["authorization_code"]
+      });
+    });
+
     // GET /oauth/authorize endpoint
     app.get("/oauth/authorize", (req, res) => {
       const { redirect_uri, state } = req.query;
@@ -602,6 +627,10 @@ async function run() {
       }
 
       if (!userId) {
+        res.setHeader(
+          "WWW-Authenticate",
+          `Bearer realm="mcp", authorization_uri="https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize", resource_metadata="https://priceshield-mcp-647257091960.us-central1.run.app/.well-known/oauth-protected-resource"`
+        );
         res.status(401).send("Unauthorized: Invalid, expired, or missing credentials");
         return;
       }

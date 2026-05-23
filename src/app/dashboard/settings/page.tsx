@@ -73,6 +73,19 @@ export default function SettingsPage() {
   const [isCreatingKey, setIsCreatingKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
 
+  // Claude OAuth copy states
+  const [copiedOAuthSse, setCopiedOAuthSse] = useState(false);
+  const [copiedOAuthAuth, setCopiedOAuthAuth] = useState(false);
+  const [copiedOAuthToken, setCopiedOAuthToken] = useState(false);
+  const [copiedOAuthClientId, setCopiedOAuthClientId] = useState(false);
+  const [copiedOAuthClientSecret, setCopiedOAuthClientSecret] = useState(false);
+
+  const copyToClipboard = (text: string, setter: (v: boolean) => void) => {
+    navigator.clipboard.writeText(text);
+    setter(true);
+    setTimeout(() => setter(false), 2000);
+  };
+
   const fetchKeys = useCallback(async () => {
     try {
       const token = await getToken();
@@ -982,6 +995,129 @@ export default function SettingsPage() {
                 {isCreatingKey ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
                 Generate
               </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Claude Web App Integration (OAuth 2.0) */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 text-purple-400" />
+              </div>
+              <div>
+                <CardTitle>Claude Web Integration (OAuth 2.0)</CardTitle>
+                <CardDescription>
+                  Configure a native custom connector in the Claude Web App to audit invoices securely
+                </CardDescription>
+              </div>
+            </div>
+            <Badge className="bg-purple-500/10 text-purple-400 border-0 h-6">
+              OAuth 2.0 Ready
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 space-y-3">
+            <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">How to set up in Claude.ai</p>
+            <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1.5 pl-1 leading-relaxed">
+              <li>Open <strong>Claude.ai</strong>, click on your profile picture, and select <strong>Settings</strong> or <strong>Connectors</strong>.</li>
+              <li>Click <strong>Add Connector</strong> and select <strong>Custom MCP (SSE)</strong>.</li>
+              <li>Provide a Name (e.g. <code className="bg-zinc-900/60 px-1 py-0.5 rounded text-purple-300">PriceShield</code>).</li>
+              <li>Copy and paste the configuration parameters shown below into their respective fields.</li>
+              <li>Click <strong>Authorize</strong> to log in and establish the secure user-scoped connection.</li>
+            </ol>
+          </div>
+
+          <div className="space-y-4">
+            {/* SSE URL */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">SSE Connection URL</label>
+                <button
+                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/sse", setCopiedOAuthSse)}
+                  className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+                >
+                  {copiedOAuthSse ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedOAuthSse ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
+                https://priceshield-mcp-647257091960.us-central1.run.app/sse
+              </div>
+            </div>
+
+            {/* Authorize URL */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">Authorization URL</label>
+                <button
+                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize", setCopiedOAuthAuth)}
+                  className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+                >
+                  {copiedOAuthAuth ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedOAuthAuth ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
+                https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize
+              </div>
+            </div>
+
+            {/* Token URL */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">Token URL</label>
+                <button
+                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/oauth/token", setCopiedOAuthToken)}
+                  className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+                >
+                  {copiedOAuthToken ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedOAuthToken ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
+                https://priceshield-mcp-647257091960.us-central1.run.app/oauth/token
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Client ID */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-muted-foreground">Client ID <span className="text-[10px] opacity-60">(Any string)</span></label>
+                  <button
+                    onClick={() => copyToClipboard("priceshield", setCopiedOAuthClientId)}
+                    className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+                  >
+                    {copiedOAuthClientId ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copiedOAuthClientId ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
+                  priceshield
+                </div>
+              </div>
+
+              {/* Client Secret */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-muted-foreground">Client Secret <span className="text-[10px] opacity-60">(Any string)</span></label>
+                  <button
+                    onClick={() => copyToClipboard("priceshield-secret", setCopiedOAuthClientSecret)}
+                    className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+                  >
+                    {copiedOAuthClientSecret ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copiedOAuthClientSecret ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
+                  priceshield-secret
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
