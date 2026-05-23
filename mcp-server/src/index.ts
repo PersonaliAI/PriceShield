@@ -1,6 +1,13 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { mcpAuthRouter } from "@modelcontextprotocol/sdk/server/auth/router.js";
+import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import type { OAuthServerProvider, AuthorizationParams } from "@modelcontextprotocol/sdk/server/auth/provider.js";
+import type { OAuthRegisteredClientsStore } from "@modelcontextprotocol/sdk/server/auth/clients.js";
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -9,6 +16,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { createClient } from "@supabase/supabase-js";
 import express from "express";
+import type { Response } from "express";
 import dotenv from "dotenv";
 import path from "path";
 import crypto from "crypto";
@@ -30,7 +38,9 @@ if (!supabaseUrl || !supabaseKey) {
 // Create Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Create MCP server factory function
+// ===================================================================
+// MCP Server Factory - Creates a user-scoped MCP server instance
+// ===================================================================
 function createMcpServer(userId: string): Server {
   const server = new Server(
     {
@@ -204,7 +214,6 @@ function createMcpServer(userId: string): Server {
             throw new McpError(ErrorCode.InvalidParams, "item_name is required");
           }
 
-          // Fetch line_items matching the name, joined with invoices to get date/vendor
           let query = supabase
             .from("line_items")
             .select("id, item_name, unit_price, quantity, unit_of_measure, invoices!inner(vendor_name, invoice_date, user_id)")
@@ -219,7 +228,6 @@ function createMcpServer(userId: string): Server {
           const { data, error } = await query;
           if (error) throw error;
 
-          // Process data to sort by invoice date client-side
           const formattedData = (data as any[] || [])
             .map((item: any) => ({
               id: item.id,
@@ -233,7 +241,7 @@ function createMcpServer(userId: string): Server {
             .sort((a: any, b: any) => {
               const dateA = new Date(a.invoice_date || 0).getTime();
               const dateB = new Date(b.invoice_date || 0).getTime();
-              return dateA - dateB; // Chronological order
+              return dateA - dateB;
             });
 
           return {
@@ -329,28 +337,29 @@ function createMcpServer(userId: string): Server {
   return server;
 }
 
-const ENCRYPTION_KEY = crypto.createHash('sha256').update(process.env.SUPABASE_SERVICE_ROLE_KEY || 'default-secret').digest(); // 32 bytes
-const IV_LENGTH = 16;
+// ===================================================================
+// OAuth 2.1 Server Provider - backed by Supabase Auth
+// ===================================================================
 
-function encrypt(text: string): string {
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
+// In-memory stores for OAuth flow (authorization codes, tokens, clients)
+const authCodes = new Map<string, { clientId: string; params: AuthorizationParams; userId: string }>();
+const accessTokens = new Map<string, { token: string; clientId: string; userId: string; scopes: string[]; expiresAt: number }>();
+
+// Client registration store - Claude uses dynamic client registration
+class SupabaseClientsStore implements OAuthRegisteredClientsStore {
+  private clients = new Map<string, any>();
+
+  async getClient(clientId: string) {
+    return this.clients.get(clientId);
+  }
+
+  async registerClient(clientMetadata: any) {
+    this.clients.set(clientMetadata.client_id, clientMetadata);
+    return clientMetadata;
+  }
 }
 
-function decrypt(text: string): string {
-  const textParts = text.split(':');
-  const iv = Buffer.from(textParts.shift()!, 'hex');
-  const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-  const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
-}
-
-function renderLoginPage(redirectUri: string, state: string, error?: string): string {
+function renderLoginPage(redirectUri: string, state: string, codeChallenge: string, clientId: string, scopes: string[], resource?: string, error?: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -419,7 +428,7 @@ function renderLoginPage(redirectUri: string, state: string, error?: string): st
       margin-bottom: 6px;
       color: #a1a1aa;
     }
-    input {
+    input[type="email"], input[type="password"] {
       width: 100%;
       background-color: rgba(9, 9, 11, 0.5);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -469,9 +478,13 @@ function renderLoginPage(redirectUri: string, state: string, error?: string): st
     
     ${error ? `<div class="error-msg">❌ ${error}</div>` : ""}
     
-    <form action="/oauth/authorize" method="POST">
+    <form action="/authorize" method="POST">
       <input type="hidden" name="redirect_uri" value="${redirectUri}">
       <input type="hidden" name="state" value="${state || ""}">
+      <input type="hidden" name="code_challenge" value="${codeChallenge}">
+      <input type="hidden" name="client_id" value="${clientId}">
+      <input type="hidden" name="scopes" value="${scopes.join(",")}">
+      ${resource ? `<input type="hidden" name="resource" value="${resource}">` : ""}
       
       <div class="form-group">
         <label for="email">Email Address</label>
@@ -491,7 +504,90 @@ function renderLoginPage(redirectUri: string, state: string, error?: string): st
   `;
 }
 
-// Run server using Stdio or SSE transport
+// OAuth Server Provider implementation that uses Supabase auth
+class SupabaseOAuthProvider implements OAuthServerProvider {
+  clientsStore = new SupabaseClientsStore();
+
+  async authorize(client: any, params: AuthorizationParams, res: Response): Promise<void> {
+    // Render the login page — user must sign in with Supabase credentials
+    const html = renderLoginPage(
+      params.redirectUri,
+      params.state || "",
+      params.codeChallenge,
+      client.client_id,
+      params.scopes || [],
+      params.resource?.toString()
+    );
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
+  }
+
+  async challengeForAuthorizationCode(_client: any, authorizationCode: string): Promise<string> {
+    const codeData = authCodes.get(authorizationCode);
+    if (!codeData) {
+      throw new Error("Invalid authorization code");
+    }
+    return codeData.params.codeChallenge;
+  }
+
+  async exchangeAuthorizationCode(client: any, authorizationCode: string): Promise<any> {
+    const codeData = authCodes.get(authorizationCode);
+    if (!codeData) {
+      throw new Error("Invalid authorization code");
+    }
+    if (codeData.clientId !== client.client_id) {
+      throw new Error("Authorization code was not issued to this client");
+    }
+
+    authCodes.delete(authorizationCode);
+
+    // Generate an access token that maps to the Supabase user
+    const token = crypto.randomUUID();
+    const expiresAt = Date.now() + 3600000; // 1 hour
+
+    accessTokens.set(token, {
+      token,
+      clientId: client.client_id,
+      userId: codeData.userId,
+      scopes: codeData.params.scopes || [],
+      expiresAt,
+    });
+
+    return {
+      access_token: token,
+      token_type: "bearer",
+      expires_in: 3600,
+      scope: (codeData.params.scopes || []).join(" "),
+    };
+  }
+
+  async exchangeRefreshToken(): Promise<any> {
+    throw new Error("Refresh tokens not implemented");
+  }
+
+  async verifyAccessToken(token: string): Promise<AuthInfo> {
+    const tokenData = accessTokens.get(token);
+    if (!tokenData) {
+      throw new Error("Invalid or expired token");
+    }
+    if (tokenData.expiresAt < Date.now()) {
+      accessTokens.delete(token);
+      throw new Error("Token has expired");
+    }
+
+    return {
+      token,
+      clientId: tokenData.clientId,
+      scopes: tokenData.scopes,
+      expiresAt: Math.floor(tokenData.expiresAt / 1000),
+      extra: { userId: tokenData.userId },
+    };
+  }
+}
+
+// ===================================================================
+// Run server using Stdio, SSE, or Streamable HTTP transport
+// ===================================================================
 async function run() {
   const isSse = process.argv.includes("--sse");
 
@@ -499,19 +595,21 @@ async function run() {
     const portArgIndex = process.argv.indexOf("--port");
     const port = portArgIndex !== -1 ? parseInt(process.argv[portArgIndex + 1], 10) : parseInt(process.env.PORT || "3000", 10);
 
+    const BASE_URL = process.env.BASE_URL || `https://priceshield-mcp-647257091960.us-central1.run.app`;
+
     const app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    // CORS and preflight OPTIONS handling middleware
+    // CORS middleware
     app.use((req, res, next) => {
       const origin = req.headers.origin || "*";
       res.setHeader("Access-Control-Allow-Origin", origin);
       res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, api_key");
-      res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate");
-      
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT, PATCH");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, api_key, Mcp-Session-Id");
+      res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate, Mcp-Session-Id");
+
       if (req.method === "OPTIONS") {
         res.sendStatus(200);
         return;
@@ -519,64 +617,53 @@ async function run() {
       next();
     });
 
-    const activeTransports = new Map<string, SSEServerTransport>();
-    const activeServers = new Map<string, Server>();
+    // ---------------------------------------------------------------
+    // OAuth 2.1 Auth Router (SDK built-in)
+    // Handles: /.well-known/oauth-protected-resource, /.well-known/oauth-authorization-server,
+    //          /authorize, /token, /register (dynamic client registration)
+    // ---------------------------------------------------------------
+    const oauthProvider = new SupabaseOAuthProvider();
+    const issuerUrl = new URL(BASE_URL);
+    const mcpServerUrl = new URL(`${BASE_URL}/mcp`);
 
-    // GET /.well-known/oauth-protected-resource endpoint
-    app.get("/.well-known/oauth-protected-resource", (req, res) => {
-      res.json({
-        resource: "https://priceshield-mcp-647257091960.us-central1.run.app/sse",
-        authorization_servers: [
-          "https://priceshield-mcp-647257091960.us-central1.run.app"
-        ],
-        scopes_supported: [],
-        bearer_methods_supported: [
-          "header"
-        ]
-      });
-    });
+    app.use(mcpAuthRouter({
+      provider: oauthProvider,
+      issuerUrl,
+      baseUrl: issuerUrl,
+      resourceServerUrl: mcpServerUrl,
+      resourceName: "PriceShield MCP Server",
+      scopesSupported: [],
+    }));
 
-    // GET /.well-known/oauth-authorization-server endpoint
-    app.get("/.well-known/oauth-authorization-server", (req, res) => {
-      res.json({
-        issuer: "https://priceshield-mcp-647257091960.us-central1.run.app",
-        authorization_endpoint: "https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize",
-        token_endpoint: "https://priceshield-mcp-647257091960.us-central1.run.app/oauth/token",
-        response_types_supported: ["code"],
-        grant_types_supported: ["authorization_code"]
-      });
-    });
-
-    // GET /oauth/authorize endpoint
-    app.get("/oauth/authorize", (req, res) => {
-      const { redirect_uri, state } = req.query;
-      if (!redirect_uri) {
-        res.status(400).send("Missing redirect_uri parameter");
-        return;
-      }
-      res.send(renderLoginPage(redirect_uri as string, state as string));
-    });
-
-    // POST /oauth/authorize endpoint
-    app.post("/oauth/authorize", async (req, res) => {
-      const { email, password, redirect_uri, state } = req.body;
+    // Custom POST handler for /authorize — login form submission
+    app.post("/authorize", async (req, res) => {
+      const { email, password, redirect_uri, state, code_challenge, client_id, scopes, resource } = req.body;
       if (!redirect_uri) {
         res.status(400).send("Missing redirect_uri parameter");
         return;
       }
 
       try {
+        // Authenticate with Supabase
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error || !data.session) {
-          res.send(renderLoginPage(redirect_uri, state, error?.message || "Invalid credentials"));
+          res.send(renderLoginPage(redirect_uri, state, code_challenge, client_id, (scopes || "").split(","), resource, error?.message || "Invalid credentials"));
           return;
         }
 
-        const tokenPayload = JSON.stringify({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token
+        // Create an authorization code tied to this user
+        const code = crypto.randomUUID();
+        authCodes.set(code, {
+          clientId: client_id,
+          params: {
+            state,
+            scopes: scopes ? scopes.split(",").filter(Boolean) : [],
+            codeChallenge: code_challenge,
+            redirectUri: redirect_uri,
+            resource: resource ? new URL(resource) : undefined,
+          },
+          userId: data.user.id,
         });
-        const code = encrypt(tokenPayload);
 
         const redirectUrl = new URL(redirect_uri);
         redirectUrl.searchParams.set("code", code);
@@ -585,46 +672,140 @@ async function run() {
         }
         res.redirect(redirectUrl.toString());
       } catch (err: any) {
+        console.error("Authorization error:", err);
         res.status(500).send(`Server error: ${err.message}`);
       }
     });
 
-    // POST /oauth/token endpoint
-    app.post("/oauth/token", async (req, res) => {
-      const { code } = req.body;
-      if (!code) {
-        res.status(400).json({ error: "invalid_request", error_description: "Missing code parameter" });
-        return;
-      }
-
-      try {
-        const decrypted = decrypt(code);
-        const payload = JSON.parse(decrypted);
-        res.json({
-          access_token: payload.access_token,
-          refresh_token: payload.refresh_token,
-          token_type: "bearer",
-          expires_in: 3600
-        });
-      } catch (err) {
-        res.status(400).json({ error: "invalid_grant", error_description: "Invalid or expired authorization code" });
-      }
+    // ---------------------------------------------------------------
+    // Bearer Auth Middleware for MCP endpoints
+    // ---------------------------------------------------------------
+    const bearerAuth = requireBearerAuth({
+      verifier: oauthProvider,
+      requiredScopes: [],
     });
 
+    // ---------------------------------------------------------------
+    // Transport stores
+    // ---------------------------------------------------------------
+    const transports: Record<string, StreamableHTTPServerTransport | SSEServerTransport> = {};
+
+    // Helper: extract userId from authenticated request
+    function getUserIdFromRequest(req: express.Request): string | undefined {
+      const auth = (req as any).auth as AuthInfo | undefined;
+      if (auth?.extra?.userId) {
+        return auth.extra.userId as string;
+      }
+      return undefined;
+    }
+
+    // ---------------------------------------------------------------
+    // Streamable HTTP Transport on /mcp (POST, GET, DELETE)
+    // This is what Claude's remote MCP connector uses
+    // ---------------------------------------------------------------
+    const mcpHandler = async (req: express.Request, res: express.Response) => {
+      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+      try {
+        let transport: StreamableHTTPServerTransport;
+
+        if (sessionId && transports[sessionId]) {
+          const existing = transports[sessionId];
+          if (existing instanceof StreamableHTTPServerTransport) {
+            transport = existing;
+          } else {
+            res.status(400).json({
+              jsonrpc: "2.0",
+              error: { code: -32000, message: "Session uses a different transport protocol" },
+              id: null,
+            });
+            return;
+          }
+        } else if (!sessionId && req.method === "POST" && isInitializeRequest(req.body)) {
+          // New session initialization
+          const userId = getUserIdFromRequest(req);
+          if (!userId) {
+            res.status(401).json({
+              jsonrpc: "2.0",
+              error: { code: -32000, message: "Unauthorized: could not identify user" },
+              id: null,
+            });
+            return;
+          }
+
+          transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID(),
+            onsessioninitialized: (sid: string) => {
+              console.log(`Streamable HTTP session initialized: ${sid}`);
+              transports[sid] = transport;
+            },
+          });
+
+          transport.onclose = () => {
+            const sid = transport.sessionId;
+            if (sid && transports[sid]) {
+              console.log(`Transport closed for session ${sid}`);
+              delete transports[sid];
+            }
+          };
+
+          const server = createMcpServer(userId);
+          await server.connect(transport);
+          await transport.handleRequest(req, res, req.body);
+          return;
+        } else {
+          res.status(400).json({
+            jsonrpc: "2.0",
+            error: { code: -32000, message: "Bad Request: No valid session ID provided" },
+            id: null,
+          });
+          return;
+        }
+
+        await transport.handleRequest(req, res, req.body);
+      } catch (error) {
+        console.error("Error handling MCP request:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: { code: -32603, message: "Internal server error" },
+            id: null,
+          });
+        }
+      }
+    };
+
+    // Apply bearer auth + handler for all methods on /mcp
+    app.post("/mcp", bearerAuth, mcpHandler);
+    app.get("/mcp", bearerAuth, mcpHandler);
+    app.delete("/mcp", bearerAuth, mcpHandler);
+
+    // ---------------------------------------------------------------
+    // Legacy SSE Transport on /sse (backwards compatible)
+    // Supports both Bearer token auth and API key query param
+    // ---------------------------------------------------------------
     app.get("/sse", async (req, res) => {
       let userId: string | null = null;
 
-      // Try reading token from Authorization header (OAuth / Claude native connector)
+      // Try Bearer token (from OAuth flow)
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(" ")[1];
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (!error && user) {
-          userId = user.id;
+        try {
+          const authInfo = await oauthProvider.verifyAccessToken(token);
+          if (authInfo.extra?.userId) {
+            userId = authInfo.extra.userId as string;
+          }
+        } catch {
+          // Try Supabase token directly
+          const { data: { user }, error } = await supabase.auth.getUser(token);
+          if (!error && user) {
+            userId = user.id;
+          }
         }
       }
 
-      // Fall back to query param key hash check
+      // Fall back to API key query param
       if (!userId) {
         const apiKey = req.query.api_key as string;
         if (apiKey) {
@@ -645,7 +826,7 @@ async function run() {
       if (!userId) {
         res.setHeader(
           "WWW-Authenticate",
-          `Bearer realm="mcp", authorization_uri="https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize", resource_metadata="https://priceshield-mcp-647257091960.us-central1.run.app/.well-known/oauth-protected-resource"`
+          `Bearer resource_metadata="${BASE_URL}/.well-known/oauth-protected-resource/mcp"`
         );
         res.status(401).send("Unauthorized: Invalid, expired, or missing credentials");
         return;
@@ -653,12 +834,10 @@ async function run() {
 
       const transport = new SSEServerTransport("/messages", res);
       const server = createMcpServer(userId);
-      activeTransports.set(transport.sessionId, transport);
-      activeServers.set(transport.sessionId, server);
+      transports[transport.sessionId] = transport;
 
       res.on("close", () => {
-        activeTransports.delete(transport.sessionId);
-        activeServers.delete(transport.sessionId);
+        delete transports[transport.sessionId];
       });
 
       await server.connect(transport);
@@ -666,20 +845,30 @@ async function run() {
 
     app.post("/messages", async (req, res) => {
       const sessionId = req.query.sessionId as string;
-      const transport = activeTransports.get(sessionId);
+      const existing = transports[sessionId];
 
-      if (transport) {
-        await transport.handlePostMessage(req, res, req.body);
+      if (existing && existing instanceof SSEServerTransport) {
+        await existing.handlePostMessage(req, res, req.body);
       } else {
         res.status(400).send("Session not found or expired");
       }
     });
 
+    // Health check
+    app.get("/health", (_req, res) => {
+      res.json({ status: "ok", transport: "streamable-http+sse" });
+    });
+
     app.listen(port, () => {
-      console.error(`PriceShield MCP Server running on SSE at http://localhost:${port}/sse`);
+      console.log(`PriceShield MCP Server running on port ${port}`);
+      console.log(`  Streamable HTTP: ${BASE_URL}/mcp`);
+      console.log(`  Legacy SSE:      ${BASE_URL}/sse`);
+      console.log(`  OAuth Authorize:  ${BASE_URL}/authorize`);
+      console.log(`  OAuth Token:      ${BASE_URL}/token`);
+      console.log(`  Client Register:  ${BASE_URL}/register`);
     });
   } else {
-    // Look for DEFAULT_USER_ID in env, or fall back to the first profile in the DB
+    // Stdio transport mode
     let userId = process.env.DEFAULT_USER_ID;
     if (!userId) {
       const { data: profiles } = await supabase.from("profiles").select("id").limit(1);

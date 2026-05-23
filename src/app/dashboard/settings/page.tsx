@@ -1055,7 +1055,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-muted-foreground">Authorization URL</label>
                 <button
-                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize", setCopiedOAuthAuth)}
+                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/authorize", setCopiedOAuthAuth)}
                   className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
                 >
                   {copiedOAuthAuth ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -1063,7 +1063,7 @@ export default function SettingsPage() {
                 </button>
               </div>
               <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                https://priceshield-mcp-647257091960.us-central1.run.app/oauth/authorize
+                https://priceshield-mcp-647257091960.us-central1.run.app/authorize
               </div>
             </div>
 
@@ -1072,7 +1072,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-muted-foreground">Token URL</label>
                 <button
-                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/oauth/token", setCopiedOAuthToken)}
+                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/token", setCopiedOAuthToken)}
                   className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
                 >
                   {copiedOAuthToken ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -1080,7 +1080,7 @@ export default function SettingsPage() {
                 </button>
               </div>
               <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                https://priceshield-mcp-647257091960.us-central1.run.app/oauth/token
+                https://priceshield-mcp-647257091960.us-central1.run.app/token
               </div>
             </div>
 
