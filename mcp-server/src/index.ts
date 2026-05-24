@@ -143,6 +143,19 @@ function createMcpServer(userId: string): Server {
             required: ["query"],
           },
         },
+        {
+          name: "get_pricing_alerts",
+          description: "Get recent price hike and margin loss alerts.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "number",
+                description: "Maximum number of alerts to return (default 50)",
+              },
+            },
+          },
+        },
       ],
     };
   });
@@ -316,6 +329,43 @@ function createMcpServer(userId: string): Server {
           };
         }
 
+        case "get_pricing_alerts": {
+          const limit = (args?.limit as number) || 50;
+
+          const { data, error } = await supabase
+            .from("alerts")
+            .select("id, vendor_name, flagged_items, total_margin_lost, created_at, message")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(limit);
+
+          if (error) throw error;
+
+          const formattedData = (data as any[] || []).map((alert: any) => {
+            let itemName = "Multiple Items";
+            if (alert.flagged_items && alert.flagged_items.length > 0) {
+              itemName = alert.flagged_items[0].item_name || "Multiple Items";
+            }
+            return {
+              id: alert.id,
+              vendor_name: alert.vendor_name,
+              item_name: itemName,
+              total_margin_lost: alert.total_margin_lost,
+              created_at: alert.created_at,
+              message: alert.message,
+            };
+          });
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(formattedData, null, 2),
+              },
+            ],
+          };
+        }
+
         default:
           throw new McpError(
             ErrorCode.MethodNotFound,
@@ -342,14 +392,71 @@ function createMcpServer(userId: string): Server {
 // OAuth 2.1 Server Provider - backed by Supabase Auth
 // ===================================================================
 
-// In-memory stores for OAuth flow (authorization codes, tokens, clients)
-const authCodes = new Map<string, { clientId: string; params: AuthorizationParams; userId: string }>();
-const accessTokens = new Map<string, { token: string; clientId: string; userId: string; scopes: string[]; expiresAt: number }>();
+// JWT signature helpers for stateless token verification
+const JWT_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback-secret-key-123456";
 
-// Client registration store - Claude uses dynamic client registration
+function base64UrlEncode(str: string | Buffer): string {
+  const base64 = typeof str === "string" 
+    ? Buffer.from(str).toString("base64") 
+    : str.toString("base64");
+  return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+}
+
+function base64UrlDecode(str: string): string {
+  let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4) base64 += "=";
+  return Buffer.from(base64, "base64").toString("utf8");
+}
+
+function signJwt(payload: any): string {
+  const header = { alg: "HS256", typ: "JWT" };
+  const encodedHeader = base64UrlEncode(JSON.stringify(header));
+  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+  
+  const signatureInput = `${encodedHeader}.${encodedPayload}`;
+  const hmac = crypto.createHmac("sha256", JWT_SECRET);
+  hmac.update(signatureInput);
+  const signature = base64UrlEncode(hmac.digest());
+  
+  return `${signatureInput}.${signature}`;
+}
+
+function verifyJwt(token: string): any {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    
+    const [encodedHeader, encodedPayload, signature] = parts;
+    const signatureInput = `${encodedHeader}.${encodedPayload}`;
+    
+    const hmac = crypto.createHmac("sha256", JWT_SECRET);
+    hmac.update(signatureInput);
+    const expectedSignature = base64UrlEncode(hmac.digest());
+    
+    if (signature !== expectedSignature) {
+      return null;
+    }
+    
+    const payload = JSON.parse(base64UrlDecode(encodedPayload));
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      return null; // Expired
+    }
+    
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+// In-memory stores for OAuth flow (authorization codes are short-lived, so in-memory is fine)
+const authCodes = new Map<string, { clientId: string; params: AuthorizationParams; userId: string }>();
+
+// Client registration store - Claude uses dynamic client registration, persists in Supabase Storage
 class SupabaseClientsStore implements OAuthRegisteredClientsStore {
   private clients = new Map<string, any>();
-  private filePath = "/tmp/oauth_clients.json";
+  private bucketName = process.env.SUPABASE_ATTACHMENTS_BUCKET || "attachments";
+  private storagePath = "oauth/oauth_clients.json";
+  private loaded = false;
 
   constructor() {
     // Pre-populate with default Claude client metadata for development/production fallback
@@ -360,40 +467,62 @@ class SupabaseClientsStore implements OAuthRegisteredClientsStore {
       logo_uri: "https://claude.ai/images/logo.png",
       redirect_uris: ["https://claude.ai/oauth/callback"],
     });
-    this.loadClients();
   }
 
-  private loadClients() {
+  private async loadClients() {
+    if (this.loaded) return;
     try {
-      if (fs.existsSync(this.filePath)) {
-        const data = fs.readFileSync(this.filePath, "utf-8");
-        const list = JSON.parse(data);
+      console.log("Loading clients from Supabase storage...");
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .download(this.storagePath);
+      
+      if (!error && data) {
+        const text = await data.text();
+        const list = JSON.parse(text);
         for (const client of list) {
           this.clients.set(client.client_id, client);
         }
-        console.log(`Loaded ${this.clients.size} clients from persistent storage.`);
+        console.log(`Loaded ${list.length} clients from Supabase storage.`);
+      } else {
+        console.log("No existing clients found in storage or error downloading: ", error);
       }
+      this.loaded = true;
     } catch (err) {
       console.error("Failed to load clients from persistent storage:", err);
+      this.loaded = true;
     }
   }
 
-  private saveClients() {
+  private async saveClients() {
     try {
       const list = Array.from(this.clients.values());
-      fs.writeFileSync(this.filePath, JSON.stringify(list, null, 2), "utf-8");
+      const buffer = Buffer.from(JSON.stringify(list, null, 2));
+      const { error } = await supabase.storage
+        .from(this.bucketName)
+        .upload(this.storagePath, buffer, {
+          contentType: "application/json",
+          upsert: true
+        });
+      if (error) {
+        console.error("Failed to upload clients to Supabase storage:", error);
+      } else {
+        console.log("Saved clients to Supabase storage successfully.");
+      }
     } catch (err) {
       console.error("Failed to save clients to persistent storage:", err);
     }
   }
 
   async getClient(clientId: string) {
+    await this.loadClients();
     return this.clients.get(clientId);
   }
 
   async registerClient(clientMetadata: any) {
+    await this.loadClients();
     this.clients.set(clientMetadata.client_id, clientMetadata);
-    this.saveClients();
+    await this.saveClients();
     return clientMetadata;
   }
 }
@@ -437,17 +566,14 @@ class SupabaseOAuthProvider implements OAuthServerProvider {
 
     authCodes.delete(authorizationCode);
 
-    // Generate an access token that maps to the Supabase user
-    const token = crypto.randomUUID();
-    const expiresAt = Date.now() + 3600000; // 1 hour
-
-    accessTokens.set(token, {
-      token,
+    // Generate a stateless access token JWT
+    const payload = {
       clientId: client.client_id,
       userId: codeData.userId,
       scopes: codeData.params.scopes || [],
-      expiresAt,
-    });
+      exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
+    };
+    const token = signJwt(payload);
 
     return {
       access_token: token,
@@ -462,22 +588,33 @@ class SupabaseOAuthProvider implements OAuthServerProvider {
   }
 
   async verifyAccessToken(token: string): Promise<AuthInfo> {
-    const tokenData = accessTokens.get(token);
-    if (!tokenData) {
-      throw new Error("Invalid or expired token");
-    }
-    if (tokenData.expiresAt < Date.now()) {
-      accessTokens.delete(token);
-      throw new Error("Token has expired");
+    const payload = verifyJwt(token);
+    if (payload) {
+      return {
+        token,
+        clientId: payload.clientId,
+        scopes: payload.scopes,
+        expiresAt: payload.exp,
+        extra: { userId: payload.userId },
+      };
     }
 
-    return {
-      token,
-      clientId: tokenData.clientId,
-      scopes: tokenData.scopes,
-      expiresAt: Math.floor(tokenData.expiresAt / 1000),
-      extra: { userId: tokenData.userId },
-    };
+    // Direct Supabase JWT token fallback (for internal backend requests)
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error || !user) {
+        throw new Error("Invalid Supabase token");
+      }
+      return {
+        token,
+        clientId: "priceshield-backend",
+        scopes: [],
+        expiresAt: Math.floor(Date.now() / 1000) + 3600,
+        extra: { userId: user.id },
+      };
+    } catch (e) {
+      throw new Error("Invalid or expired token");
+    }
   }
 }
 

@@ -27,19 +27,19 @@ import { useAuth } from "@/lib/auth-context";
 import { api, UserSettings } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
+interface LiveStep {
+  type: "thinking" | "tool";
+  content: string;
+  status: "pending" | "running" | "completed" | "failed";
+  details?: string;
+}
+
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   created_at?: string;
+  thinkingSteps?: LiveStep[];
 }
-
-const THINKING_STEPS = [
-  "Analyzing query intent & parameters...",
-  "Scanning invoice database for relevant records...",
-  "Comparing pricing points with baseline targets...",
-  "Running margin variance and leakage calculations...",
-  "Formulating financial recommendations...",
-];
 
 export default function AICFOPage() {
   const { getToken } = useAuth();
@@ -49,12 +49,12 @@ export default function AICFOPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [settings, setSettings] = useState<UserSettings | null>(null);
   
-  // Real-time simulated thinking steps
-  const [thinkingStep, setThinkingStep] = useState(0);
-  const [showThinkingDetails, setShowThinkingDetails] = useState(true);
+  // Track which messages have their thinking steps expanded
+  const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({});
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load history & settings
   useEffect(() => {
@@ -77,6 +77,13 @@ export default function AICFOPage() {
       }
     }
     init();
+
+    // Clean up typing interval on unmount
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+    };
   }, [getToken]);
 
   // Scroll to bottom when messages change
@@ -88,50 +95,215 @@ export default function AICFOPage() {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Run thinking steps simulation
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isLoading) {
-      setThinkingStep(0);
-      interval = setInterval(() => {
-        setThinkingStep((prev) => {
-          if (prev < THINKING_STEPS.length - 1) {
-            return prev + 1;
-          }
-          clearInterval(interval);
-          return prev;
-        });
-      }, 950);
-    }
-    return () => clearInterval(interval);
-  }, [isLoading]);
-
   const handleSendMessage = async (e?: React.FormEvent, customInput?: string) => {
     if (e) e.preventDefault();
     const finalInput = customInput || input;
     if (!finalInput.trim() || isLoading || settings?.tier === "free") return;
 
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+
     const userMessage: ChatMessage = { role: "user", content: finalInput };
-    setMessages((prev) => [...prev, userMessage]);
+    const assistantIndex = messages.length + 1; // index of assistant message in the new array
+    const initialAssistantMessage: ChatMessage = {
+      role: "assistant",
+      content: "",
+      thinkingSteps: [
+        {
+          type: "thinking",
+          content: "Analyzing query intent & parameters...",
+          status: "running"
+        }
+      ]
+    };
+
+    setMessages((prev) => [...prev, userMessage, initialAssistantMessage]);
+    setExpandedSteps((prev) => ({ ...prev, [assistantIndex]: true }));
     setInput("");
     setIsLoading(true);
+
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
       const token = await getToken();
       if (!token) return;
-      
-      const res = await api.askAICFO(token, finalInput);
-      const assistantMessage: ChatMessage = { 
-        role: "assistant", 
-        content: res.answer 
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+
+      const response = await fetch(`${API_BASE}/api/ai-cfo/ask`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+        },
+        body: JSON.stringify({ question: finalInput }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`CFO Stream API error: ${response.statusText}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No reader on response body");
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+
+        for (const part of parts) {
+          if (!part.trim()) continue;
+
+          let eventName = "";
+          let dataContent = "";
+
+          const lines = part.split("\n");
+          for (const line of lines) {
+            if (line.startsWith("event:")) {
+              eventName = line.substring(6).trim();
+            } else if (line.startsWith("data:")) {
+              dataContent = line.substring(5).trim();
+            }
+          }
+
+          if (eventName && dataContent) {
+            try {
+              const parsedData = JSON.parse(dataContent);
+
+              setMessages((prev) => {
+                const next = [...prev];
+                const msg = next[assistantIndex];
+                if (!msg) return prev;
+
+                let steps = msg.thinkingSteps ? [...msg.thinkingSteps] : [];
+
+                if (eventName === "thinking") {
+                  if (steps.length > 0) {
+                    steps[steps.length - 1] = {
+                      ...steps[steps.length - 1],
+                      status: "completed"
+                    };
+                  }
+                  steps.push({
+                    type: "thinking",
+                    content: parsedData,
+                    status: "completed"
+                  });
+                  msg.thinkingSteps = steps;
+                } else if (eventName === "tool_start") {
+                  if (steps.length > 0) {
+                    steps[steps.length - 1] = {
+                      ...steps[steps.length - 1],
+                      status: "completed"
+                    };
+                  }
+                  const argStr = parsedData.arguments && Object.keys(parsedData.arguments).length > 0
+                    ? Object.entries(parsedData.arguments)
+                        .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+                        .join(", ")
+                    : "";
+                  steps.push({
+                    type: "tool",
+                    content: `${parsedData.name}(${argStr})`,
+                    status: "running",
+                    details: JSON.stringify(parsedData.arguments)
+                  });
+                  msg.thinkingSteps = steps;
+                } else if (eventName === "tool_end") {
+                  const toolName = parsedData.name;
+                  const idx = steps.findIndex(s => s.type === "tool" && s.status === "running" && s.content.startsWith(toolName));
+                  if (idx !== -1) {
+                    steps[idx] = {
+                      ...steps[idx],
+                      status: "completed",
+                      details: typeof parsedData.result === "string" ? parsedData.result : JSON.stringify(parsedData.result, null, 2)
+                    };
+                  }
+                  msg.thinkingSteps = steps;
+                } else if (eventName === "answer") {
+                  steps = steps.map(s => s.status === "running" ? { ...s, status: "completed" } as const : s);
+                  msg.thinkingSteps = steps;
+
+                  // Trigger simulated typing effect for answer
+                  const fullAnswer = parsedData;
+                  const words = fullAnswer.split(" ");
+                  let wordIdx = 0;
+                  let displayedText = "";
+
+                  if (typingIntervalRef.current) {
+                    clearInterval(typingIntervalRef.current);
+                  }
+
+                  typingIntervalRef.current = setInterval(() => {
+                    if (wordIdx < words.length) {
+                      displayedText += (wordIdx === 0 ? "" : " ") + words[wordIdx];
+                      wordIdx++;
+                      setMessages((prevMessages) => {
+                        const updated = [...prevMessages];
+                        const activeMsg = updated[assistantIndex];
+                        if (activeMsg) {
+                          activeMsg.content = displayedText;
+                        }
+                        return updated;
+                      });
+                    } else {
+                      if (typingIntervalRef.current) {
+                        clearInterval(typingIntervalRef.current);
+                        typingIntervalRef.current = null;
+                      }
+                    }
+                  }, 15);
+                } else if (eventName === "error") {
+                  steps = steps.map(s => s.status === "running" ? { ...s, status: "failed" } as const : s);
+                  msg.thinkingSteps = steps;
+                  msg.content = `⚠️ An error occurred during reasoning: ${parsedData}`;
+                }
+
+                return next;
+              });
+
+            } catch (jsonErr) {
+              console.error("Failed to parse SSE JSON:", jsonErr, dataContent);
+            }
+          }
+        }
+      }
+
+      setMessages((prev) => {
+        const next = [...prev];
+        const msg = next[assistantIndex];
+        if (msg && msg.thinkingSteps) {
+          msg.thinkingSteps = msg.thinkingSteps.map(s => 
+            s.status === "running" ? { ...s, status: "completed" } as const : s
+          );
+        }
+        return next;
+      });
+
     } catch (err) {
-      console.error("AI CFO Error:", err);
-      setMessages((prev) => [
-        ...prev, 
-        { role: "assistant", content: "⚠️ Sorry, I encountered an error processing your request. Please try again later." }
-      ]);
+      console.error("AI CFO Streaming Error:", err);
+      setMessages((prev) => {
+        const next = [...prev];
+        const msg = next[assistantIndex];
+        if (msg) {
+          msg.content = "⚠️ Sorry, I encountered an error processing your request. Please try again later.";
+          if (msg.thinkingSteps) {
+            msg.thinkingSteps = msg.thinkingSteps.map(s => 
+              s.status === "running" ? { ...s, status: "failed" } as const : s
+            );
+          }
+        }
+        return next;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -204,7 +376,7 @@ export default function AICFOPage() {
                   )}
                 >
                   <div className={cn(
-                    "flex max-w-[85%] sm:max-w-[75%] gap-4",
+                    "flex max-w-[85%] sm:max-w-[75%] gap-4 w-full",
                     msg.role === "user" ? "flex-row-reverse" : "flex-row"
                   )}>
                     {msg.role === "assistant" && (
@@ -216,26 +388,121 @@ export default function AICFOPage() {
                     )}
                     
                     <div className={cn(
-                      "rounded-3xl px-5 py-4 text-[15px] leading-relaxed",
+                      "rounded-3xl px-5 py-4 text-[15px] leading-relaxed flex-1 min-w-0",
                       msg.role === "user" 
                         ? "bg-emerald-500 text-background font-medium shadow-xl shadow-emerald-500/10 rounded-tr-none"
                         : "bg-muted/10 border border-border/30 text-foreground shadow-sm rounded-tl-none"
                     )}>
-                      <div className="markdown-content prose prose-sm prose-invert max-w-none prose-p:leading-relaxed">
-                        <ReactMarkdown 
-                          remarkPlugins={[remarkMath, remarkGfm]} 
-                          rehypePlugins={[rehypeKatex]}
-                          components={{
-                            b: ({...props}) => <b className="font-bold text-emerald-400" {...props} />,
-                            strong: ({...props}) => <strong className="font-bold text-emerald-400" {...props} />,
-                            p: ({...props}) => <p className="mb-4 last:mb-0" {...props} />,
-                            ul: ({...props}) => <ul className="list-disc pl-5 space-y-2 mb-4" {...props} />,
-                            li: ({...props}) => <li className="marker:text-emerald-500" {...props} />,
-                          }}
-                        >
-                          {msg.content}
-                        </ReactMarkdown>
-                      </div>
+                      {msg.role === "assistant" && msg.thinkingSteps && msg.thinkingSteps.length > 0 && (
+                        <div className="mb-4 rounded-2xl bg-zinc-950/40 border border-purple-500/20 shadow-xl overflow-hidden max-w-full">
+                          {/* Accordion Trigger Header */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExpandedSteps(prev => ({
+                                ...prev,
+                                [i]: !prev[i]
+                              }));
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-purple-500/5 transition-all group"
+                          >
+                            <div className="flex items-center gap-2">
+                              {(isLoading && i === messages.length - 1) ? (
+                                <Loader2 className="h-3.5 w-3.5 text-purple-400 animate-spin" />
+                              ) : (
+                                <Brain className="h-3.5 w-3.5 text-purple-400" />
+                              )}
+                              <span className="text-xs font-bold tracking-tight text-purple-400">
+                                Thinking Process
+                              </span>
+                            </div>
+                            {expandedSteps[i] ? (
+                              <ChevronUp className="h-3.5 w-3.5 text-purple-400/50 group-hover:text-purple-400 transition-colors" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5 text-purple-400/50 group-hover:text-purple-400 transition-colors" />
+                            )}
+                          </button>
+
+                          {/* Accordion Detail Steps */}
+                          {expandedSteps[i] && (
+                            <div className="px-4 pb-4 pt-1 space-y-2 border-t border-purple-500/10 bg-purple-950/5">
+                              {msg.thinkingSteps.map((step, idx) => {
+                                const isCompleted = step.status === "completed";
+                                const isActive = step.status === "running";
+                                const isFailed = step.status === "failed";
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={cn(
+                                      "flex flex-col text-xs transition-opacity duration-300",
+                                      isCompleted || isActive ? "opacity-100" : "opacity-40"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2.5">
+                                      {isCompleted ? (
+                                        <div className="h-4 w-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                                          <CheckIcon className="h-2.5 w-2.5" />
+                                        </div>
+                                      ) : isActive ? (
+                                        <div className="h-4 w-4 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/30 animate-pulse">
+                                          <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                        </div>
+                                      ) : isFailed ? (
+                                        <div className="h-4 w-4 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/30">
+                                          <span className="text-[10px] font-bold">!</span>
+                                        </div>
+                                      ) : (
+                                        <div className="h-4 w-4 rounded-full bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 border border-zinc-700">
+                                          <span className="text-[8px] font-bold">{idx + 1}</span>
+                                        </div>
+                                      )}
+                                      <span
+                                        className={cn(
+                                          "font-medium",
+                                          isCompleted
+                                            ? "text-zinc-400"
+                                            : isActive
+                                            ? "text-purple-300 font-bold"
+                                            : "text-zinc-500"
+                                        )}
+                                      >
+                                        {step.content}
+                                      </span>
+                                    </div>
+                                    
+                                    {step.type === "tool" && step.details && (
+                                      <div className="pl-6 mt-1.5">
+                                        <pre className="p-2 text-[10px] font-mono text-zinc-400 bg-zinc-950/60 rounded-lg border border-border/20 max-w-full overflow-x-auto whitespace-pre-wrap">
+                                          {step.details}
+                                        </pre>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {msg.content && (
+                        <div className="markdown-content prose prose-sm prose-invert max-w-none prose-p:leading-relaxed">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkMath, remarkGfm]} 
+                            rehypePlugins={[rehypeKatex]}
+                            components={{
+                              b: ({...props}) => <b className="font-bold text-emerald-400" {...props} />,
+                              strong: ({...props}) => <strong className="font-bold text-emerald-400" {...props} />,
+                              p: ({...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                              ul: ({...props}) => <ul className="list-disc pl-5 space-y-2 mb-4" {...props} />,
+                              li: ({...props}) => <li className="marker:text-emerald-500" {...props} />,
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
                     </div>
 
                     {msg.role === "user" && (
@@ -249,86 +516,6 @@ export default function AICFOPage() {
                 </div>
               ))}
               <div ref={messagesEndRef} />
-            </div>
-          )}
-          
-          {isLoading && (
-            <div className="flex flex-col items-start gap-4 mt-8 animate-in fade-in slide-in-from-bottom-3 duration-300 w-full">
-              <div className="flex max-w-[85%] sm:max-w-[75%] gap-4 w-full">
-                <div className="mt-1 flex-shrink-0">
-                  <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-lg shadow-purple-500/5">
-                    <Brain className="h-4 w-4 text-purple-400 animate-pulse" />
-                  </div>
-                </div>
-                
-                <div className="flex-1 rounded-3xl bg-zinc-950/40 border border-purple-500/20 shadow-xl shadow-purple-950/5 overflow-hidden">
-                  {/* Accordion Trigger Header */}
-                  <button
-                    type="button"
-                    onClick={() => setShowThinkingDetails(!showThinkingDetails)}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-purple-500/5 transition-all group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Loader2 className="h-4 w-4 text-purple-400 animate-spin" />
-                      <span className="text-sm font-bold tracking-tight text-purple-400">
-                        Thinking Process...
-                      </span>
-                    </div>
-                    {showThinkingDetails ? (
-                      <ChevronUp className="h-4 w-4 text-purple-400/50 group-hover:text-purple-400 transition-colors" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-purple-400/50 group-hover:text-purple-400 transition-colors" />
-                    )}
-                  </button>
-
-                  {/* Accordion Detail Steps */}
-                  {showThinkingDetails && (
-                    <div className="px-5 pb-5 pt-1 space-y-3 border-t border-purple-500/10 bg-purple-950/5">
-                      {THINKING_STEPS.map((step, idx) => {
-                        const isCompleted = thinkingStep > idx;
-                        const isActive = thinkingStep === idx;
-                        const isPending = thinkingStep < idx;
-
-                        return (
-                          <div
-                            key={idx}
-                            className={cn(
-                              "flex items-center gap-3 text-xs transition-opacity duration-300",
-                              isPending ? "opacity-30" : "opacity-100"
-                            )}
-                          >
-                            {isCompleted ? (
-                              <div className="h-4.5 w-4.5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                                <CheckIcon className="h-2.5 w-2.5" />
-                              </div>
-                            ) : isActive ? (
-                              <div className="h-4.5 w-4.5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/30 animate-pulse">
-                                <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                              </div>
-                            ) : (
-                              <div className="h-4.5 w-4.5 rounded-full bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 border border-zinc-700">
-                                <span className="text-[9px] font-bold">{idx + 1}</span>
-                              </div>
-                            )}
-                            <span
-                              className={cn(
-                                "font-medium",
-                                isCompleted
-                                  ? "text-zinc-400 line-through decoration-zinc-700/80"
-                                  : isActive
-                                  ? "text-purple-300 font-bold"
-                                  : "text-zinc-500"
-                              )}
-                            >
-                              {step}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           )}
         </div>
