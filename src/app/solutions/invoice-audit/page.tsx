@@ -67,7 +67,7 @@ export default function InvoiceAuditPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-black text-foreground pt-24 pb-16">
+      <main className="flex-1 bg-black text-foreground pt-24 pb-16 relative overflow-hidden">
         {/* Glow Elements */}
         <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
