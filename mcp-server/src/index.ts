@@ -631,6 +631,7 @@ async function run() {
     const BASE_URL = process.env.BASE_URL || `https://priceshield-mcp-647257091960.us-central1.run.app`;
 
     const app = express();
+    app.set("trust proxy", true);
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
