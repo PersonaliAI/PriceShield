@@ -477,6 +477,16 @@ class SupabaseClientsStore implements OAuthRegisteredClientsStore {
         .from(this.bucketName)
         .download(this.storagePath);
       
+      // Clear cache first and restore default Claude client
+      this.clients.clear();
+      this.clients.set("ae9af087-e690-4f20-8b48-ebf4a32aa9c2", {
+        client_id: "ae9af087-e690-4f20-8b48-ebf4a32aa9c2",
+        client_name: "Claude",
+        client_uri: "https://claude.ai",
+        logo_uri: "https://claude.ai/images/logo.png",
+        redirect_uris: ["https://claude.ai/oauth/callback"],
+      });
+
       if (!error && data) {
         const text = await data.text();
         const list = JSON.parse(text);
@@ -515,11 +525,13 @@ class SupabaseClientsStore implements OAuthRegisteredClientsStore {
   }
 
   async getClient(clientId: string) {
+    this.loaded = false; // Force refresh from Supabase storage
     await this.loadClients();
     return this.clients.get(clientId);
   }
 
   async registerClient(clientMetadata: any) {
+    this.loaded = false; // Force refresh from Supabase storage first to prevent race condition erasure
     await this.loadClients();
     this.clients.set(clientMetadata.client_id, clientMetadata);
     await this.saveClients();
