@@ -85,7 +85,7 @@ export function Navbar() {
           : "bg-transparent",
       )}
     >
-      <nav className="mx-auto max-w-5xl px-6 h-16 grid grid-cols-2 md:grid-cols-3 items-center">
+      <nav className="mx-auto max-w-5xl px-6 h-16 grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] items-center">
         {/* Left */}
         <div className="flex items-center gap-3">
           <button
@@ -101,12 +101,12 @@ export function Navbar() {
         </div>
 
         {/* Center — desktop */}
-        <div className="hidden md:flex items-center justify-center gap-7">
+        <div className="hidden md:flex items-center justify-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
             >
               {link.label}
             </Link>
