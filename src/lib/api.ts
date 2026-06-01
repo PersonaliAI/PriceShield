@@ -20,6 +20,9 @@ export interface UserSettings {
   slack_linked: boolean;
   slack_team_id: string | null;
   locations: Location[];
+  country: string | null;
+  timezone: string | null;
+  onboarding_complete: boolean;
 }
 
 export interface Location {
@@ -45,6 +48,9 @@ export interface SettingsUpdate {
   report_monthly?: boolean;
   alert_threshold?: number;
   slack_webhook_url?: string | null;
+  country?: string | null;
+  timezone?: string | null;
+  onboarding_complete?: boolean;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

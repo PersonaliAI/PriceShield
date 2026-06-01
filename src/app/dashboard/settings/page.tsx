@@ -16,6 +16,8 @@ import {
   ArrowRight,
   Hash,
   Key,
+  Globe,
+  Clock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,8 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { api, UserSettings, SettingsUpdate, APIKeyListItem, APIKeyResponse } from "@/lib/api";
+import SearchableDropdown from "@/components/dashboard/SearchableDropdown";
+import { getCountries, getTimezones, timezoneLabel } from "@/lib/locale";
 
 export default function SettingsPage() {
   const { getToken, user } = useAuth();
@@ -61,6 +65,8 @@ export default function SettingsPage() {
   const [reportMonthly, setReportMonthly] = useState(true);
   const [alertThreshold, setAlertThreshold] = useState(2.0);
   const [slackWebhookUrl, setSlackWebhookUrl] = useState("");
+  const [country, setCountry] = useState("US");
+  const [timezone, setTimezone] = useState("UTC");
   
   const [triggeringReport, setTriggeringReport] = useState<string | null>(null);
   const initialLoadDone = useRef(false);
@@ -114,6 +120,8 @@ export default function SettingsPage() {
       setReportMonthly(data.report_monthly);
       setAlertThreshold(data.alert_threshold || 2.0);
       setSlackWebhookUrl(data.slack_webhook_url || "");
+      setCountry(data.country || "US");
+      setTimezone(data.timezone || "UTC");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load settings";
       setError(msg);
@@ -187,7 +195,9 @@ export default function SettingsPage() {
       reportWeekly !== settings.report_weekly ||
       reportMonthly !== settings.report_monthly ||
       alertThreshold !== (settings.alert_threshold || 2.0) ||
-      slackWebhookUrl !== (settings.slack_webhook_url || "");
+      slackWebhookUrl !== (settings.slack_webhook_url || "") ||
+      country !== (settings.country || "US") ||
+      timezone !== (settings.timezone || "UTC");
 
     if (!isDirty) return;
 
@@ -209,6 +219,8 @@ export default function SettingsPage() {
           report_monthly: reportMonthly,
           alert_threshold: alertThreshold,
           slack_webhook_url: slackWebhookUrl || null,
+          country: country || null,
+          timezone: timezone || null,
         };
 
         await api.updateSettings(token, update);
@@ -233,6 +245,8 @@ export default function SettingsPage() {
     reportMonthly,
     alertThreshold,
     slackWebhookUrl,
+    country,
+    timezone,
     loading,
     settings,
     getToken,
@@ -789,6 +803,77 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               We recommend <span className="text-emerald-400 font-bold">2%</span> for most restaurants to ignore minor market fluctuations while catching meaningful supplier jumps.
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Regional Settings */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <Globe className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div>
+              <CardTitle>Regional Settings</CardTitle>
+              <CardDescription>
+                Configure your default region and timezone for tracking and automated digests
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {saving && (
+              <Badge variant="outline" className="animate-pulse flex items-center gap-1 bg-amber-500/10 text-amber-500 border-amber-500/20 px-2 py-0.5">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="text-[10px]">Saving...</span>
+              </Badge>
+            )}
+            {saved && (
+              <Badge variant="outline" className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2 py-0.5">
+                <Check className="h-3 w-3" />
+                <span className="text-[10px]">Saved</span>
+              </Badge>
+            )}
+            {!saving && !saved && (
+              <span className="text-xs text-muted-foreground italic opacity-50">Auto-save active</span>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Country Dropdown */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                Default Country
+              </label>
+              <SearchableDropdown
+                options={getCountries().map(c => ({ value: c.code, label: c.name }))}
+                value={country}
+                onChange={setCountry}
+                placeholder="Select country..."
+                searchPlaceholder="Search country name..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Set the default region filter for local supplier baselines.
+              </p>
+            </div>
+
+            {/* Timezone Dropdown */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                Timezone
+              </label>
+              <SearchableDropdown
+                options={getTimezones().map(tz => ({ value: tz, label: timezoneLabel(tz) }))}
+                value={timezone}
+                onChange={setTimezone}
+                placeholder="Select timezone..."
+                searchPlaceholder="Search timezone..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Dates and scheduled notifications adjust based on this zone.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

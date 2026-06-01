@@ -20,7 +20,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
 import { useState, useEffect } from "react";
-import AppTour from "@/components/dashboard/AppTour";
+import OnboardingModal from "@/components/dashboard/OnboardingModal";
+import { api } from "@/lib/api";
 import "katex/dist/katex.min.css";
 
 const navItems = [
@@ -37,23 +38,42 @@ const navItems = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut, user, sendVerification } = useAuth();
+  const { signOut, user, sendVerification, getToken } = useAuth();
   const [verifying, setVerifying] = useState(false);
   const [sent, setSent] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showTour, setShowTour] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Auto-trigger tour for first-time users
+  // Check backend onboarding state for user
   useEffect(() => {
     setIsMounted(true);
 
-    const hasSeen = localStorage.getItem("priceshield_onboarding_seen");
-    if (!hasSeen) {
-      const timer = setTimeout(() => setShowTour(true), 1500);
-      return () => clearTimeout(timer);
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("forceOnboarding") === "true") {
+      setShowOnboarding(true);
+      return;
     }
-  }, []);
+
+    let active = true;
+    async function checkOnboarding() {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const settings = await api.getSettings(token);
+        if (active && settings && !settings.onboarding_complete) {
+          setShowOnboarding(true);
+        }
+      } catch (err) {
+        console.error("Failed to check onboarding status:", err);
+      }
+    }
+
+    checkOnboarding();
+    return () => {
+      active = false;
+    };
+  }, [getToken]);
 
   if (!isMounted) {
     return (
@@ -113,13 +133,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           <div className="px-3 py-4 border-t border-border/40 space-y-2">
-            <button
-              onClick={() => setShowTour(true)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-500/5 w-full transition-colors"
-            >
-              <HelpCircle className="h-4 w-4" />
-              Platform Tour
-            </button>
             {user?.email && (
               <p className="px-3 text-xs text-muted-foreground truncate">{user.email}</p>
             )}
@@ -199,13 +212,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </nav>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/40 bg-card/50 space-y-2">
-                  <button
-                    onClick={() => { setIsMenuOpen(false); setShowTour(true); }}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-500/5 w-full transition-colors"
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                    Platform Tour
-                  </button>
                   {user?.email && (
                     <p className="px-3 py-2 text-xs text-muted-foreground truncate">{user.email}</p>
                   )}
@@ -246,7 +252,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           )}
 
-          <AppTour open={showTour} onOpenChange={setShowTour} />
+          <OnboardingModal open={showOnboarding} onComplete={() => setShowOnboarding(false)} />
 
           <div className="p-6 md:p-8 max-w-[1600px] mx-auto">{children}</div>
         </main>

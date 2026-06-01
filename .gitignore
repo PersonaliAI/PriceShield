@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ignore backend, raw invoices, and local testing/development folders
+/backend/
+/Invoices/
+/growth/
+/frontend/
