@@ -102,23 +102,24 @@ export default function DashboardPage() {
       setInboxCount(inboxData.length);
       setSettings(s);
       setInboxLoading(false);
+      // Show the dashboard immediately — don't block the spinner on the optional trend chart.
+      setLoading(false);
 
-      // Auto-select first item for trend chart
+      // Auto-select first item for the trend chart (loads in the background, non-blocking).
       if (invoicesData.rows.length > 0) {
         const firstRow = invoicesData.rows[0];
         setTrendItem(firstRow.item_name);
         setTrendVendor(firstRow.vendor_name);
-        try {
-          const trends = await api.getPriceTrends(token, firstRow.vendor_name, firstRow.item_name);
-          setTrendData(trends.data);
-        } catch {
-          // Trend data is optional
-        }
+        api
+          .getPriceTrends(token, firstRow.vendor_name, firstRow.item_name)
+          .then((trends) => setTrendData(trends.data))
+          .catch(() => {
+            // Trend data is optional
+          });
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load dashboard";
       setError(msg);
-    } finally {
       setLoading(false);
     }
   }, [getToken, selectedVendor]);
@@ -202,8 +203,57 @@ export default function DashboardPage() {
     try {
       const token = await getToken();
       if (!token) return;
-      const res = await api.askAICFO(token, cfoQuestion);
-      setCfoAnswer(res.answer);
+
+      // /api/ai-cfo/ask streams Server-Sent Events — read the stream and keep the final answer.
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${API_BASE}/api/ai-cfo/ask`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+        },
+        body: JSON.stringify({ question: cfoQuestion }),
+      });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response stream");
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalAnswer = "";
+      let streamError = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+        for (const part of parts) {
+          if (!part.trim()) continue;
+          let eventName = "";
+          let dataContent = "";
+          for (const line of part.split("\n")) {
+            if (line.startsWith("event:")) eventName = line.slice(6).trim();
+            else if (line.startsWith("data:")) dataContent = line.slice(5).trim();
+          }
+          if (!eventName || !dataContent) continue;
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(dataContent);
+          } catch {
+            continue;
+          }
+          if (eventName === "answer") finalAnswer = String(parsed);
+          else if (eventName === "error") {
+            streamError = typeof parsed === "string" ? parsed : "AI CFO error";
+          }
+        }
+      }
+
+      if (finalAnswer) setCfoAnswer(finalAnswer);
+      else setCfoAnswer(streamError ? `⚠️ ${streamError}` : "Sorry, I couldn't process your request right now.");
     } catch {
       setCfoAnswer("Sorry, I couldn't process your request right now.");
     } finally {
