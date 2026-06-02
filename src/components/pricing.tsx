@@ -11,14 +11,14 @@ const plans = [
     name: "Free Audit",
     price: "$0",
     period: "",
-    description: "Prove the AI works on your own invoices.",
+    description: "Upload your invoices and see what the AI catches — before you pay a cent.",
     features: [
-      "5 manual invoice uploads",
-      "AI line-item extraction",
-      "Basic variance detection",
-      "Web dashboard access",
+      "5 invoice uploads, no expiry",
+      "AI reads every line item",
+      "Flags price increases vs your history",
+      "Dashboard to review results",
     ],
-    cta: "Start free",
+    cta: "Start free — no card needed",
     href: "/login",
     highlighted: false,
   },
@@ -26,14 +26,14 @@ const plans = [
     name: "Pro Shield",
     price: "$49",
     period: "/mo",
-    description: "The core engine. Catch every stealth hike automatically.",
+    description: "Automatic protection. Catches hikes the moment they happen, not months later.",
     features: [
       "1 business location",
-      "Unlimited auto-forwarding",
-      "Real-time alerts (Telegram, Slack, WhatsApp, email)",
-      "AI CFO chat",
-      "Unlimited vendor tracking",
-      "Weekly PDF reports",
+      "Forward invoices by email — AI audits them automatically",
+      "Instant alerts via email, Telegram, or Slack",
+      "Ask your AI analyst anything about your supplier costs",
+      "Unlimited suppliers tracked",
+      "Weekly cost summary reports",
     ],
     cta: "Start Pro Shield",
     href: "/login?redirect=/dashboard/billing",
@@ -43,15 +43,15 @@ const plans = [
     name: "Multi-Location",
     price: "$149",
     period: "/mo",
-    description: "Built for hospitality groups and multi-site operators.",
+    description: "For small businesses running more than one site. One dashboard, full visibility.",
     features: [
-      "Up to 5 venue locations",
-      "Combined AI CFO across sites",
+      "Up to 5 locations",
+      "See cost trends across all sites",
       "Everything in Pro Shield",
       "Priority support",
       "Custom integrations",
     ],
-    cta: "Scale your shield",
+    cta: "Scale your protection",
     href: "/login?redirect=/dashboard/billing",
     highlighted: false,
   },
@@ -62,14 +62,12 @@ export function Pricing() {
     <section id="pricing" className="py-16 md:py-20 border-t border-border">
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center mb-12">
-          <p className="text-sm font-medium text-muted-foreground mb-3">Pricing</p>
+          <p className="text-sm font-medium text-muted-foreground mb-3">Simple pricing</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Pay <span className="text-emerald-500">less</span> than one missed
-            hike costs.
+            Costs less than <span className="text-emerald-500">one missed hike.</span>
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Most operators recover 5–20× the subscription in their first month
-            of caught hikes.
+            Most small businesses recover 5–20× the monthly cost in caught overcharges within the first month.
           </p>
         </div>
 

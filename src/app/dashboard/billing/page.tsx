@@ -13,17 +13,17 @@ const PLANS = [
     tier: "free",
     name: "Free Audit",
     price: "$0",
-    description: "Prove the AI works and see exactly what you're losing.",
+    description: "See what the AI catches on your own invoices — before you pay anything.",
     features: [
-      "5 Manual Invoice Uploads (Lifetime)",
-      "AI Line-Item Extraction",
-      "Basic Price Comparison",
-      "Web Dashboard Access",
+      "5 invoice uploads (no expiry)",
+      "AI reads every line item",
+      "Flags price increases vs your history",
+      "Full dashboard access",
     ],
     limitations: [
-      "No Auto-Forwarding",
-      "No Telegram Alerts",
-      "No AI CFO chat",
+      "No auto-forwarding",
+      "No real-time alerts",
+      "No AI cost analysis",
     ],
     icon: Zap,
     popular: false,
@@ -32,13 +32,14 @@ const PLANS = [
     tier: "pro",
     name: "Pro Shield",
     price: "$49 / month",
-    description: "Your core revenue engine. Pays for itself on the first caught hike.",
+    description: "Automatic protection. Catches hikes the day they happen — not months later.",
     features: [
-      "1 Venue Location",
-      "Unlimited Auto-Forwarding",
-      "Real-Time Telegram Alerts",
-      "Ask Your AI CFO Chat Access",
-      "Unlimited Vendor Tracking",
+      "1 business location",
+      "Forward invoices by email — AI audits automatically",
+      "Instant alerts via email, Telegram, or Slack",
+      "Ask your AI analyst about any supplier cost",
+      "Unlimited suppliers tracked",
+      "Weekly cost summary reports",
     ],
     icon: Shield,
     popular: true,
@@ -47,12 +48,12 @@ const PLANS = [
     tier: "multi",
     name: "Multi-Location",
     price: "$149 / month",
-    description: "Built for hospitality operators managing multiple venues.",
+    description: "For small businesses running more than one site. One dashboard, full visibility.",
     features: [
-      "Up to 5 Venue Locations",
-      "Combined AI CFO Insights",
+      "Up to 5 business locations",
+      "Combined cost view across all sites",
       "Everything in Pro Shield",
-      "Priority Email Support",
+      "Priority support",
     ],
     icon: Building2,
     popular: false,
@@ -116,9 +117,9 @@ export default function BillingPage() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <div className="text-center space-y-2 mb-12">
-        <h1 className="text-3xl font-bold tracking-tight">Upgrade Your Shield</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Upgrade Your Plan</h1>
         <p className="text-muted-foreground text-lg">
-          Stop bleeding margins. Automate your supplier invoice tracking today.
+          Most small businesses recover 5–20× the monthly cost in caught price hikes within their first month.
         </p>
       </div>
 
