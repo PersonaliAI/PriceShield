@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { ChevronDown, Check, Search } from "lucide-react";
 
 interface DropdownOption {
@@ -27,64 +27,117 @@ export default function SearchableDropdown({
 }: SearchableDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+  // Compute fixed position from the trigger's bounding rect so the panel
+  // escapes any overflow:auto/hidden ancestor (e.g. the dashboard <main>).
+  const calcPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const panelHeight = 280; // approx max: search box ~44px + options max-h-56 ~224px
+    const openUpward = spaceBelow < panelHeight && rect.top > panelHeight;
+    setPanelStyle({
+      position: "fixed",
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+      ...(openUpward
+        ? { bottom: window.innerHeight - rect.top + 6 }
+        : { top: rect.bottom + 6 }),
+    });
   }, []);
 
-  // Filter options based on search query
-  const filteredOptions = useMemo(() => {
-    const query = search.toLowerCase().trim();
-    if (!query) return options;
-    return options.filter((opt) => opt.label.toLowerCase().includes(query));
-  }, [options, search]);
+  const openDropdown = () => {
+    calcPosition();
+    setIsOpen(true);
+    setSearch("");
+  };
 
-  // Focus search input when dropdown opens
+  const closeDropdown = () => setIsOpen(false);
+
+  const toggleDropdown = () => (isOpen ? closeDropdown() : openDropdown());
+
+  // Close on outside click
+  useEffect(() => {
+    if (!isOpen) return;
+    function onMouseDown(e: MouseEvent) {
+      if (
+        triggerRef.current?.contains(e.target as Node) ||
+        panelRef.current?.contains(e.target as Node)
+      )
+        return;
+      closeDropdown();
+    }
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [isOpen]);
+
+  // Close + reposition on scroll or resize
+  useEffect(() => {
+    if (!isOpen) return;
+    const onScroll = () => closeDropdown();
+    const onResize = () => calcPosition();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [isOpen, calcPosition]);
+
+  // Focus search input when panel opens
   useEffect(() => {
     if (isOpen) {
-      setSearch("");
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen]);
 
-  const selectedOption = useMemo(() => {
-    return options.find((opt) => opt.value === value);
-  }, [options, value]);
+  const filteredOptions = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
+  }, [options, search]);
+
+  const selectedOption = useMemo(
+    () => options.find((o) => o.value === value),
+    [options, value]
+  );
 
   const handleSelect = (val: string) => {
     onChange(val);
-    setIsOpen(false);
+    closeDropdown();
   };
 
   return (
-    <div className={`relative w-full ${className}`} ref={containerRef}>
-      {/* Trigger Button */}
+    <div className={`relative w-full ${className}`}>
+      {/* Trigger */}
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleDropdown}
         className="w-full h-11 px-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700/80 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 flex items-center justify-between text-sm transition-all select-none cursor-pointer"
       >
         <span className={selectedOption ? "text-foreground truncate" : "text-muted-foreground"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Panel — position:fixed so it's never clipped by overflow:auto parents */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 rounded-xl bg-zinc-950/95 border border-zinc-800/80 backdrop-blur-md shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-          {/* Search Box */}
+        <div
+          ref={panelRef}
+          style={panelStyle}
+          className="rounded-xl bg-zinc-950/95 border border-zinc-800/80 backdrop-blur-md shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+        >
+          {/* Search */}
           <div className="relative flex items-center px-2 py-1.5 border-b border-zinc-900/80">
             <Search className="absolute left-4 h-3.5 w-3.5 text-muted-foreground" />
             <input
@@ -97,7 +150,7 @@ export default function SearchableDropdown({
             />
           </div>
 
-          {/* Options List — explicit max-h so scroll works regardless of parent height */}
+          {/* Options */}
           <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5">
             {filteredOptions.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-4">No results found</p>
@@ -116,7 +169,9 @@ export default function SearchableDropdown({
                     }`}
                   >
                     <span className="truncate pr-4">{opt.label}</span>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                    {isSelected && (
+                      <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    )}
                   </button>
                 );
               })

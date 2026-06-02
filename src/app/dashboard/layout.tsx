@@ -55,11 +55,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       return;
     }
 
-    // Session safeguard to prevent infinite loops in the same session
-    if (sessionStorage.getItem("priceshield_onboarding_session_done") === "true") {
-      return;
-    }
-
     let active = true;
     async function checkOnboarding() {
       try {
@@ -257,12 +252,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           )}
 
-          <OnboardingModal 
-            open={showOnboarding} 
-            onComplete={() => {
-              setShowOnboarding(false);
-              sessionStorage.setItem("priceshield_onboarding_session_done", "true");
-            }} 
+          <OnboardingModal
+            open={showOnboarding}
+            onComplete={() => setShowOnboarding(false)}
           />
 
           <div className="p-6 md:p-8 max-w-[1600px] mx-auto">{children}</div>
