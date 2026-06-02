@@ -53,7 +53,6 @@ export default function SettingsPage() {
   const [showConfirmDisconnectSlack, setShowConfirmDisconnectSlack] = useState(false);
 
   // Form state
-  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [forwardingEmails, setForwardingEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
   const [alertChannels, setAlertChannels] = useState<string[]>(["push", "email"]);
@@ -111,7 +110,6 @@ export default function SettingsPage() {
       if (!token) return;
       const data = await api.getSettings(token);
       setSettings(data);
-      setWhatsappNumber(data.whatsapp_number || "");
       setForwardingEmails(data.forwarding_emails || []);
       setAlertChannels(data.alert_channels || ["push", "email"]);
       setAlertEmail(data.alert_email || "");
@@ -186,8 +184,7 @@ export default function SettingsPage() {
     if (loading || !settings || !initialLoadDone.current) return;
 
     // Deep compare to prevent saving when initial data is fetched
-    const isDirty = 
-      whatsappNumber !== (settings.whatsapp_number || "") ||
+    const isDirty =
       JSON.stringify(forwardingEmails) !== JSON.stringify(settings.forwarding_emails || []) ||
       JSON.stringify(alertChannels) !== JSON.stringify(settings.alert_channels || ["push", "email"]) ||
       alertEmail !== (settings.alert_email || "") ||
@@ -210,7 +207,6 @@ export default function SettingsPage() {
         if (!token) return;
 
         const update: SettingsUpdate = {
-          whatsapp_number: whatsappNumber || null,
           forwarding_emails: forwardingEmails,
           alert_channels: alertChannels,
           alert_email: alertEmail || null,
@@ -224,6 +220,24 @@ export default function SettingsPage() {
         };
 
         await api.updateSettings(token, update);
+        // Sync settings state so isDirty stays accurate
+        setSettings((prev) =>
+          prev
+            ? {
+                ...prev,
+                forwarding_emails: forwardingEmails,
+                alert_channels: alertChannels,
+                alert_email: alertEmail || null,
+                report_daily: reportDaily,
+                report_weekly: reportWeekly,
+                report_monthly: reportMonthly,
+                alert_threshold: alertThreshold,
+                slack_webhook_url: slackWebhookUrl || null,
+                country: country || null,
+                timezone: timezone || null,
+              }
+            : prev
+        );
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } catch (err) {
@@ -236,7 +250,6 @@ export default function SettingsPage() {
 
     return () => clearTimeout(saveTimer);
   }, [
-    whatsappNumber,
     forwardingEmails,
     alertChannels,
     alertEmail,
@@ -357,11 +370,30 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure your alert channels and email forwarding
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground mt-1">
+            Configure your alert channels and email forwarding
+          </p>
+        </div>
+        <div className="flex items-center gap-2 pt-1">
+          {saving && (
+            <Badge variant="outline" className="animate-pulse flex items-center gap-1 bg-amber-500/10 text-amber-500 border-amber-500/20 px-2 py-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span className="text-xs">Saving…</span>
+            </Badge>
+          )}
+          {saved && (
+            <Badge variant="outline" className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2 py-1">
+              <Check className="h-3 w-3" />
+              <span className="text-xs">Saved</span>
+            </Badge>
+          )}
+          {!saving && !saved && (
+            <span className="text-xs text-muted-foreground italic opacity-50">Auto-save active</span>
+          )}
+        </div>
       </div>
 
       {success && (
@@ -494,7 +526,7 @@ export default function SettingsPage() {
 
       {/* Alert Channels */}
       <Card id="tour-settings-channels" className="bg-card/50 border-border/50">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
               <Bell className="h-5 w-5 text-amber-400" />
@@ -505,23 +537,6 @@ export default function SettingsPage() {
                 Choose how you want to receive price hike notifications
               </CardDescription>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {saving && (
-              <Badge variant="outline" className="animate-pulse flex items-center gap-1 bg-amber-500/10 text-amber-500 border-amber-500/20 px-2 py-0.5">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span className="text-[10px]">Saving...</span>
-              </Badge>
-            )}
-            {saved && (
-              <Badge variant="outline" className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2 py-0.5">
-                <Check className="h-3 w-3" />
-                <span className="text-[10px]">Saved</span>
-              </Badge>
-            )}
-            {!saving && !saved && (
-              <span className="text-xs text-muted-foreground italic opacity-50">Auto-save active</span>
-            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -809,7 +824,7 @@ export default function SettingsPage() {
 
       {/* Regional Settings */}
       <Card className="bg-card/50 border-border/50">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
               <Globe className="h-5 w-5 text-emerald-400" />
@@ -820,23 +835,6 @@ export default function SettingsPage() {
                 Configure your default region and timezone for tracking and automated digests
               </CardDescription>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {saving && (
-              <Badge variant="outline" className="animate-pulse flex items-center gap-1 bg-amber-500/10 text-amber-500 border-amber-500/20 px-2 py-0.5">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span className="text-[10px]">Saving...</span>
-              </Badge>
-            )}
-            {saved && (
-              <Badge variant="outline" className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2 py-0.5">
-                <Check className="h-3 w-3" />
-                <span className="text-[10px]">Saved</span>
-              </Badge>
-            )}
-            {!saving && !saved && (
-              <span className="text-xs text-muted-foreground italic opacity-50">Auto-save active</span>
-            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -1021,14 +1019,14 @@ export default function SettingsPage() {
                 No API keys generated yet. Generate a key below to connect your local IDE or AI client.
               </p>
             ) : (
-              <div className="rounded-lg border border-border/50 overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
+              <div className="rounded-lg border border-border/50 overflow-hidden overflow-x-auto">
+                <table className="w-full min-w-[480px] text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-muted/30 border-b border-border/50">
                       <th className="p-3 font-semibold text-muted-foreground">Name</th>
                       <th className="p-3 font-semibold text-muted-foreground">Prefix</th>
-                      <th className="p-3 font-semibold text-muted-foreground">Created</th>
-                      <th className="p-3 font-semibold text-muted-foreground">Last Used</th>
+                      <th className="p-3 font-semibold text-muted-foreground hidden sm:table-cell">Created</th>
+                      <th className="p-3 font-semibold text-muted-foreground hidden sm:table-cell">Last Used</th>
                       <th className="p-3 font-semibold text-muted-foreground text-right">Actions</th>
                     </tr>
                   </thead>
@@ -1037,8 +1035,8 @@ export default function SettingsPage() {
                       <tr key={key.id} className="border-b border-border/40 hover:bg-muted/10 transition-colors">
                         <td className="p-3 font-medium">{key.name}</td>
                         <td className="p-3"><code className="bg-muted/40 px-1.5 py-0.5 rounded font-mono text-[11px]">{key.key_prefix}...</code></td>
-                        <td className="p-3 text-muted-foreground">{new Date(key.created_at).toLocaleDateString()}</td>
-                        <td className="p-3 text-muted-foreground">
+                        <td className="p-3 text-muted-foreground hidden sm:table-cell">{new Date(key.created_at).toLocaleDateString()}</td>
+                        <td className="p-3 text-muted-foreground hidden sm:table-cell">
                           {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : "Never"}
                         </td>
                         <td className="p-3 text-right">
@@ -1208,41 +1206,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Connection Status */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <Shield className="h-5 w-5 text-emerald-400" />
-            </div>
-            <div>
-              <CardTitle>Connection Status</CardTitle>
-              <CardDescription>
-                Overview of your integrations
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-lg border border-border/50 bg-muted/10 p-3 text-center">
-              <Send className="h-5 w-5 mx-auto mb-2 text-sky-400" />
-              <p className="text-xs font-medium">Telegram</p>
-              <p className={`text-xs mt-1 ${settings?.telegram_linked ? "text-emerald-400" : "text-muted-foreground"}`}>
-                {settings?.telegram_linked ? "✓ Connected" : "Not connected"}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/50 bg-muted/10 p-3 text-center">
-              <Mail className="h-5 w-5 mx-auto mb-2 text-blue-400" />
-              <p className="text-xs font-medium">Email Forwarding</p>
-              <p className={`text-xs mt-1 ${forwardingEmails.length > 0 ? "text-emerald-400" : "text-muted-foreground"}`}>
-                {forwardingEmails.length > 0 ? `✓ ${forwardingEmails.length} Configured` : "Not configured"}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Disconnect Confirmation Dialog */}
       <Dialog open={showConfirmDisconnect} onOpenChange={setShowConfirmDisconnect}>
         <DialogContent className="max-w-md">
@@ -1259,6 +1222,30 @@ export default function SettingsPage() {
             <Button 
               variant="destructive" 
               onClick={handleDisconnectTelegram} 
+              className="bg-rose-500 hover:bg-rose-600"
+            >
+              Disconnect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Disconnect Slack Confirmation Dialog */}
+      <Dialog open={showConfirmDisconnectSlack} onOpenChange={setShowConfirmDisconnectSlack}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-500">
+              <AlertTriangle className="h-5 w-5" /> Disconnect Slack?
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure? You will stop receiving alerts in Slack. You can reconnect anytime.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="ghost" onClick={() => setShowConfirmDisconnectSlack(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleDisconnectSlack}
               className="bg-rose-500 hover:bg-rose-600"
             >
               Disconnect
