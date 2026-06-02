@@ -81,10 +81,14 @@ export default function SearchableDropdown({
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, [isOpen]);
 
-  // Close on scroll, reposition on resize
+  // Close on outside scroll, reposition on resize.
+  // Ignore scroll events inside the panel itself (user scrolling the options list).
   useEffect(() => {
     if (!isOpen) return;
-    const onScroll = () => closeDropdown();
+    const onScroll = (e: Event) => {
+      if (panelRef.current?.contains(e.target as Node)) return;
+      closeDropdown();
+    };
     const onResize = () => calcPosition();
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onResize);
