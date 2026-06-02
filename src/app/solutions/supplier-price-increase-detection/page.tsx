@@ -163,7 +163,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
 
                       <div className="space-y-2">
                         <p className="text-[11px] text-zinc-200 leading-relaxed font-medium">
-                          ⚠️ **Price Increase Detected** at **US Foods**
+                          ⚠️ **Price Increase Detected** at **your supplier**
                         </p>
                         <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/20 text-xs font-mono">
                           <div className="flex justify-between text-zinc-200 font-semibold">
@@ -300,7 +300,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                 Never miss another supplier price hike
               </h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                Join thousands of kitchens protected by automated price increase monitoring. Save hours of labor and protect your bottom line.
+                Join thousands of hospitality operators protected by automated price increase monitoring. Save hours of labor and protect your bottom line.
               </p>
               <Button
                 size="lg"

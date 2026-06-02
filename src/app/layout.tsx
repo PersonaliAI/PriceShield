@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   creator: "PriceShield",
   publisher: "PriceShield",
   category: "business",
-  classification: "Restaurant SaaS, Supplier Price Tracking, Invoice Audit, Price Hike Detection",
+  classification: "Hospitality SaaS, Supplier Price Tracking, Invoice Audit, Price Hike Detection",
   keywords: [
     // Core Target Keywords
     "supplier price track",
@@ -84,9 +84,9 @@ export const metadata: Metadata = {
     url: "https://trypriceshield.com",
     siteName: "PriceShield",
     title:
-      "PriceShield — Stop Supplier Price Creep. Protect Restaurant Margins.",
+      "PriceShield — Stop Supplier Price Creep. Protect Hospitality Margins.",
     description:
-      "Every supplier invoice audited in 5 seconds. Stealth price hikes flagged instantly via Telegram, Slack, or email. Recover 2–7% of margin most kitchens leak silently.",
+      "Every supplier invoice audited in 5 seconds. Stealth price hikes flagged instantly via Telegram, Slack, or email. Recover 2–7% of margin most businesses leak silently.",
     images: [
       {
         url: "/logo.png",
@@ -102,7 +102,7 @@ export const metadata: Metadata = {
     creator: "@trypriceshield",
     title: "PriceShield — Stop Supplier Price Creep",
     description:
-      "AI-powered invoice auditing and supplier price monitoring for restaurants. Free audit on first 5 invoices.",
+      "AI-powered invoice auditing and supplier price monitoring for hospitality operators. Free audit on first 5 invoices.",
     images: ["/logo.png"],
   },
   icons: {
@@ -183,7 +183,7 @@ const jsonLd = {
       "@id": "https://trypriceshield.com/#software",
       name: "PriceShield",
       description:
-        "AI-powered supplier price monitoring and invoice auditing platform for restaurants.",
+        "AI-powered supplier price monitoring and invoice auditing platform for hospitality operators.",
       url: "https://trypriceshield.com",
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web, iOS, Android",
@@ -217,7 +217,7 @@ const jsonLd = {
         "Stealth supplier price hike detection",
         "Real-time Telegram, Slack, WhatsApp, email alerts",
         "AI CFO chat for pricing questions",
-        "Multi-location food cost tracking",
+        "Multi-location procurement cost tracking",
         "Auto-forwarding from supplier emails",
         "Semantic SKU matching across renames",
       ],

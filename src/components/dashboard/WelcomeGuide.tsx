@@ -77,7 +77,7 @@ export function WelcomeGuide({ open, onOpenChange }: WelcomeGuideProps) {
       title: "Multi-Location",
       icon: <MapPin className="h-6 w-6 text-amber-400" />,
       bg: "bg-amber-500/10",
-      desc: "Scaling up? manage multiple restaurant locations from a single login and compare pricing performance between sites.",
+      desc: "Scaling up? Manage multiple venue locations from a single login and compare pricing performance between sites.",
     },
     {
       title: "Smart Alerts",

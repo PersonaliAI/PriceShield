@@ -285,7 +285,7 @@ export default function UploadPage() {
               <CardHeader>
                 <CardTitle>Upload Your Invoice PDFs</CardTitle>
                 <CardDescription>
-                  Drop in your recent invoices from Sysco, US Foods, or any distributor.
+                  Drop in your recent invoices from your suppliers and distributors.
                   {" "}More invoices = better comparison, but even one works.
                 </CardDescription>
               </CardHeader>
@@ -294,7 +294,7 @@ export default function UploadPage() {
                 {settings && settings.locations.length > 0 && (
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                      Restaurant Location
+                      Location
                     </label>
                     <div className="flex items-center gap-2">
                       {settings.locations.length === 1 ? (

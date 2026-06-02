@@ -206,7 +206,7 @@ function StepDone({
       <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
         <p className="text-sm font-semibold text-emerald-400">Your first audit is free</p>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Upload any PDF invoice from Sysco, US Foods, or your local distributor. No account setup, no credit card.
+          Upload any PDF invoice from your suppliers. No account setup, no credit card.
           Just a PDF.
         </p>
       </div>

@@ -816,7 +816,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              We recommend <span className="text-emerald-400 font-bold">2%</span> for most restaurants to ignore minor market fluctuations while catching meaningful supplier jumps.
+              We recommend <span className="text-emerald-400 font-bold">2%</span> for most hospitality businesses to ignore minor market fluctuations while catching meaningful supplier jumps.
             </p>
           </div>
         </CardContent>

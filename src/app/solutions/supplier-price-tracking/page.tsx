@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Supplier Price Tracking Software for Restaurants | PriceShield",
+  title: "Supplier Price Tracking Software for Hospitality | PriceShield",
   description:
     "Track supplier prices and stop stealth inflation in real-time. PriceShield audits every invoice line item and helps you track supplier prices automatically.",
   alternates: {
@@ -33,7 +33,7 @@ const jsonLd = {
       "@id": "https://trypriceshield.com/solutions/supplier-price-tracking/#webpage",
       "url": "https://trypriceshield.com/solutions/supplier-price-tracking",
       "name": "Supplier Price Tracking Software - PriceShield",
-      "description": "How to track supplier prices and secure restaurant food margins automatically.",
+      "description": "How to track supplier prices and secure hospitality procurement margins automatically.",
       "publisher": { "@id": "https://trypriceshield.com/#organization" },
     },
     {
@@ -42,10 +42,10 @@ const jsonLd = {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "Why is it important to track supplier prices for restaurants?",
+          "name": "Why is it important to track supplier prices for hospitality businesses?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Restaurants operate on thin margins (usually 3-7%). Even a small, unnoticed increase of 2-5% on key ingredients like beef, butter, or oil can wipe out your profitability. Tracking supplier prices manually is time-consuming, but automation catches these hikes before they drain your cash flow.",
+            "text": "Hospitality businesses operate on thin margins (usually 3-7%). Even a small, unnoticed increase of 2-5% on key supplies like proteins, dairy, or oil can wipe out your profitability. Tracking supplier prices manually is time-consuming, but automation catches these hikes before they drain your cash flow.",
           },
         },
         {
@@ -53,7 +53,7 @@ const jsonLd = {
           "name": "Can PriceShield track prices across multiple suppliers?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. PriceShield extracts and matches line-item data across all of your food service distributors (such as Sysco, US Foods, GFS, and regional vendors). It normalizes unit measurements so you can compare prices on identical items instantly.",
+            "text": "Yes. PriceShield extracts and matches line-item data across all of your suppliers and distributors. It normalizes unit measurements so you can compare prices on identical items instantly.",
           },
         },
       ],
@@ -110,7 +110,7 @@ export default function SupplierPriceTrackingPage() {
                 </span>
               </h1>
               <p className="text-xs md:text-[13px] text-zinc-400/90 leading-relaxed max-w-md">
-                Manual tracking is a chore that never gets done. PriceShield automates food distributor price tracking, revealing stealth inflation and item-by-item drift automatically.
+                Manual tracking is a chore that never gets done. PriceShield automates supplier price tracking for hospitality operators, revealing stealth inflation and item-by-item drift automatically.
               </p>
               <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
@@ -141,7 +141,7 @@ export default function SupplierPriceTrackingPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                       <div>
                         <h2 className="text-[11px] font-semibold text-zinc-200 uppercase tracking-wider">Live Price Track</h2>
-                        <p className="text-[10px] text-zinc-500">Sysco vs US Foods • Active</p>
+                        <p className="text-[10px] text-zinc-500">Multi-Supplier Comparison • Active</p>
                       </div>
                     </div>
                     <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-medium tracking-wide">
@@ -154,7 +154,7 @@ export default function SupplierPriceTrackingPage() {
                     {[
                       {
                         name: "Prime Beef Tenderloin (1855)",
-                        supplier: "Sysco Corp",
+                        supplier: "Broadline Supplier A",
                         base: 18.5,
                         curr: 21.2,
                         unit: "lb",
@@ -162,7 +162,7 @@ export default function SupplierPriceTrackingPage() {
                       },
                       {
                         name: "Heavy Whipping Cream 36%",
-                        supplier: "US Foods",
+                        supplier: "Broadline Supplier B",
                         base: 34.2,
                         curr: 34.2,
                         unit: "case",
@@ -214,7 +214,7 @@ export default function SupplierPriceTrackingPage() {
                   {/* Micro-insight Footer inside Card */}
                   <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-start gap-2 text-[10px] text-zinc-400">
                     <Info className="size-3.5 text-blue-400 shrink-0 mt-0.5" />
-                    <span>Olive Oil increase detected at Cheney Bros. Alternate supplier (Sysco) is offering $68.00.</span>
+                    <span>Olive Oil increase detected at your distributor. Alternate supplier is offering $68.00.</span>
                   </div>
                 </div>
               </div>
@@ -225,10 +225,10 @@ export default function SupplierPriceTrackingPage() {
           <section className="py-16 border-t border-border/60">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-white">
-                How automated supplier price tracking protects your kitchen
+                How automated supplier price tracking protects your operations
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
-                Distributors count on restaurant operators being too busy to audit invoices. PriceShield shifts the balance of power back to you.
+                Distributors count on hospitality operators being too busy to audit invoices. PriceShield shifts the balance of power back to you.
               </p>
             </div>
 
@@ -249,7 +249,7 @@ export default function SupplierPriceTrackingPage() {
                 </div>
                 <h3 className="text-base font-semibold text-white mb-2">Cross-Supplier Auditing</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Compare equivalent products between Sysco, US Foods, and local purveyors. Our system standardizes SKU names, so you see alternative vendor pricing instantly.
+                  Compare equivalent products between your suppliers and local purveyors. Our system standardizes SKU names, so you see alternative vendor pricing instantly.
                 </p>
               </div>
 

@@ -16,7 +16,7 @@ const items = [
   },
   {
     q: "How accurate is the AI extraction?",
-    a: "Our extraction model returns a confidence score per line item. In production we see 97%+ accuracy on standard supplier invoice formats (US Foods, Sysco, Cheney Bros, Performance Food Group, GFS, regional distributors). Low-confidence items get flagged for one-click review in the dashboard. Photographed paper invoices average ~93% — typed PDFs near 100%.",
+    a: "Our extraction model returns a confidence score per line item. In production we see 97%+ accuracy on standard supplier invoice formats (Cheney Bros, Performance Food Group, GFS, regional distributors, and all major broadline suppliers). Low-confidence items get flagged for one-click review in the dashboard. Photographed paper invoices average ~93% — typed PDFs near 100%.",
   },
   {
     q: "Do you work with suppliers outside North America?",

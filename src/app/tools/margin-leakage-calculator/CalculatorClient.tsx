@@ -56,7 +56,7 @@ export function CalculatorClient() {
           </span>
         </h1>
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
-          Industry averages show restaurants leak 2% to 6% of spend to invoice errors and stealth price creep. Find out how much you are losing silently.
+          Industry averages show hospitality businesses leak 2% to 6% of spend to invoice errors and stealth price creep. Find out how much you are losing silently.
         </p>
       </div>
 
@@ -64,12 +64,12 @@ export function CalculatorClient() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Side: Inputs */}
         <div className="lg:col-span-7 rounded-2xl border border-border bg-card p-6 md:p-8 space-y-6">
-          <h2 className="text-lg font-bold text-white mb-4">1. Your Kitchen Operations</h2>
+          <h2 className="text-lg font-bold text-white mb-4">1. Your Operations</h2>
 
           {/* Monthly Spend */}
           <div className="space-y-2">
             <div className="flex justify-between items-center text-xs font-semibold">
-              <label htmlFor="spend-range" className="text-muted-foreground">Monthly Food & Supply Spend</label>
+              <label htmlFor="spend-range" className="text-muted-foreground">Monthly Supplier Spend</label>
               <span className="text-white font-mono text-sm">${spend.toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-4">
@@ -273,7 +273,7 @@ export function CalculatorClient() {
               Cross-Vendor Comparison
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Without cross-supplier auditing, you have no leverage. PriceShield normalizes vendor SKU variants to compare equivalent items between Sysco, GFS, US Foods, and local purveyors, identifying cheaper alternative sources.
+              Without cross-supplier auditing, you have no leverage. PriceShield normalizes vendor SKU variants to compare equivalent items between your suppliers and local purveyors, identifying cheaper alternative sources.
             </p>
           </div>
 

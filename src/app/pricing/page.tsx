@@ -7,7 +7,7 @@ import { Pricing } from "@/components/pricing";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Pricing — PriceShield | Supplier Price Monitoring for Restaurants",
+  title: "Pricing — PriceShield | Supplier Price Monitoring for Hospitality",
   description:
     "Simple pricing for PriceShield. Start free with 5 invoice audits, no credit card. Pro Shield is $49/mo for unlimited audits and real-time alerts; Multi-Location is $149/mo for up to 5 sites.",
   alternates: { canonical: "https://trypriceshield.com/pricing" },
@@ -31,7 +31,7 @@ const faqJsonLd = {
       name: "How much does PriceShield cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Pro Shield is $49/month for one location with unlimited auto-forwarding, real-time alerts, AI CFO chat, and unlimited vendor tracking. Multi-Location is $149/month for up to 5 restaurant sites. Most operators recover 5–20× the subscription in caught price hikes within the first month.",
+        text: "Pro Shield is $49/month for one location with unlimited auto-forwarding, real-time alerts, AI CFO chat, and unlimited vendor tracking. Multi-Location is $149/month for up to 5 venue locations. Most operators recover 5–20× the subscription in caught price hikes within the first month.",
       },
     },
     {
@@ -60,7 +60,7 @@ const faqs = [
   },
   {
     q: "What's the difference between Pro Shield and Multi-Location?",
-    a: "Pro Shield ($49/mo) covers one business location with unlimited auto-forwarding, real-time alerts, and AI CFO chat. Multi-Location ($149/mo) covers up to 5 sites with a combined AI CFO across locations and priority support.",
+    a: "Pro Shield ($49/mo) covers one venue with unlimited auto-forwarding, real-time alerts, and AI CFO chat. Multi-Location ($149/mo) covers up to 5 venues with a combined AI CFO across locations and priority support.",
   },
   {
     q: "Can I cancel anytime?",

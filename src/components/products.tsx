@@ -25,7 +25,7 @@ export function Products() {
           Stealth supplier price-creep, <span className="text-emerald-500">exposed</span>.
         </h2>
         <p className="text-muted-foreground max-w-xl mb-12">
-          An AI-powered invoice auditor designed for restaurants and food-service
+          An AI-powered invoice auditor designed for hospitality businesses and food-service
           operators. Catch sneaky price increases before your next order.
         </p>
 

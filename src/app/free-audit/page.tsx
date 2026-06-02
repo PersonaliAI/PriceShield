@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Free Invoice Audit for Restaurants | PriceShield",
+  title: "Free Invoice Audit for Hospitality Businesses | PriceShield",
   description:
     "Send your last 2–3 supplier invoices and get a free, line-by-line breakdown of every stealth price increase — and what it's costing you per month. No credit card, no signup hassle.",
   alternates: { canonical: "https://trypriceshield.com/free-audit" },
@@ -38,7 +38,7 @@ const faqJsonLd = {
       name: "What do I need to send?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Your 2–3 most recent supplier invoices (Sysco, US Foods, PFG, GFS, Cheney Bros, or any broadline distributor) as PDFs. Even one recent invoice is enough for a useful sample.",
+        text: "Your 2–3 most recent supplier invoices from any broadline distributor as PDFs. Even one recent invoice is enough for a useful sample.",
       },
     },
   ],
@@ -130,7 +130,7 @@ export default function FreeAuditPage() {
                           Free Audit Result
                         </h2>
                         <p className="text-[10px] text-zinc-500">
-                          Invoice #SYS-90812 • Sysco
+                          Invoice #SYS-90812 • Your Supplier
                         </p>
                       </div>
                     </div>
@@ -235,7 +235,7 @@ export default function FreeAuditPage() {
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-semibold">Sysco · US Foods · PFG · GFS · Cheney Bros</p>
+                <p className="text-sm font-semibold">PFG · GFS · Cheney Bros · and all major distributors</p>
                 <p className="text-xs text-muted-foreground">
                   works with every major broadline distributor
                 </p>

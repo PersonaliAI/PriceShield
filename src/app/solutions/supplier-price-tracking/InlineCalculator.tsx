@@ -24,7 +24,7 @@ export function InlineCalculator() {
         <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Interactive Calculator</span>
         <h2 className="text-2xl md:text-3xl font-bold text-white">Calculate your leaks</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Industry estimates show restaurants leak 2% to 4% of total supplier spend to stealth price hikes. Try our fully interactive{" "}
+          Industry estimates show hospitality businesses leak 2% to 4% of total supplier spend to stealth price hikes. Try our fully interactive{" "}
           <Link href="/tools/margin-leakage-calculator" className="text-emerald-400 underline hover:text-emerald-300">
             Margin Leakage Calculator
           </Link>{" "}

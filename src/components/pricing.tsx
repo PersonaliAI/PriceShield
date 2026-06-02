@@ -43,9 +43,9 @@ const plans = [
     name: "Multi-Location",
     price: "$149",
     period: "/mo",
-    description: "Built for restaurant groups and multi-site operators.",
+    description: "Built for hospitality groups and multi-site operators.",
     features: [
-      "Up to 5 business locations",
+      "Up to 5 venue locations",
       "Combined AI CFO across sites",
       "Everything in Pro Shield",
       "Priority support",

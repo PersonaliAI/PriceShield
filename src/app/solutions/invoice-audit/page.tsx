@@ -15,9 +15,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Automated Invoice Audit Software for Restaurants | PriceShield",
+  title: "Automated Invoice Audit Software for Hospitality | PriceShield",
   description:
-    "Audit supplier invoices in 5 seconds. PriceShield uses AI to perform invoice audits, flag errors, and stop hidden food cost inflation automatically.",
+    "Audit supplier invoices in 5 seconds. PriceShield uses AI to perform invoice audits, flag errors, and stop hidden procurement cost inflation automatically.",
   alternates: {
     canonical: "https://trypriceshield.com/solutions/invoice-audit",
   },
@@ -31,7 +31,7 @@ const jsonLd = {
       "@id": "https://trypriceshield.com/solutions/invoice-audit/#webpage",
       "url": "https://trypriceshield.com/solutions/invoice-audit",
       "name": "Automated Invoice Audit Software - PriceShield",
-      "description": "Perform automated invoice audits on food and restaurant purveyors.",
+      "description": "Perform automated invoice audits on hospitality and food-service supplier invoices.",
       "publisher": { "@id": "https://trypriceshield.com/#organization" },
     },
     {
@@ -248,7 +248,7 @@ export default function InvoiceAuditPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-4">
                 <h2 className="text-2xl md:text-3xl font-bold text-white">
-                  Why restaurant invoice audits fail when done manually
+                  Why hospitality invoice audits fail when done manually
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Reviewing supplier pricing manually is incredibly tedious. A typical food delivery contains 30 to 80 line items. Try our free <Link href="/tools/margin-leakage-calculator" className="text-emerald-400 underline hover:text-emerald-300">Margin Leakage Calculator</Link> to estimate how much labor time you save by automating audits.

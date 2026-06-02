@@ -39,7 +39,7 @@ export function Footer() {
               <span className="font-semibold tracking-tight text-lg">PriceShield</span>
             </Link>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed max-w-[220px]">
-              The margin guardian for restaurants. Detect stealth supplier
+              The margin guardian for hospitality businesses. Detect stealth supplier
               price creep automatically.
             </p>
           </div>

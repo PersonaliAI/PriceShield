@@ -348,7 +348,7 @@ export default function DashboardPage() {
                 value={cfoQuestion}
                 onChange={(e) => setCfoQuestion(e.target.value)}
                 disabled={settings?.tier === "free"}
-                placeholder="Ask your AI CFO: 'What's my biggest price hike?' or 'Compare Sysco prices...'"
+                placeholder="Ask your AI CFO: 'What's my biggest price hike?' or 'Compare supplier prices...'"
                 className="w-full bg-background/50 border-0 focus:ring-0 pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground/60 rounded-xl"
               />
             </div>

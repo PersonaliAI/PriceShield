@@ -345,7 +345,7 @@ export default function AICFOPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 {[
                   { label: "Price Audit", text: "Which item had the biggest price jump this month?", icon: TrendingUp },
-                  { label: "Vendor Compare", text: "Compare Sysco vs GFS pricing on Chicken.", icon: History },
+                  { label: "Vendor Compare", text: "Compare my suppliers' pricing on Chicken.", icon: History },
                   { label: "Margin Leak", text: "Calculate my total margin lost since January.", icon: AlertTriangle },
                   { label: "Analysis", text: "What's my average price variance across all vendors?", icon: Sparkles }
                 ].map((item) => (

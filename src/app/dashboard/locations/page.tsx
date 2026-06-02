@@ -178,7 +178,7 @@ export default function LocationsPage() {
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Restaurant Locations</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
           <p className="text-muted-foreground">Manage the physical sites monitored by PriceShield.</p>
         </div>
         {!isAdding && !editingId && !atLimit && (
@@ -199,7 +199,7 @@ export default function LocationsPage() {
         <Card className="border-emerald-500/30 bg-emerald-500/5 animate-in fade-in slide-in-from-top-4 duration-300">
           <CardHeader>
             <CardTitle className="text-lg">{editingId ? "Edit Location" : "Add New Location"}</CardTitle>
-            <CardDescription>Enter the physical details for your restaurant site.</CardDescription>
+            <CardDescription>Enter the physical details for your venue.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">

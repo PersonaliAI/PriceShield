@@ -10,7 +10,7 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title:
-    "PriceShield — AI Supplier Price Monitoring & Invoice Auditing for Restaurants",
+    "PriceShield — AI Supplier Price Monitoring & Invoice Auditing for Hospitality",
   description:
     "Catch every supplier price hike automatically. PriceShield audits invoices in 5 seconds, flags stealth creep, and alerts you on Telegram, Slack, or email. Start free — 5 audits, no credit card.",
   alternates: { canonical: "https://trypriceshield.com" },
@@ -34,7 +34,7 @@ const faqJsonLd = {
       name: "How accurate is the AI invoice extraction?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "PriceShield's extraction model returns a confidence score per line item. Typed supplier PDFs (US Foods, Sysco, Cheney Bros, Performance Food Group, GFS, regional distributors) average 97%+ accuracy. Photographed paper invoices average ~93%. Low-confidence items are flagged for one-click review.",
+        text: "PriceShield's extraction model returns a confidence score per line item. Typed supplier PDFs (Cheney Bros, Performance Food Group, GFS, regional distributors, and all major broadline suppliers) average 97%+ accuracy. Photographed paper invoices average ~93%. Low-confidence items are flagged for one-click review.",
       },
     },
     {
@@ -50,7 +50,7 @@ const faqJsonLd = {
       name: "How much does PriceShield cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Free for the first 5 invoice audits, no credit card required. Pro Shield is $49/month for unlimited invoices and real-time alerts. Multi-Location is $149/month for up to 5 restaurant sites. Most operators recover 5–40x the subscription in caught hikes within the first month.",
+        text: "Free for the first 5 invoice audits, no credit card required. Pro Shield is $49/month for unlimited invoices and real-time alerts. Multi-Location is $149/month for up to 5 venue locations. Most operators recover 5–40x the subscription in caught hikes within the first month.",
       },
     },
     {

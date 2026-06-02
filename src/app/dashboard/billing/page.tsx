@@ -34,7 +34,7 @@ const PLANS = [
     price: "$49 / month",
     description: "Your core revenue engine. Pays for itself on the first caught hike.",
     features: [
-      "1 Restaurant Location",
+      "1 Venue Location",
       "Unlimited Auto-Forwarding",
       "Real-Time Telegram Alerts",
       "Ask Your AI CFO Chat Access",
@@ -47,9 +47,9 @@ const PLANS = [
     tier: "multi",
     name: "Multi-Location",
     price: "$149 / month",
-    description: "Built to catch the whales who own local restaurant groups.",
+    description: "Built for hospitality operators managing multiple venues.",
     features: [
-      "Up to 5 Restaurant Locations",
+      "Up to 5 Venue Locations",
       "Combined AI CFO Insights",
       "Everything in Pro Shield",
       "Priority Email Support",

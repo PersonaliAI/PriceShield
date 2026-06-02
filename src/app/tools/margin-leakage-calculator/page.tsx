@@ -5,9 +5,9 @@ import { Footer } from "@/components/footer";
 import { CalculatorClient } from "./CalculatorClient";
 
 export const metadata: Metadata = {
-  title: "Free Supplier Price Leakage Calculator for Restaurants | PriceShield",
+  title: "Free Supplier Price Leakage Calculator for Hospitality | PriceShield",
   description:
-    "Calculate how much money your restaurant is leaking to supplier price creep and invoice mistakes. Estimate your potential annual savings and labor reduction.",
+    "Calculate how much money your hospitality business is leaking to supplier price creep and invoice mistakes. Estimate your potential annual savings and labor reduction.",
   alternates: {
     canonical: "https://trypriceshield.com/tools/margin-leakage-calculator",
   },
@@ -21,7 +21,7 @@ const jsonLd = {
       "@id": "https://trypriceshield.com/tools/margin-leakage-calculator/#webpage",
       "url": "https://trypriceshield.com/tools/margin-leakage-calculator",
       "name": "Supplier Price Leakage Calculator - PriceShield",
-      "description": "Free tool to calculate restaurant supplier spend leaks, price creep, and audit times.",
+      "description": "Free tool to calculate hospitality supplier spend leaks, price creep, and audit times.",
       "publisher": { "@id": "https://trypriceshield.com/#organization" },
     },
     {
@@ -30,10 +30,10 @@ const jsonLd = {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How does a restaurant lose money to margin leakage?",
+          "name": "How does a hospitality business lose money to margin leakage?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Margin leakage happens in two main ways: (1) manual billing mistakes, overcharges, delivery fee additions, or wrong taxes by suppliers; and (2) price creep, which are small weekly price increases on key ingredients that go unnoticed by busy restaurant staff.",
+            "text": "Margin leakage happens in two main ways: (1) manual billing mistakes, overcharges, delivery fee additions, or wrong taxes by suppliers; and (2) price creep, which are small weekly price increases on key supplies that go unnoticed by busy operations staff.",
           },
         },
         {
