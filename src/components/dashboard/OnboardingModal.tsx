@@ -22,7 +22,6 @@ import { api } from "@/lib/api";
 import {
   getCountries,
   getTimezones,
-  detectCountry,
   detectTimezone,
   timezoneLabel,
 } from "@/lib/locale";
@@ -357,14 +356,15 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
   const [savedOk, setSavedOk] = useState(false);
   const [error, setError] = useState("");
 
-  // Auto-detect on open; reset all transient state
+  // Reset state on open; auto-detect timezone only (reliable via OS clock).
+  // Country is left blank — browser locale is unreliable for location.
   useEffect(() => {
     if (open) {
       setStep(1);
       setError("");
       setSaving(false);
       setSavedOk(false);
-      setCountry(detectCountry());
+      setCountry("");
       setTimezone(detectTimezone());
     }
   }, [open]);
