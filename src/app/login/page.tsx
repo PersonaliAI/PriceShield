@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,12 +29,36 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Parse Supabase auth errors from the URL hash (#error=...&error_description=...)
+  // useSearchParams() only reads query string params, not hash params.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.slice(1); // strip leading #
+    if (!hash) return;
+    const params = new URLSearchParams(hash);
+    const desc = params.get("error_description");
+    const code = params.get("error_code");
+    if (desc || code) {
+      const msg = desc
+        ? decodeURIComponent(desc.replace(/\+/g, " "))
+        : "Authentication failed. Please try again.";
+      // Surface a friendly message for the most common Supabase trigger failure
+      if (msg.toLowerCase().includes("database error saving new user")) {
+        setError("Account creation is temporarily unavailable. Please try again in a moment or contact support.");
+      } else {
+        setError(msg);
+      }
+      // Clean the hash so it doesn't persist on refresh
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       router.replace(nextPath);
     }
-  }, [loading, user, router]);
+  }, [loading, user, router, nextPath]);
 
   if (!loading && user) {
     return null;
@@ -91,14 +115,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 relative">
+    <div className="flex-1 flex items-center justify-center px-4 py-10 sm:px-6 relative min-h-[100svh]">
       {/* Background effects */}
-      <div className="absolute inset-0 -z-10">
+      <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-1/3 left-1/3 h-72 w-72 rounded-full bg-emerald-500/8 blur-3xl animate-pulse-glow" />
         <div className="absolute bottom-1/3 right-1/3 h-64 w-64 rounded-full bg-emerald-400/6 blur-3xl animate-pulse-glow [animation-delay:1s]" />
       </div>
 
-      <Card className="w-full max-w-md bg-card/80 backdrop-blur border-border/50">
+      <Card className="w-full max-w-md bg-card/80 backdrop-blur border-border/50 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center justify-center gap-2 mb-2">
             <img src="/logo.png" alt="PriceShield Logo" className="h-12 w-auto" />
@@ -122,8 +146,9 @@ export default function LoginPage() {
             </div>
           )}
           {error && (
-            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
-              {error}
+            <div className="rounded-lg bg-rose-500/10 border border-rose-500/20 px-4 py-3 text-sm text-rose-400 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
 
