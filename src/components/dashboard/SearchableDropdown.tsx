@@ -83,9 +83,9 @@ export default function SearchableDropdown({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 max-h-72 overflow-hidden rounded-xl bg-zinc-950/95 border border-zinc-800/80 backdrop-blur-md shadow-2xl flex flex-col p-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute z-50 left-0 right-0 mt-1.5 rounded-xl bg-zinc-950/95 border border-zinc-800/80 backdrop-blur-md shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Search Box */}
-          <div className="relative flex items-center px-2 py-1.5 border-b border-zinc-900/80 shrink-0">
+          <div className="relative flex items-center px-2 py-1.5 border-b border-zinc-900/80">
             <Search className="absolute left-4 h-3.5 w-3.5 text-muted-foreground" />
             <input
               ref={inputRef}
@@ -97,8 +97,8 @@ export default function SearchableDropdown({
             />
           </div>
 
-          {/* Options List */}
-          <div className="overflow-y-auto flex-1 mt-1 space-y-0.5 custom-scrollbar">
+          {/* Options List — explicit max-h so scroll works regardless of parent height */}
+          <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5">
             {filteredOptions.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-4">No results found</p>
             ) : (
