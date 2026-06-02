@@ -8,23 +8,17 @@ import {
   Clock,
   ArrowRight,
   ArrowLeft,
-  Mail,
-  Bell,
   CheckCircle2,
-  Zap,
   TrendingDown,
+  Bell,
+  Zap,
   AlertTriangle,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
-import {
-  getCountries,
-  getTimezones,
-  detectTimezone,
-  timezoneLabel,
-} from "@/lib/locale";
+import { getCountries, getTimezones, detectTimezone, timezoneLabel } from "@/lib/locale";
 import SearchableDropdown from "./SearchableDropdown";
 
 interface OnboardingModalProps {
@@ -32,7 +26,7 @@ interface OnboardingModalProps {
   onComplete: () => void;
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 // Step 1 — Welcome
 function StepWelcome({ onNext }: { onNext: () => void }) {
@@ -50,8 +44,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           Welcome to PriceShield
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Your AI-powered guard against supplier price creep. Let&apos;s set
-          you up in under a minute.
+          Upload a supplier invoice and we&apos;ll instantly flag any price increases — no setup needed.
         </p>
       </div>
 
@@ -61,37 +54,33 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
             icon: TrendingDown,
             color: "text-rose-400",
             bg: "bg-rose-500/10",
-            title: "Catch hikes instantly",
-            desc: "Every invoice line item checked against your baseline",
+            title: "Catches price hikes",
+            desc: "Every line item checked against your previous invoices",
           },
           {
             icon: Bell,
             color: "text-amber-400",
             bg: "bg-amber-500/10",
-            title: "Real-time alerts",
-            desc: "Telegram, Slack, or email the moment a price jumps",
+            title: "Instant alerts",
+            desc: "Get notified by email the moment a price goes up",
           },
           {
             icon: Zap,
             color: "text-emerald-400",
             bg: "bg-emerald-500/10",
-            title: "5-second audits",
-            desc: "AI extracts and audits your PDFs automatically",
+            title: "30-second audit",
+            desc: "Drop a PDF — AI reads it and reports back fast",
           },
         ].map((f) => (
           <div
             key={f.title}
             className="rounded-xl border border-border/40 bg-card/40 p-3.5 space-y-2"
           >
-            <div
-              className={`h-8 w-8 rounded-lg ${f.bg} flex items-center justify-center`}
-            >
+            <div className={`h-8 w-8 rounded-lg ${f.bg} flex items-center justify-center`}>
               <f.icon className={`h-4 w-4 ${f.color}`} />
             </div>
             <p className="text-xs font-semibold leading-snug">{f.title}</p>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              {f.desc}
-            </p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">{f.desc}</p>
           </div>
         ))}
       </div>
@@ -106,7 +95,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
   );
 }
 
-// Step 2 — Region
+// Step 2 — Region (timezone only — country optional)
 function StepRegion({
   country,
   timezone,
@@ -122,14 +111,8 @@ function StepRegion({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const countryOptions = getCountries().map((c) => ({
-    value: c.code,
-    label: c.name,
-  }));
-  const timezoneOptions = getTimezones().map((tz) => ({
-    value: tz,
-    label: timezoneLabel(tz),
-  }));
+  const countryOptions = getCountries().map((c) => ({ value: c.code, label: c.name }));
+  const timezoneOptions = getTimezones().map((tz) => ({ value: tz, label: timezoneLabel(tz) }));
 
   return (
     <div className="space-y-6">
@@ -141,21 +124,20 @@ function StepRegion({
           <h3 className="text-lg font-bold">Your Region</h3>
         </div>
         <p className="text-sm text-muted-foreground pl-10">
-          We auto-detected your location. Correct it if needed — your timezone
-          drives when scheduled digests are sent.
+          Your timezone controls when daily price reports are delivered. Takes 30 seconds.
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
           <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-            <Globe className="h-3 w-3" /> Country
+            <Globe className="h-3 w-3" /> Country <span className="normal-case font-normal opacity-60">(optional)</span>
           </label>
           <SearchableDropdown
             options={countryOptions}
             value={country}
             onChange={onCountry}
-            placeholder="Select country…"
+            placeholder="Select your country…"
             searchPlaceholder="Search country…"
           />
         </div>
@@ -171,85 +153,10 @@ function StepRegion({
             placeholder="Select timezone…"
             searchPlaceholder="Search e.g. London, Colombo…"
           />
-          <p className="text-[11px] text-muted-foreground pl-0.5">
-            Used for daily / weekly digest scheduling and PDF timestamps.
+          <p className="text-[11px] text-muted-foreground">
+            Reports arrive at 8 AM in this timezone.
           </p>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-3 pt-2">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="h-10 px-4 text-sm"
-        >
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
-        </Button>
-        <Button
-          onClick={onNext}
-          disabled={!country || !timezone}
-          className="flex-1 sm:flex-none bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-10 px-8 rounded-xl"
-        >
-          Continue <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// Step 3 — Alerts setup primer
-function StepAlerts({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
-  return (
-    <div className="space-y-6">
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <Bell className="h-4 w-4 text-amber-400" />
-          </div>
-          <h3 className="text-lg font-bold">Stay Informed</h3>
-        </div>
-        <p className="text-sm text-muted-foreground pl-10">
-          PriceShield notifies you the moment a supplier sneaks in a price hike.
-        </p>
-      </div>
-
-      <div className="space-y-3">
-        {[
-          {
-            icon: "📬",
-            title: "Email Forwarding",
-            desc: "Forward supplier invoice emails to your unique PriceShield address. AI extracts and audits them automatically.",
-            where: "Settings → Email Forwarding",
-          },
-          {
-            icon: "💬",
-            title: "Telegram Bot",
-            desc: "Get instant push alerts with price details and a one-tap dispute button right in Telegram.",
-            where: "Settings → Alert Channels → Telegram",
-          },
-          {
-            icon: "#",
-            title: "Slack Integration",
-            desc: "Receive structured alerts in your ops channel — with AI CFO summaries baked in.",
-            where: "Settings → Alert Channels → Slack",
-          },
-        ].map((item) => (
-          <div
-            key={item.title}
-            className="flex items-start gap-3.5 rounded-xl border border-border/40 bg-card/30 p-4"
-          >
-            <span className="text-lg shrink-0 mt-0.5">{item.icon}</span>
-            <div className="space-y-0.5 min-w-0">
-              <p className="text-sm font-semibold">{item.title}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {item.desc}
-              </p>
-              <p className="text-[10px] text-emerald-400/70 font-medium mt-1">
-                Configure in: {item.where}
-              </p>
-            </div>
-          </div>
-        ))}
       </div>
 
       <div className="flex items-center justify-between gap-3 pt-2">
@@ -258,6 +165,7 @@ function StepAlerts({ onNext, onBack }: { onNext: () => void; onBack: () => void
         </Button>
         <Button
           onClick={onNext}
+          disabled={!timezone}
           className="flex-1 sm:flex-none bg-emerald-500 hover:bg-emerald-400 text-background font-bold h-10 px-8 rounded-xl"
         >
           Continue <ArrowRight className="ml-2 h-4 w-4" />
@@ -267,7 +175,7 @@ function StepAlerts({ onNext, onBack }: { onNext: () => void; onBack: () => void
   );
 }
 
-// Step 4 — First invoice CTA
+// Step 3 — Done, push to upload
 function StepDone({
   onFinish,
   saving,
@@ -288,26 +196,19 @@ function StepDone({
           <CheckCircle2 className="h-8 w-8 text-emerald-400" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-xl font-bold">You&apos;re all set!</h3>
+          <h3 className="text-xl font-bold">You&apos;re ready!</h3>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-            Your region is saved. Now forward your first supplier invoice to start
-            protecting your margins.
+            Drop your most recent supplier invoice and we&apos;ll check it for price increases in under a minute.
           </p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-2">
-        <div className="flex items-start gap-3">
-          <Mail className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="text-sm font-semibold">Forward your first invoice</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Head to <span className="font-medium text-foreground">Settings → Email Forwarding</span> to
-              grab your unique PriceShield inbox address, then forward any
-              Sysco, US Foods, or other distributor invoice PDF to it.
-            </p>
-          </div>
-        </div>
+      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
+        <p className="text-sm font-semibold text-emerald-400">Your first audit is free</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Upload any PDF invoice from Sysco, US Foods, or your local distributor. No account setup, no credit card.
+          Just a PDF.
+        </p>
       </div>
 
       {error && (
@@ -332,11 +233,11 @@ function StepDone({
             </span>
           ) : savedOk ? (
             <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> All set!
+              <CheckCircle2 className="h-4 w-4" /> Opening…
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              Go to Dashboard <ArrowRight className="h-4 w-4" />
+              Check My First Invoice <ArrowRight className="h-4 w-4" />
             </span>
           )}
         </Button>
@@ -350,14 +251,12 @@ function StepDone({
 export default function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   const { getToken } = useAuth();
   const [step, setStep] = useState(1);
-  const [country, setCountry] = useState("US");
+  const [country, setCountry] = useState("");
   const [timezone, setTimezone] = useState("UTC");
   const [saving, setSaving] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
   const [error, setError] = useState("");
 
-  // Reset state on open; auto-detect timezone only (reliable via OS clock).
-  // Country is left blank — browser locale is unreliable for location.
   useEffect(() => {
     if (open) {
       setStep(1);
@@ -376,13 +275,12 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
       const token = await getToken();
       if (!token) throw new Error("Not authenticated — please sign in again.");
       await api.updateSettings(token, {
-        country,
+        country: country || null,
         timezone,
         onboarding_complete: true,
       });
       setSaving(false);
       setSavedOk(true);
-      // Brief success feedback before closing
       setTimeout(onComplete, 900);
     } catch (err) {
       setSaving(false);
@@ -390,7 +288,6 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
     }
   }, [getToken, country, timezone, onComplete]);
 
-  // Progress dots
   const Dots = () => (
     <div className="flex items-center justify-center gap-1.5 mb-6">
       {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
@@ -412,7 +309,6 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
     <Dialog open={open}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-lg bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 p-6 sm:p-8 shadow-2xl rounded-2xl [&>button]:hidden overflow-y-auto max-h-[calc(100vh-2rem)]">
         <Dots />
-
         {step === 1 && <StepWelcome onNext={() => setStep(2)} />}
         {step === 2 && (
           <StepRegion
@@ -425,15 +321,12 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
           />
         )}
         {step === 3 && (
-          <StepAlerts onNext={() => setStep(4)} onBack={() => setStep(2)} />
-        )}
-        {step === 4 && (
           <StepDone
             onFinish={handleFinish}
             saving={saving}
             savedOk={savedOk}
             error={error}
-            onBack={() => setStep(3)}
+            onBack={() => setStep(2)}
           />
         )}
       </DialogContent>
