@@ -145,13 +145,26 @@ function createMcpServer(userId: string): Server {
         },
         {
           name: "get_pricing_alerts",
-          description: "Get recent price hike and margin loss alerts.",
+          description: "Get recent price hike and margin loss alerts. Each alert includes all flagged_items with item names, old/new prices, and margin lost.",
           inputSchema: {
             type: "object",
             properties: {
               limit: {
                 type: "number",
                 description: "Maximum number of alerts to return (default 50)",
+              },
+            },
+          },
+        },
+        {
+          name: "list_items",
+          description: "List all unique supplier items (products) tracked for this user across all non-baseline invoices. Use this to discover what items exist before querying price trends.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              vendor_name: {
+                type: "string",
+                description: "Optional vendor name filter",
               },
             },
           },
@@ -341,26 +354,65 @@ function createMcpServer(userId: string): Server {
 
           if (error) throw error;
 
-          const formattedData = (data as any[] || []).map((alert: any) => {
-            let itemName = "Multiple Items";
-            if (alert.flagged_items && alert.flagged_items.length > 0) {
-              itemName = alert.flagged_items[0].item_name || "Multiple Items";
-            }
-            return {
-              id: alert.id,
-              vendor_name: alert.vendor_name,
-              item_name: itemName,
-              total_margin_lost: alert.total_margin_lost,
-              created_at: alert.created_at,
-              message: alert.message,
-            };
-          });
+          const formattedData = (data as any[] || []).map((alert: any) => ({
+            id: alert.id,
+            vendor_name: alert.vendor_name,
+            flagged_items: (alert.flagged_items || []).map((fi: any) => ({
+              item_name: fi.item_name,
+              old_price: fi.old_price,
+              new_price: fi.new_price,
+              price_change_pct: fi.price_change_pct,
+              margin_lost: fi.margin_lost,
+            })),
+            total_margin_lost: alert.total_margin_lost,
+            created_at: alert.created_at,
+            message: alert.message,
+          }));
 
           return {
             content: [
               {
                 type: "text",
                 text: JSON.stringify(formattedData, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "list_items": {
+          const vendorName = args?.vendor_name as string | undefined;
+
+          let query = supabase
+            .from("line_items")
+            .select("item_name, unit_of_measure, invoices!inner(vendor_name, user_id, is_baseline)")
+            .eq("invoices.user_id", userId)
+            .eq("invoices.is_baseline", false);
+
+          if (vendorName) {
+            query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          // Deduplicate by item_name + vendor
+          const seen = new Map<string, any>();
+          for (const row of (data as any[] || [])) {
+            const key = `${row.item_name}|||${row.invoices?.vendor_name}`;
+            if (!seen.has(key)) {
+              seen.set(key, {
+                item_name: row.item_name,
+                unit_of_measure: row.unit_of_measure,
+                vendor_name: row.invoices?.vendor_name,
+              });
+            }
+          }
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(Array.from(seen.values()), null, 2),
               },
             ],
           };

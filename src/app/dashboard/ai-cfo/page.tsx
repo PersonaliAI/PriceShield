@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { 
-  Shield, 
-  Send, 
-  Loader2, 
-  Bot, 
-  User, 
+import {
+  Shield,
+  Send,
+  Loader2,
+  Bot,
+  User,
   Sparkles,
   Info,
   ChevronRight,
@@ -22,10 +22,22 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
+import {
+  LineChart, BarChart, Line, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer,
+} from "recharts";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { api, UserSettings } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+interface ChartSeries { name: string; data: { x: string; y: number }[] }
+interface ChartSpec {
+  chart_type: "line" | "bar";
+  title: string;
+  y_label?: string;
+  series: ChartSeries[];
+}
 
 interface LiveStep {
   type: "thinking" | "tool";
@@ -39,6 +51,59 @@ interface ChatMessage {
   content: string;
   created_at?: string;
   thinkingSteps?: LiveStep[];
+  chart?: ChartSpec;
+}
+
+const CHART_COLORS = [
+  "#10b981", "#6366f1", "#f59e0b", "#ef4444", "#06b6d4",
+  "#8b5cf6", "#84cc16", "#f97316", "#ec4899", "#14b8a6",
+];
+
+function buildRechartData(series: ChartSeries[]) {
+  const xSet = new Set<string>();
+  series.forEach(s => s.data.forEach(d => xSet.add(d.x)));
+  const xValues = Array.from(xSet).sort();
+  return xValues.map(x => {
+    const row: Record<string, string | number> = { x };
+    series.forEach(s => {
+      const pt = s.data.find(d => d.x === x);
+      if (pt) row[s.name] = pt.y;
+    });
+    return row;
+  });
+}
+
+function InlineChart({ spec }: { spec: ChartSpec }) {
+  const data = buildRechartData(spec.series);
+  const ChartComponent = spec.chart_type === "bar" ? BarChart : LineChart;
+
+  return (
+    <div className="my-4 rounded-2xl bg-zinc-950/60 border border-emerald-500/20 p-4 shadow-lg">
+      {spec.title && (
+        <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">{spec.title}</p>
+      )}
+      <ResponsiveContainer width="100%" height={260}>
+        <ChartComponent data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+          <XAxis dataKey="x" tick={{ fontSize: 10, fill: "#71717a" }} />
+          <YAxis
+            tick={{ fontSize: 10, fill: "#71717a" }}
+            label={spec.y_label ? { value: spec.y_label, angle: -90, position: "insideLeft", style: { fontSize: 10, fill: "#71717a" } } : undefined}
+          />
+          <Tooltip
+            contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12 }}
+            labelStyle={{ color: "#a1a1aa" }}
+          />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
+          {spec.series.map((s, i) =>
+            spec.chart_type === "bar"
+              ? <Bar key={s.name} dataKey={s.name} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[4, 4, 0, 0]} />
+              : <Line key={s.name} type="monotone" dataKey={s.name} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+          )}
+        </ChartComponent>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 export default function AICFOPage() {
@@ -141,7 +206,10 @@ export default function AICFOPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`CFO Stream API error: ${response.statusText}`);
+        const body = await response.text().catch(() => "");
+        let detail = body;
+        try { detail = JSON.parse(body)?.detail ?? body; } catch { /* ignore */ }
+        throw new Error(`CFO Stream API error (${response.status}): ${detail || response.statusText}`);
       }
 
       const reader = response.body?.getReader();
@@ -262,6 +330,8 @@ export default function AICFOPage() {
                       }
                     }
                   }, 15);
+                } else if (eventName === "chart") {
+                  msg.chart = parsedData as ChartSpec;
                 } else if (eventName === "error") {
                   steps = steps.map(s => s.status === "running" ? { ...s, status: "failed" } as const : s);
                   msg.thinkingSteps = steps;
@@ -485,6 +555,8 @@ export default function AICFOPage() {
                           )}
                         </div>
                       )}
+
+                      {msg.chart && <InlineChart spec={msg.chart} />}
 
                       {msg.content && (
                         <div className="markdown-content prose prose-sm prose-invert max-w-none prose-p:leading-relaxed">
