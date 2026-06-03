@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Shield,
   Send,
   Loader2,
-  Bot,
   User,
   Sparkles,
-  Info,
-  ChevronRight,
   TrendingUp,
   AlertTriangle,
   History,
   Brain,
   Check as CheckIcon,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Square,
+  Copy,
+  RefreshCw,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -79,6 +79,24 @@ function buildRechartData(series: ChartSeries[]) {
   });
 }
 
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background: "#09090b", border: "1px solid #52525b", borderRadius: 10,
+      padding: "10px 14px", boxShadow: "0 12px 40px rgba(0,0,0,0.95)", fontSize: 12, minWidth: 160,
+    }}>
+      <p style={{ color: "#e4e4e7", fontWeight: 700, marginBottom: 6 }}>{label}</p>
+      {payload.map((entry: any) => (
+        <p key={entry.name} style={{ color: entry.color, marginBottom: 3 }}>
+          <span style={{ color: "#a1a1aa" }}>{entry.name}: </span>
+          <span style={{ fontWeight: 600 }}>{typeof entry.value === "number" ? entry.value.toFixed(2) : entry.value}</span>
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function InlineChart({ spec }: { spec: ChartSpec }) {
   const data = buildRechartData(spec.series);
   const ChartComponent = spec.chart_type === "bar" ? BarChart : LineChart;
@@ -96,19 +114,7 @@ function InlineChart({ spec }: { spec: ChartSpec }) {
             tick={{ fontSize: 10, fill: "#71717a" }}
             label={spec.y_label ? { value: spec.y_label, angle: -90, position: "insideLeft", style: { fontSize: 10, fill: "#71717a" } } : undefined}
           />
-          <Tooltip
-            contentStyle={{
-              background: "#09090b",
-              border: "1px solid #3f3f46",
-              borderRadius: 10,
-              fontSize: 12,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
-              opacity: 1,
-            }}
-            labelStyle={{ color: "#e4e4e7", fontWeight: 600, marginBottom: 4 }}
-            itemStyle={{ color: "#d4d4d8" }}
-            wrapperStyle={{ opacity: 1 }}
-          />
+          <Tooltip content={<ChartTooltip />} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
           {spec.series.map((s, i) =>
             spec.chart_type === "bar"
@@ -168,9 +174,12 @@ export default function AICFOPage() {
   // Track which messages have their thinking steps expanded
   const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({});
   
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const userScrolledUpRef = useRef(false);
 
   // Load history & settings
   useEffect(() => {
@@ -202,14 +211,26 @@ export default function AICFOPage() {
     };
   }, [getToken]);
 
-  // Scroll to bottom when messages change
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback((force = false) => {
+    if (force || !userScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
+  // Track whether the user has scrolled up
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      userScrolledUpRef.current = el.scrollHeight - el.scrollTop - el.clientHeight > 80;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, scrollToBottom]);
 
   const handleSendMessage = async (e?: React.FormEvent, customInput?: string) => {
     if (e) e.preventDefault();
@@ -239,8 +260,10 @@ export default function AICFOPage() {
     setExpandedSteps((prev) => ({ ...prev, [assistantIndex]: true }));
     setInput("");
     setIsLoading(true);
+    userScrolledUpRef.current = false;
 
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    abortControllerRef.current = new AbortController();
 
     try {
       const token = await getToken();
@@ -254,6 +277,7 @@ export default function AICFOPage() {
           "Cache-Control": "no-cache",
         },
         body: JSON.stringify({ question: finalInput }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -412,23 +436,36 @@ export default function AICFOPage() {
         return next;
       });
 
-    } catch (err) {
-      console.error("AI CFO Streaming Error:", err);
-      setMessages((prev) => {
-        const next = [...prev];
-        const msg = next[assistantIndex];
-        if (msg) {
-          msg.content = "⚠️ Sorry, I encountered an error processing your request. Please try again later.";
-          if (msg.thinkingSteps) {
-            msg.thinkingSteps = msg.thinkingSteps.map(s => 
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        setMessages((prev) => {
+          const next = [...prev];
+          const msg = next[assistantIndex];
+          if (msg) {
+            if (!msg.content) msg.content = "*(generation stopped)*";
+            msg.thinkingSteps = msg.thinkingSteps?.map(s =>
+              s.status === "running" ? { ...s, status: "completed" } as const : s
+            );
+          }
+          return next;
+        });
+      } else {
+        console.error("AI CFO Streaming Error:", err);
+        setMessages((prev) => {
+          const next = [...prev];
+          const msg = next[assistantIndex];
+          if (msg) {
+            msg.content = "⚠️ Sorry, I encountered an error processing your request. Please try again later.";
+            msg.thinkingSteps = msg.thinkingSteps?.map(s =>
               s.status === "running" ? { ...s, status: "failed" } as const : s
             );
           }
-        }
-        return next;
-      });
+          return next;
+        });
+      }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -449,7 +486,7 @@ export default function AICFOPage() {
   return (
     <div className="relative flex flex-col h-[calc(100vh-100px)] overflow-hidden">
       {/* Centered Scrollable Area */}
-      <div className="flex-1 overflow-y-auto pt-4 pb-32 scroll-smooth custom-scrollbar">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pt-4 pb-32 scroll-smooth custom-scrollbar">
         <div className="max-w-5xl mx-auto px-4 w-full">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center pt-20 space-y-10 animate-in fade-in duration-700">
@@ -491,10 +528,10 @@ export default function AICFOPage() {
           ) : (
             <div className="space-y-12">
               {messages.map((msg, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className={cn(
-                    "flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500",
+                    "group flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500",
                     msg.role === "user" ? "items-end" : "items-start"
                   )}
                 >
@@ -639,6 +676,34 @@ export default function AICFOPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Action bar under assistant messages */}
+                  {msg.role === "assistant" && msg.content && !(isLoading && i === messages.length - 1) && (
+                    <div className="flex items-center gap-1 mt-2 ml-12 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.content);
+                          setCopiedIdx(i);
+                          setTimeout(() => setCopiedIdx(null), 2000);
+                        }}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 transition-all"
+                        title="Copy markdown"
+                      >
+                        {copiedIdx === i ? <CheckIcon className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                        {copiedIdx === i ? "Copied" : "Copy"}
+                      </button>
+                      {i > 0 && messages[i - 1]?.role === "user" && (
+                        <button
+                          onClick={() => handleSendMessage(undefined, messages[i - 1].content)}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 transition-all"
+                          title="Regenerate response"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          Regenerate
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={messagesEndRef} />
@@ -687,18 +752,29 @@ export default function AICFOPage() {
                 placeholder={isFreeTier ? "Upgrade for CFO access..." : "Ask your financial assistant anything..."}
                 className="flex-1 bg-transparent py-3.5 text-sm focus:outline-none placeholder:text-muted-foreground/30 disabled:opacity-50"
               />
-              <button 
-                type="submit" 
-                disabled={!input.trim() || isLoading || isFreeTier}
-                className={cn(
-                  "p-3 rounded-full transition-all duration-300",
-                  input.trim() && !isLoading 
-                    ? "bg-emerald-500 text-background shadow-lg shadow-emerald-500/20 scale-100" 
-                    : "bg-muted/10 text-muted-foreground/30 scale-90"
-                )}
-              >
-                <Send className="h-4 w-4" />
-              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={() => abortControllerRef.current?.abort()}
+                  className="p-3 rounded-full bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-all duration-200 shadow-lg"
+                  title="Stop generating"
+                >
+                  <Square className="h-4 w-4 fill-current" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isFreeTier}
+                  className={cn(
+                    "p-3 rounded-full transition-all duration-300",
+                    input.trim()
+                      ? "bg-emerald-500 text-background shadow-lg shadow-emerald-500/20 scale-100"
+                      : "bg-muted/10 text-muted-foreground/30 scale-90"
+                  )}
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              )}
             </form>
           </div>
           <p className="mt-2 text-[10px] text-center text-muted-foreground/40 font-medium tracking-wide">
