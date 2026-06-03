@@ -38,6 +38,11 @@ interface ChartSpec {
   y_label?: string;
   series: ChartSeries[];
 }
+interface TableSpec {
+  title?: string;
+  headers: string[];
+  rows: string[][];
+}
 
 interface LiveStep {
   type: "thinking" | "tool";
@@ -52,6 +57,7 @@ interface ChatMessage {
   created_at?: string;
   thinkingSteps?: LiveStep[];
   chart?: ChartSpec;
+  table?: TableSpec;
 }
 
 const CHART_COLORS = [
@@ -91,8 +97,17 @@ function InlineChart({ spec }: { spec: ChartSpec }) {
             label={spec.y_label ? { value: spec.y_label, angle: -90, position: "insideLeft", style: { fontSize: 10, fill: "#71717a" } } : undefined}
           />
           <Tooltip
-            contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12 }}
-            labelStyle={{ color: "#a1a1aa" }}
+            contentStyle={{
+              background: "#09090b",
+              border: "1px solid #3f3f46",
+              borderRadius: 10,
+              fontSize: 12,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
+              opacity: 1,
+            }}
+            labelStyle={{ color: "#e4e4e7", fontWeight: 600, marginBottom: 4 }}
+            itemStyle={{ color: "#d4d4d8" }}
+            wrapperStyle={{ opacity: 1 }}
           />
           <Legend wrapperStyle={{ fontSize: 11 }} />
           {spec.series.map((s, i) =>
@@ -102,6 +117,42 @@ function InlineChart({ spec }: { spec: ChartSpec }) {
           )}
         </ChartComponent>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+function InlineTable({ spec }: { spec: TableSpec }) {
+  return (
+    <div className="my-4 rounded-2xl bg-zinc-950/60 border border-emerald-500/20 shadow-lg overflow-hidden">
+      {spec.title && (
+        <div className="px-4 py-3 border-b border-zinc-800">
+          <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">{spec.title}</p>
+        </div>
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-zinc-900/80">
+              {spec.headers.map((h, i) => (
+                <th key={i} className="px-4 py-2.5 text-left font-semibold text-zinc-300 whitespace-nowrap border-b border-zinc-800">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {spec.rows.map((row, ri) => (
+              <tr key={ri} className={ri % 2 === 0 ? "bg-transparent" : "bg-zinc-900/30"}>
+                {row.map((cell, ci) => (
+                  <td key={ci} className="px-4 py-2 text-zinc-300 whitespace-nowrap border-b border-zinc-800/50 last:border-b-0">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -332,6 +383,8 @@ export default function AICFOPage() {
                   }, 15);
                 } else if (eventName === "chart") {
                   msg.chart = parsedData as ChartSpec;
+                } else if (eventName === "table") {
+                  msg.table = parsedData as TableSpec;
                 } else if (eventName === "error") {
                   steps = steps.map(s => s.status === "running" ? { ...s, status: "failed" } as const : s);
                   msg.thinkingSteps = steps;
@@ -557,6 +610,7 @@ export default function AICFOPage() {
                       )}
 
                       {msg.chart && <InlineChart spec={msg.chart} />}
+                      {msg.table && <InlineTable spec={msg.table} />}
 
                       {msg.content && (
                         <div className="markdown-content prose prose-sm prose-invert max-w-none prose-p:leading-relaxed">
