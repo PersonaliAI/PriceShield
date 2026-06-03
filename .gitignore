@@ -40,8 +40,16 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# ignore backend, raw invoices, and local testing/development folders
-/backend/
+# Backend secrets and generated files
+backend/.env
+backend/env_vars.yaml
+backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+backend/firebase-service-account.json
+
+# ignore raw invoices and local testing/development folders
 /Invoices/
 /growth/
 /frontend/

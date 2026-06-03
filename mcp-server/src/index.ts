@@ -382,29 +382,30 @@ function createMcpServer(userId: string): Server {
         case "list_items": {
           const vendorName = args?.vendor_name as string | undefined;
 
-          let query = supabase
-            .from("line_items")
-            .select("item_name, unit_of_measure, invoices!inner(vendor_name, user_id, is_baseline)")
-            .eq("invoices.user_id", userId)
-            .eq("invoices.is_baseline", false);
+          let invQuery = supabase
+            .from("invoices")
+            .select("vendor_name, line_items(item_name, unit_of_measure)")
+            .eq("user_id", userId);
 
           if (vendorName) {
-            query = query.ilike("invoices.vendor_name", `%${vendorName}%`);
+            invQuery = invQuery.ilike("vendor_name", `%${vendorName}%`);
           }
 
-          const { data, error } = await query;
+          const { data, error } = await invQuery;
           if (error) throw error;
 
           // Deduplicate by item_name + vendor
           const seen = new Map<string, any>();
-          for (const row of (data as any[] || [])) {
-            const key = `${row.item_name}|||${row.invoices?.vendor_name}`;
-            if (!seen.has(key)) {
-              seen.set(key, {
-                item_name: row.item_name,
-                unit_of_measure: row.unit_of_measure,
-                vendor_name: row.invoices?.vendor_name,
-              });
+          for (const inv of (data as any[] || [])) {
+            for (const item of (inv.line_items || [])) {
+              const key = `${item.item_name}|||${inv.vendor_name}`;
+              if (!seen.has(key)) {
+                seen.set(key, {
+                  item_name: item.item_name,
+                  unit_of_measure: item.unit_of_measure,
+                  vendor_name: inv.vendor_name,
+                });
+              }
             }
           }
 
