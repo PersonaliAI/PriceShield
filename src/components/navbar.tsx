@@ -15,6 +15,8 @@ import {
   Shield,
   ShoppingBag,
   TrendingDown,
+  Calculator,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_META, FEATURED_POSTS } from "@/lib/blog";
@@ -60,6 +62,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
   const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(false);
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
   const isAuthed = !loading && !!user;
 
@@ -112,6 +115,7 @@ export function Navbar() {
             </Link>
           ))}
           <SolutionsMenu />
+          <ToolsMenu />
           <ResourcesMenu />
         </div>
 
@@ -220,6 +224,73 @@ export function Navbar() {
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
                             Get instant alerts on stealth vendor adjustments
+                          </div>
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Expandable Tools section */}
+              <div>
+                <button
+                  onClick={() => setMobileToolsOpen((s) => !s)}
+                  className="w-full flex items-center justify-between text-base text-foreground py-1 cursor-pointer"
+                  aria-expanded={mobileToolsOpen}
+                >
+                  Tools
+                  <ChevronDown
+                    className={cn(
+                      "size-4 text-muted-foreground transition-transform",
+                      mobileToolsOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {mobileToolsOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pl-3 mt-2 mb-2 space-y-2 border-l border-border">
+                        <Link
+                          href="/tools/invoice-to-csv"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Invoice to CSV Converter
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Extract line items from PDFs instantly
+                          </div>
+                        </Link>
+                        <Link
+                          href="/tools/food-cost-calculator"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Food Cost Calculator
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Calculate cost per serving & ideal price
+                          </div>
+                        </Link>
+                        <Link
+                          href="/tools/margin-leakage-calculator"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Margin Leakage Calculator
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Find what you lose to billing errors
                           </div>
                         </Link>
                       </div>
@@ -605,6 +676,109 @@ function ResourcesMenu() {
                       </div>
                       <div className="text-xs text-foreground/90 leading-snug line-clamp-2 group-hover:underline underline-offset-4">
                         {post.description}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ToolsMenu() {
+  const [open, setOpen] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function show() {
+    if (timer.current) clearTimeout(timer.current);
+    setOpen(true);
+  }
+  function hide() {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setOpen(false), 150);
+  }
+
+  const tools = [
+    {
+      href: "/tools/invoice-to-csv",
+      label: "Invoice to CSV Converter",
+      desc: "Extract structured line items from PDFs instantly.",
+      icon: FileSpreadsheet,
+      tone: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    },
+    {
+      href: "/tools/food-cost-calculator",
+      label: "Food Cost Calculator",
+      desc: "Find recommended pricing based on ingredient cost.",
+      icon: Calculator,
+      tone: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+    },
+    {
+      href: "/tools/margin-leakage-calculator",
+      label: "Margin Leakage Calculator",
+      desc: "Calculate savings from catching supplier overcharges.",
+      icon: TrendingDown,
+      tone: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    },
+  ];
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+    >
+      <Link
+        href="/tools/margin-leakage-calculator"
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      >
+        Free Tools
+        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
+      </Link>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.14 }}
+            className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50"
+            onMouseEnter={show}
+            onMouseLeave={hide}
+          >
+            <div className="w-[320px] sm:w-[400px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden p-2">
+              <div className="px-3 pt-3 pb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Free Growth Calculators</h3>
+              </div>
+              <div className="space-y-1">
+                {tools.map((tool) => {
+                  const Icon = tool.icon;
+                  return (
+                    <Link
+                      key={tool.href}
+                      href={tool.href}
+                      className="group flex items-start gap-3 rounded-xl p-3 hover:bg-muted transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <div className={cn("p-2 rounded-lg border shrink-0", tool.tone)}>
+                        <Icon className="size-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-foreground group-hover:text-emerald-400 transition-colors">
+                          {tool.label}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5 leading-normal">
+                          {tool.desc}
+                        </div>
                       </div>
                     </Link>
                   );

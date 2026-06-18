@@ -13,7 +13,9 @@ const links = {
     { label: "Supplier Price Track", href: "/solutions/supplier-price-tracking" },
     { label: "Invoice Audit", href: "/solutions/invoice-audit" },
     { label: "Price Hike Detect", href: "/solutions/supplier-price-increase-detection" },
-    { label: "Margin Calculator", href: "/tools/margin-leakage-calculator" },
+    { label: "Margin Leakage Calculator", href: "/tools/margin-leakage-calculator" },
+    { label: "Food Cost Calculator", href: "/tools/food-cost-calculator" },
+    { label: "Invoice to CSV Converter", href: "/tools/invoice-to-csv" },
   ],
   Resources: [
     { label: "Blog", href: "/blog" },
