@@ -118,6 +118,34 @@ async def extract_invoice(
         )
 
 
+@router.post("/public/extract", response_model=ExtractionResult, summary="Free, no-auth endpoint to extract invoice data.")
+async def public_extract_invoice(
+    file: UploadFile = File(...)
+):
+    """
+    Extract structured line-item data from an invoice PDF or image without an API key.
+    Protected by standard network limit. Max 20MB.
+    """
+    try:
+        ct = file.content_type or ""
+        if not (ct == "application/pdf" or ct.startswith("image/")):
+            raise HTTPException(status_code=400, detail="Unsupported file type. Upload PDF, PNG, JPEG, or WEBP.")
+            
+        content = await file.read()
+        file_size = len(content)
+        if file_size > 20971520: # 20MB
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
+            
+        gemini = GeminiService()
+        result = await gemini.extract_invoice(pdf_bytes=content, mime_type=ct)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Public extract failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+
+
 @router.post("/compare", response_model=PriceAlert, summary="Compare extracted invoice data against historical baselines to detect price hikes.")
 async def compare_invoice(
     extraction: ExtractionResult,

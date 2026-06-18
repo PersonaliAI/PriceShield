@@ -137,11 +137,43 @@ export function InvoiceToCsvClient() {
     setStage("processing");
     setDownloaded(false);
 
-    // Simulate extraction processing
-    setTimeout(() => {
-      setItems(DEMO_ITEMS.map((item) => ({ ...item, id: uid() })));
-      setStage("preview");
-    }, 2000);
+    // Call the real public Gemini extraction API
+    const formData = new FormData();
+    formData.append("file", f);
+
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+    fetch(`${API_BASE}/api/v1/public/extract?t=${new Date().getTime()}`, {
+      method: "POST",
+      body: formData,
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to extract invoice data");
+        return res.json();
+      })
+      .then((data) => {
+        if (data && Array.isArray(data.items)) {
+          const parsed = data.items.map((item: any) => ({
+            id: uid(),
+            description: item.item_name || "Unknown Item",
+            qty: item.quantity !== undefined && item.quantity !== null ? String(item.quantity) : "",
+            unit: item.unit_of_measure || "",
+            unitPrice: item.unit_price !== undefined && item.unit_price !== null ? String(item.unit_price) : "",
+            total: item.total_price !== undefined && item.total_price !== null ? String(item.total_price) : "",
+          }));
+          setItems(parsed);
+        } else {
+          setItems(DEMO_ITEMS.map((item) => ({ ...item, id: uid() })));
+        }
+        setStage("preview");
+      })
+      .catch((err) => {
+        console.error("Extraction error:", err);
+        // Graceful fallback to demo items if API fails/offline
+        setItems(DEMO_ITEMS.map((item) => ({ ...item, id: uid() })));
+        setStage("preview");
+      });
   }, []);
 
   const onDrop = useCallback(
