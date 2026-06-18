@@ -193,6 +193,32 @@ _TOOL_DECLARATIONS = types.Tool(function_declarations=[
         ),
     ),
     types.FunctionDeclaration(
+        name="build_table",
+        description=(
+            "Render a data table in the user's chat window. "
+            "Use for structured comparisons: price summaries, ranked lists, vendor comparisons. "
+            "headers: column names. rows: 2D array of strings (one array per row). "
+            "Call this alongside or instead of build_chart when tabular data is clearer."
+        ),
+        parameters=types.Schema(
+            type=types.Type.OBJECT,
+            properties={
+                "title": types.Schema(type=types.Type.STRING, description="Table title"),
+                "headers": types.Schema(
+                    type=types.Type.ARRAY,
+                    description="Column headers e.g. ['Product','Jan 2025','May 2025','% Change']",
+                    items=types.Schema(type=types.Type.STRING),
+                ),
+                "rows": types.Schema(
+                    type=types.Type.ARRAY,
+                    description="One array of strings per data row",
+                    items=types.Schema(type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING)),
+                ),
+            },
+            required=["headers", "rows"],
+        ),
+    ),
+    types.FunctionDeclaration(
         name="list_items",
         description="List all unique supplier items (products) tracked for this user. Call this first when asked to compare or analyse trends across all products — it returns every item name so you can then call get_price_trends for each.",
         parameters=types.Schema(
@@ -258,6 +284,8 @@ SYSTEM_PROMPT = (
     "IMPORTANT — efficiency: when fetching trends for multiple products, call get_price_trends for ALL products in a SINGLE response (parallel calls). Do NOT call them one at a time. "
     "When asked to compare or visualise trends across products, call build_chart ONCE with all series combined BEFORE writing your text summary. "
     "For cross-product comparison charts, normalise prices to % change from baseline so different units are comparable on one axis. "
+    "Call build_table for ranked lists, price summaries, or any structured comparison — use it alongside build_chart or on its own. "
+    "IMPORTANT: when you call build_chart or build_table, do NOT repeat the same data as a markdown table or list in your text — the rendered widget replaces that. Your text should provide interpretation, not raw data. "
     "Format your final answer in markdown with headers, bullet points, and data tables where applicable."
 )
 
@@ -268,6 +296,14 @@ SYSTEM_PROMPT = (
 
 def _execute_tool(name: str, args: dict, mcp: MCPClient, emit=None) -> str:
     """Execute a tool call, returning a string result."""
+    if name == "build_table":
+        if emit:
+            emit("table", {
+                "title": args.get("title", ""),
+                "headers": args.get("headers", []),
+                "rows": args.get("rows", []),
+            })
+        return "Table rendered in the user's chat window."
     if name == "build_chart":
         if emit:
             labels = args.get("labels", [])
