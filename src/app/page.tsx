@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
@@ -88,6 +89,16 @@ export default function Home() {
         <CTA />
       </main>
       <Footer />
+
+      {/* Chatty AI chat assistant widget */}
+      <Script
+        id="chatty-widget"
+        src="https://chatty.personaliai.com/widget.js"
+        data-id="3af1ac68-c783-4c2c-a56a-f086e65078de"
+        data-color="#f97316"
+        data-style="minimalist"
+        strategy="afterInteractive"
+      />
     </>
   );
 }
