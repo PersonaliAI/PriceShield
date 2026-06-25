@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { Products } from "@/components/products";
@@ -94,7 +93,7 @@ export default function Home() {
       <Script
         id="chatty-widget"
         src="https://chatty.personaliai.com/widget.js"
-        data-id="3af1ac68-c783-4c2c-a56a-f086e65078de"
+        data-id="ea56151d-66c3-41e6-ba0b-bb28569c727e"
         strategy="afterInteractive"
       />
     </>
