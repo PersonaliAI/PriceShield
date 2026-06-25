@@ -93,7 +93,7 @@ export default function Home() {
       <Script
         id="chatty-widget"
         src="https://chatty.personaliai.com/widget.js"
-        data-id="ea56151d-66c3-41e6-ba0b-bb28569c727e"
+        data-id="9930ce3a-6152-4b2d-bc83-c78ab893a2e5"
         strategy="afterInteractive"
       />
     </>
