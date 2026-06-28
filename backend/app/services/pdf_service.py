@@ -171,7 +171,7 @@ class PDFService:
         if data.get("businessEmail"):
             contact_info.append(data.get("businessEmail"))
         if contact_info:
-            pdf.cell(100, 4, " • ".join(contact_info), ln=True, align="L")
+            pdf.cell(100, 4, " | ".join(contact_info), ln=True, align="L")
             
         y_left_end = pdf.get_y()
         
@@ -424,6 +424,6 @@ class PDFService:
         # --- FOOTER BRANDS ---
         pdf.set_font(font_family, 'I', 7.5)
         pdf.set_text_color(148, 163, 184) # Slate-400
-        pdf.cell(0, 10, "Invoices generated free by PriceShield.com — Audit supplier costs automatically.", align="C")
+        pdf.cell(0, 10, "Invoices generated free by PriceShield.com - Audit supplier costs automatically.", align="C")
         
         return bytes(pdf.output())
