@@ -98,3 +98,332 @@ class PDFService:
         pdf.output(filepath)
         
         return filepath
+
+    def generate_invoice_pdf(self, data: dict) -> bytes:
+        """Generate a high-quality PDF invoice based on style presets."""
+        style = data.get("style", "classic").lower()
+        
+        # Color Palettes
+        if style == "modern":
+            primary_color = (15, 23, 42) # Slate-900
+            accent_color = (16, 185, 129) # Emerald-500
+            secondary_color = (100, 116, 139) # Slate-500
+            fill_header = (240, 253, 250) # Light Emerald
+            font_family = "Arial"
+        elif style == "boutique":
+            primary_color = (50, 45, 40) # Warm Dark Charcoal
+            accent_color = (180, 150, 110) # Luxury Warm Gold/Bronze
+            secondary_color = (140, 130, 120) # Slate Warm Gray
+            fill_header = (255, 253, 245) # Soft Cream
+            font_family = "Times"
+        else: # classic
+            primary_color = (0, 0, 0)
+            accent_color = (71, 85, 105) # Slate-600
+            secondary_color = (100, 116, 139) # Slate-500
+            fill_header = (241, 245, 249) # Light Gray
+            font_family = "Arial"
+            
+        pdf = FPDF(orientation="P", unit="mm", format="A4")
+        pdf.set_margins(15, 15, 15)
+        pdf.add_page()
+        
+        # Draw top colored bar for modern/boutique
+        if style == "modern":
+            pdf.set_fill_color(*accent_color)
+            pdf.rect(0, 0, 210, 4, 'F')
+        elif style == "boutique":
+            pdf.set_fill_color(*accent_color)
+            pdf.rect(0, 0, 210, 2.5, 'F')
+            
+        pdf.ln(5)
+        
+        # --- HEADER SECTION ---
+        # Business Details (Left)
+        pdf.set_font(font_family, 'B', 15)
+        pdf.set_text_color(*primary_color)
+        pdf.cell(110, 8, data.get("businessName", ""), ln=False, align="L")
+        
+        # Invoice Label (Right)
+        pdf.set_font(font_family, 'B', 20)
+        pdf.set_text_color(*accent_color if style != "classic" else primary_color)
+        pdf.cell(70, 8, "INVOICE", ln=True, align="R")
+        
+        # Sub-header Details
+        pdf.set_font(font_family, '', 9)
+        pdf.set_text_color(*secondary_color)
+        
+        # Write business address multi-line on the left
+        addr_lines = data.get("businessAddress", "").split("\n")
+        
+        # Align business info (left) and invoice info (right) side-by-side using Y coordinates
+        y_pos = pdf.get_y()
+        
+        # Render left block
+        pdf.set_xy(15, y_pos)
+        pdf.set_font(font_family, '', 8.5)
+        pdf.set_text_color(*secondary_color)
+        for line in addr_lines:
+            pdf.cell(100, 4, line, ln=True, align="L")
+        
+        contact_info = []
+        if data.get("businessPhone"):
+            contact_info.append(data.get("businessPhone"))
+        if data.get("businessEmail"):
+            contact_info.append(data.get("businessEmail"))
+        if contact_info:
+            pdf.cell(100, 4, " • ".join(contact_info), ln=True, align="L")
+            
+        y_left_end = pdf.get_y()
+        
+        # Render right block (metadata)
+        pdf.set_xy(115, y_pos)
+        pdf.set_font(font_family, '', 9)
+        
+        pdf.cell(80, 4.5, f"Invoice No:  {data.get('invoiceNumber', '')}", ln=True, align="R")
+        pdf.set_xy(115, pdf.get_y())
+        pdf.cell(80, 4.5, f"Date:  {data.get('invoiceDate', '')}", ln=True, align="R")
+        if data.get("dueDate"):
+            pdf.set_xy(115, pdf.get_y())
+            pdf.cell(80, 4.5, f"Due Date:  {data.get('dueDate', '')}", ln=True, align="R")
+            
+        y_right_end = pdf.get_y()
+        
+        # Place cursor below both blocks
+        max_y = max(y_left_end, y_right_end)
+        pdf.set_xy(15, max_y + 8)
+        
+        # Draw horizontal divider line
+        pdf.set_draw_color(*fill_header)
+        pdf.set_line_width(0.3)
+        pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+        pdf.ln(5)
+        
+        # --- DETAILS SPLIT (BILL TO & EVENT/STAY/SESSION) ---
+        y_pos = pdf.get_y()
+        
+        # Left Side: Bill To
+        pdf.set_xy(15, y_pos)
+        pdf.set_font(font_family, 'B', 8.5)
+        pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
+        pdf.cell(90, 4, "BILL TO:", ln=True)
+        
+        pdf.set_font(font_family, 'B', 10)
+        pdf.set_text_color(*primary_color)
+        pdf.cell(90, 5, data.get("clientName", ""), ln=True)
+        
+        pdf.set_font(font_family, '', 8.5)
+        pdf.set_text_color(*secondary_color)
+        if data.get("clientContact"):
+            pdf.cell(90, 4, f"Attn: {data.get('clientContact')}", ln=True)
+            
+        client_addr_lines = data.get("clientAddress", "").split("\n")
+        for line in client_addr_lines:
+            pdf.cell(90, 4, line, ln=True)
+        if data.get("clientEmail"):
+            pdf.cell(90, 4, data.get("clientEmail"), ln=True)
+        if data.get("clientPhone"):
+            pdf.cell(90, 4, data.get("clientPhone"), ln=True)
+            
+        y_left_end = pdf.get_y()
+        
+        # Right Side: Event / Stay / Session info (depending on what's populated)
+        pdf.set_xy(115, y_pos)
+        
+        # 1. Catering Event Info
+        if data.get("eventType") or data.get("eventVenue") or data.get("guestCount"):
+            pdf.set_font(font_family, 'B', 8.5)
+            pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
+            pdf.cell(80, 4, "EVENT DETAILS:", ln=True, align="R")
+            
+            pdf.set_font(font_family, 'B', 10)
+            pdf.set_text_color(*primary_color)
+            pdf.cell(80, 5, data.get("eventType", ""), ln=True, align="R")
+            
+            pdf.set_font(font_family, '', 8.5)
+            pdf.set_text_color(*secondary_color)
+            if data.get("eventDate"):
+                pdf.cell(80, 4, f"Date: {data.get('eventDate')}", ln=True, align="R")
+            if data.get("eventVenue"):
+                pdf.cell(80, 4, f"Venue: {data.get('eventVenue')}", ln=True, align="R")
+            if data.get("guestCount"):
+                pdf.cell(80, 4, f"Guests: {data.get('guestCount')}", ln=True, align="R")
+                
+        # 2. B&B Stay Info
+        elif data.get("roomName") or data.get("checkIn") or data.get("checkOut"):
+            pdf.set_font(font_family, 'B', 8.5)
+            pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
+            pdf.cell(80, 4, "STAY INFORMATION:", ln=True, align="R")
+            
+            pdf.set_font(font_family, 'B', 10)
+            pdf.set_text_color(*primary_color)
+            pdf.cell(80, 5, data.get("roomName", ""), ln=True, align="R")
+            
+            pdf.set_font(font_family, '', 8.5)
+            pdf.set_text_color(*secondary_color)
+            if data.get("checkIn"):
+                pdf.cell(80, 4, f"Check-in: {data.get('checkIn')}", ln=True, align="R")
+            if data.get("checkOut"):
+                pdf.cell(80, 4, f"Check-out: {data.get('checkOut')}", ln=True, align="R")
+            if data.get("nights"):
+                pdf.cell(80, 4, f"Nights: {data.get('nights')}", ln=True, align="R")
+                
+        # 3. Massage Therapist Info
+        elif data.get("therapistName") or data.get("licenseNumber"):
+            pdf.set_font(font_family, 'B', 8.5)
+            pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
+            pdf.cell(80, 4, "SERVICE DETAILS:", ln=True, align="R")
+            
+            pdf.set_font(font_family, 'B', 10)
+            pdf.set_text_color(*primary_color)
+            pdf.cell(80, 5, data.get("therapistName", ""), ln=True, align="R")
+            
+            pdf.set_font(font_family, '', 8.5)
+            pdf.set_text_color(*secondary_color)
+            if data.get("licenseNumber"):
+                pdf.cell(80, 4, f"License: {data.get('licenseNumber')}", ln=True, align="R")
+            if data.get("eventDate"):
+                pdf.cell(80, 4, f"Date: {data.get('eventDate')}", ln=True, align="R")
+                
+        y_right_end = pdf.get_y()
+        
+        max_y = max(y_left_end, y_right_end)
+        pdf.set_xy(15, max_y + 8)
+        
+        # --- TABLE OF ITEMS ---
+        # Table Header
+        pdf.set_fill_color(*fill_header)
+        pdf.set_font(font_family, 'B', 9)
+        pdf.set_text_color(*primary_color)
+        
+        pdf.cell(100, 8, "  Description / Service", border=0, ln=False, fill=True)
+        pdf.cell(25, 8, "Qty", border=0, ln=False, align="C", fill=True)
+        pdf.cell(25, 8, "Rate", border=0, ln=False, align="R", fill=True)
+        pdf.cell(30, 8, "Total  ", border=0, ln=True, align="R", fill=True)
+        
+        # Table Rows
+        pdf.set_font(font_family, '', 9)
+        pdf.set_text_color(*primary_color)
+        pdf.set_draw_color(229, 231, 235) # Light divider line #e5e7eb
+        
+        items = data.get("items", [])
+        
+        # If B&B and nights > 0, include Room Stay row at the top of the table
+        if data.get("roomName") and data.get("nights") and data.get("nightlyRate"):
+            r_name = f"{data.get('roomName')} (Room Charge)"
+            r_qty = int(data.get("nights", 0))
+            r_rate = float(data.get("nightlyRate", 0))
+            r_total = r_qty * r_rate
+            
+            pdf.cell(100, 8, f"  {r_name}", border="B")
+            pdf.cell(25, 8, str(r_qty), border="B", align="C")
+            pdf.cell(25, 8, f"${r_rate:.2f}", border="B", align="R")
+            pdf.cell(30, 8, f"${r_total:.2f}  ", border="B", align="R")
+            pdf.ln()
+            
+        for item in items:
+            desc = item.get("description", "")
+            qty = float(item.get("qty", 0))
+            qty_str = str(int(qty)) if qty.is_integer() else f"{qty:.2f}"
+            price = float(item.get("price", 0))
+            row_total = qty * price
+            
+            pdf.cell(100, 8, f"  {desc}", border="B")
+            pdf.cell(25, 8, qty_str, border="B", align="C")
+            pdf.cell(25, 8, f"${price:.2f}", border="B", align="R")
+            pdf.cell(30, 8, f"${row_total:.2f}  ", border="B", align="R")
+            pdf.ln()
+            
+        pdf.ln(5)
+        
+        # --- TOTALS BLOCK ---
+        y_pos = pdf.get_y()
+        
+        # Notes (Left)
+        pdf.set_xy(15, y_pos)
+        pdf.set_font(font_family, 'B', 8.5)
+        pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
+        pdf.cell(100, 4, "TERMS & NOTES:", ln=True)
+        pdf.set_font(font_family, '', 8.5)
+        pdf.set_text_color(*secondary_color)
+        
+        notes_text = data.get("notes", "")
+        pdf.set_xy(15, pdf.get_y())
+        pdf.multi_cell(100, 4, notes_text, border=0, align="L")
+        
+        y_left_end = pdf.get_y()
+        
+        # Calculations of Totals (Right)
+        room_cost = float(data.get("nights", 0)) * float(data.get("nightlyRate", 0)) if data.get("roomName") else 0.0
+        services_cost = sum(float(item.get("qty", 0)) * float(item.get("price", 0)) for item in items)
+        subtotal = room_cost + services_cost
+        
+        setup_fee = float(data.get("setupFee", 0.0))
+        gratuity_rate = float(data.get("gratuityRate", 0.0))
+        
+        # In B&B, lodging tax (mapped to gratuityRate) applies only to room cost.
+        if data.get("roomName"):
+            gratuity = room_cost * (gratuity_rate / 100.0)
+        else:
+            gratuity = subtotal * (gratuity_rate / 100.0)
+        
+        taxable = subtotal + setup_fee
+        tax_rate = float(data.get("taxRate", 0.0))
+        tax = taxable * (tax_rate / 100.0)
+        
+        tip = float(data.get("tip", 0.0))
+        total_due = subtotal + setup_fee + gratuity + tax + tip
+        
+        pdf.set_xy(125, y_pos)
+        pdf.set_font(font_family, '', 9)
+        pdf.set_text_color(*secondary_color)
+        
+        pdf.cell(40, 5, "Subtotal:", ln=False, align="L")
+        pdf.cell(30, 5, f"${subtotal:.2f}", ln=True, align="R")
+        
+        if setup_fee > 0:
+            pdf.set_xy(125, pdf.get_y())
+            pdf.cell(40, 5, "Setup & Delivery:", ln=False, align="L")
+            pdf.cell(30, 5, f"${setup_fee:.2f}", ln=True, align="R")
+            
+        if gratuity > 0:
+            pdf.set_xy(125, pdf.get_y())
+            label = f"Lodging Tax ({int(gratuity_rate)}%):" if data.get("roomName") else f"Gratuity ({int(gratuity_rate)}%):"
+            pdf.cell(40, 5, label, ln=False, align="L")
+            pdf.cell(30, 5, f"${gratuity:.2f}", ln=True, align="R")
+            
+        if tax > 0:
+            pdf.set_xy(125, pdf.get_y())
+            label = f"State Tax ({tax_rate:.2f}%):" if data.get("roomName") else f"Sales Tax ({tax_rate:.2f}%):"
+            pdf.cell(40, 5, label, ln=False, align="L")
+            pdf.cell(30, 5, f"${tax:.2f}", ln=True, align="R")
+            
+        if tip > 0:
+            pdf.set_xy(125, pdf.get_y())
+            pdf.cell(40, 5, "Tip:", ln=False, align="L")
+            pdf.cell(30, 5, f"${tip:.2f}", ln=True, align="R")
+            
+        # Draw final total divider line
+        pdf.set_xy(125, pdf.get_y() + 1)
+        pdf.set_draw_color(*primary_color)
+        pdf.set_line_width(0.4)
+        pdf.line(125, pdf.get_y(), 195, pdf.get_y())
+        pdf.ln(2)
+        
+        # Total Due
+        pdf.set_xy(125, pdf.get_y())
+        pdf.set_font(font_family, 'B', 11)
+        pdf.set_text_color(*accent_color if style != "classic" else primary_color)
+        pdf.cell(40, 6, "Total Due:", ln=False, align="L")
+        pdf.cell(30, 6, f"${total_due:.2f}", ln=True, align="R")
+        
+        y_right_end = pdf.get_y()
+        
+        max_y = max(y_left_end, y_right_end)
+        pdf.set_xy(15, max_y + 15)
+        
+        # --- FOOTER BRANDS ---
+        pdf.set_font(font_family, 'I', 7.5)
+        pdf.set_text_color(148, 163, 184) # Slate-400
+        pdf.cell(0, 10, "Invoices generated free by PriceShield.com — Audit supplier costs automatically.", align="C")
+        
+        return bytes(pdf.output())

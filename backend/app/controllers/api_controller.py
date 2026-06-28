@@ -17,6 +17,7 @@ from app.services.usage_tracker import UsageTracker
 from app.services.gemini_service import GeminiService
 from app.services.price_engine import PriceEngine
 from app.services.supabase_service import SupabaseService
+from app.services.pdf_service import PDFService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["Developer API"])
@@ -144,6 +145,71 @@ async def public_extract_invoice(
     except Exception as e:
         logger.error("Public extract failed: %s", e)
         raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+
+
+class PDFInvoiceItem(BaseModel):
+    description: str
+    qty: float
+    price: float
+
+
+class PDFInvoiceRequest(BaseModel):
+    style: str = "classic"
+    businessName: str
+    businessEmail: str
+    businessPhone: str
+    businessAddress: str
+    clientName: str
+    clientContact: Optional[str] = None
+    clientEmail: str
+    clientAddress: str
+    invoiceNumber: str
+    invoiceDate: str
+    dueDate: Optional[str] = None
+    items: list[PDFInvoiceItem]
+    notes: Optional[str] = None
+    
+    # Event / booking fields (optional)
+    eventType: Optional[str] = None
+    eventDate: Optional[str] = None
+    eventVenue: Optional[str] = None
+    guestCount: Optional[int] = None
+    roomName: Optional[str] = None
+    checkIn: Optional[str] = None
+    checkOut: Optional[str] = None
+    nights: Optional[int] = None
+    nightlyRate: Optional[float] = None
+    therapistName: Optional[str] = None
+    licenseNumber: Optional[str] = None
+    
+    # Financial fields
+    setupFee: Optional[float] = 0.0
+    taxRate: Optional[float] = 0.0
+    gratuityRate: Optional[float] = 0.0
+    tip: Optional[float] = 0.0
+
+
+@router.post("/public/generate-pdf", summary="Generate high-quality PDF invoice")
+async def generate_invoice_pdf_endpoint(request_data: PDFInvoiceRequest):
+    """
+    Generate a professional, high-quality PDF invoice.
+    Supports Classic, Modern, and Boutique style presets.
+    Returns the PDF binary file directly.
+    """
+    try:
+        pdf_service = PDFService()
+        pdf_bytes = pdf_service.generate_invoice_pdf(request_data.model_dump())
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=invoice_{request_data.invoiceNumber}.pdf"
+            }
+        )
+    except Exception as e:
+        logger.error("Failed to generate PDF: %s", e)
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
 
 
 @router.post("/compare", response_model=PriceAlert, summary="Compare extracted invoice data against historical baselines to detect price hikes.")
