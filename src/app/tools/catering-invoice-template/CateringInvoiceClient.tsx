@@ -518,13 +518,15 @@ export function CateringInvoiceClient() {
           </div>
         </div>
 
-        {/* Paper Invoice sheet */}
-        <div className={`print-area bg-white text-black p-8 rounded-lg shadow-2xl border border-zinc-200 aspect-[1/1.4] w-full text-[11px] leading-relaxed relative overflow-hidden ${
-          style === "boutique" ? "font-serif" : "font-sans"
-        }`}>
-          {/* Style accents */}
-          {style === "modern" && <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />}
-          {style === "boutique" && <div className="absolute top-0 left-0 right-0 h-0.5 bg-amber-705" />}
+        {/* Scroll wrapper for mobile responsiveness */}
+        <div className="w-full overflow-x-auto pb-4 print:overflow-visible">
+          {/* Paper Invoice sheet */}
+          <div className={`print-area bg-white text-black p-8 rounded-lg shadow-2xl border border-zinc-200 min-w-[600px] lg:min-w-0 lg:w-full min-h-[840px] text-[11px] leading-relaxed relative ${
+            style === "boutique" ? "font-serif" : "font-sans"
+          }`}>
+            {/* Style accents */}
+            {style === "modern" && <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />}
+            {style === "boutique" && <div className="absolute top-0 left-0 right-0 h-0.5 bg-amber-705" />}
 
           {/* Header */}
           <div className="flex justify-between items-start border-b border-zinc-200 pb-5 mb-5">
@@ -633,5 +635,6 @@ export function CateringInvoiceClient() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
