@@ -1078,6 +1078,170 @@ The pattern most operators settle into: alerts on weekdays trigger a reply same-
 
 That cadence is the entire system.`,
   },
+
+  {
+    slug: "shipping-freight-invoice-audit-guide",
+    title: "How to audit shipping and freight invoices for billing errors",
+    description:
+      "Prevent duplicate billing charges, fuel surcharge inflation, and weight mismatches. Learn best practices for implementing a carrier invoice audit process.",
+    category: "audit",
+    date: "2026-06-25",
+    readingMinutes: 8,
+    body: `Shipping and freight costs are a massive expense line for physical product companies. Yet, study after study shows that up to **10% of carrier invoices contain billing errors**. 
+
+If you are paying freight, parcel, or LTL (Less-Than-Truckload) carrier bills without a systematic shipping invoice audit, you are bleeding capital.
+
+Here is the step-by-step process for auditing shipping invoices, preventing duplicate billing charges, and choosing the right audit strategy.
+
+## Common shipping & carrier invoice errors
+
+Before you start auditing, you need to know what anomalies you are searching for:
+
+1. **Duplicate billing charges.** Carriers frequently submit duplicate invoices under different billing references (e.g., separate tracking number vs. master bill-of-lading).
+2. **Incorrect fuel surcharges.** Fuel surcharges are adjusted weekly based on indexes (like the EIA National Diesel Average). Carriers often lag behind on adjustments or charge outdated higher rates.
+3. **Weight & dimension mismatches.** LTL freight uses dimensioners to measure pallets. If their machine miscalculates a pallet's size, they bump you to a higher freight class (re-classification fee).
+4. **Accessorial surcharges.** Fees for lift-gate deliveries, residential delivery, or waiting time (detention fees) that were never actually requested or performed.
+5. **Service level failures.** Guaranteed next-day air shipments that arrived late but were billed at the premium rate anyway.
+
+## Best practices for freight & parcel auditing
+
+A robust carrier invoice audit process should be continuous and proactive:
+
+### Step 1: Centralize your shipping logs
+Ensure your shipping platform (ShipStation, EasyPost, custom ERP) logs every shipment's tracking ID, dimensions, quoted cost, and carrier SLA. This is your source of truth.
+
+### Step 2: Set up automated matching rules
+Comparing invoices manually is impossible due to volume. Build or configure rules to auto-match:
+\`\`\`
+Quoted Cost  +  Permissible Fees  =  Expected Cost
+Compare: Expected Cost vs. Invoiced Cost
+\`\`\`
+
+### Step 3: Implement real-time duplicate checks
+Your system must verify if an invoice's bill-of-lading (BOL) or tracking ID matches a previously paid record. A duplicate check pays for itself in the first month.
+
+## Automated software vs. freight audit companies
+
+For enterprise shippers, manual Excel audits do not scale. You have two main alternatives:
+
+| Metric | Carrier Audit Companies | Audit Software Platforms |
+| --- | --- | --- |
+| **Recovery Method** | Retrospective (after payment) | Real-time (pre-payment) |
+| **Service Scope** | Managed claim filing | Automated matching & alerts |
+| **Typical Cost** | Contingency-based (15-30% of recovery) | Fixed SaaS subscription |
+| **Speed** | 30-90 days delay | Instant audit (seconds) |
+
+### Enterprise carrier audit software comparison
+For LTL freight and small parcel shippers (UPS, FedEx, DHL), modern touchless audit platforms with real-time error detection are the standard. They use automated APIs to file claims for late deliveries and billing variances within hours of the invoice date, avoiding the 180-day limitation window.
+
+## How to get started
+If you are auditing under 50 shipments a month, use a spreadsheet to check fuel surcharges and duplicate billing charges manually on Sundays. If you scale past that, automate your billing checks to capture touchless margin recovery.`,
+  },
+
+  {
+    slug: "complete-guide-to-invoice-audit-services-and-software",
+    title: "Accounts payable invoice auditing: process, services & software",
+    description:
+      "A complete overview of accounts payable invoice auditing. Learn the difference between manual recovery services and automated touchless software solutions.",
+    category: "audit",
+    date: "2026-06-22",
+    readingMinutes: 6,
+    body: `Accounts Payable (AP) departments are high-pressure environments. When dealing with hundreds of monthly supplier invoices, processing speed is prioritized over billing accuracy. 
+
+As a result, double payments, tax errors, and vendor pricing drift go unnoticed.
+
+This guide details the modern AP invoice auditing process, compares recovery services vs. software, and outlines how to transition to touchless auditing.
+
+## The invoice auditing process
+
+A standard AP invoice audit follows four key phases:
+
+\`\`\`
+[Ingestion] -> [Validation] -> [Comparison] -> [Dispute/Recovery]
+\`\`\`
+
+1. **Ingestion.** Invoices are received via email, portal, or paper scan. OCR software reads and extracts the metadata and tables.
+2. **Validation.** The system validates math totals: \`Qty × Unit Price = Total\` + \`Taxes\` + \`Freight\` = \`Invoice Total\`.
+3. **Comparison.** The invoice is cross-referenced with purchase orders (2-way match) or receiving logs (3-way match) and historical contract pricing.
+4. **Dispute / Recovery.** Anomalies (price jumps, missing items, unapproved fees) are flagged and disputed with the vendor.
+
+## Services vs. software: how to choose
+
+Many CFOs struggle to decide whether to hire an external auditor or purchase software.
+
+### 1. AP invoice recovery audit services
+Recovery services are retrospective. They send a team of auditors to scan your database for the past 12 to 24 months, searching for overpayments. They operate on a contingency basis (typically taking **20-50% of the funds they recover**).
+* **Best for:** Companies with years of un-audited historical data looking for a one-time cash injection.
+
+### 2. Touchless invoice processing software
+Software platforms audit invoices in real time *before* you pay them. By using AI extraction and automated matching rules, the software flags anomalies within seconds of ingestion.
+* **Best for:** Continuous margin defense. Preventing the leak *before* it leaves your bank account.
+
+## Cloud invoicing platforms with audit capabilities
+
+Modern cloud invoicing platforms consolidate procurement, OCR ingestion, and auditing into a single dashboard. Features to look for:
+
+- **Touchless matches.** If the invoice matches the purchase order and historical pricing within 0.5%, it is auto-approved and queued for payment.
+- **Audit logs.** Every change, validation, and approval is logged for compliance and fraud prevention.
+- **Direct supplier disputes.** The software automatically draft emails with the exact line item overcharge to send to your vendor rep.
+
+By automating the auditing process, your accounts payable team shifts from manual data transcription to high-value anomaly resolution, protecting your EBITDA margins from silent supplier inflation.`,
+  },
+
+  {
+    slug: "specialized-invoice-auditing-telecom-equipment",
+    title: "Specialized invoice auditing: telecom, equipment rental & complex freight",
+    description:
+      "How to audit complex non-standard invoices. Compare telecom invoice auditing methods and checklists for heavy equipment rental billing.",
+    category: "audit",
+    date: "2026-06-19",
+    readingMinutes: 5,
+    body: `Standard corporate invoices (e.g. office supplies, software licensing) are easy to audit because they have static pricing. 
+
+Specialized invoices—specifically **telecom billing, equipment rentals, and complex freight** (like aircraft parts)—are different. They carry complicated usage metrics, hidden accessorial fees, and contractual variables that confuse standard AP tools.
+
+Here is how to audit these specialized invoice categories.
+
+---
+
+## 1. Telecom invoice auditing methods
+
+Telecom bills are famously unreadable. A single corporate carrier invoice can be 500 pages long, filled with roaming charges, trunk lines, and data pools.
+
+### Key audit areas:
+- **Zero-usage lines.** Employees leave the company, but their SIM cards and data plans remain active for months or years.
+- **Contract rate verification.** Telecom carriers frequently neglect to apply contract updates, billing you at standard out-of-contract rates.
+- **Roaming surcharges.** Automated cellular backup modules that failover to cellular and incur data overage charges.
+
+### Methods comparison:
+* **Manual reviews:** Checking individual lines is slow and ineffective.
+* **Automated TEM (Telecom Expense Management) Software:** Ingests carrier EDI files, matches lines to active directories, and flags zero-usage lines. Recommended if your telecom spend exceeds $5,000/month.
+
+---
+
+## 2. Equipment rental invoice audit checklist
+
+Renting cranes, generators, or forklifts involves complex rental contracts with complex billing terms.
+
+### The Audit Checklist:
+- \`[ ]\` **Rental Days vs Calendar Days.** Check if you were billed for weekend days when the rental agreement specified a 5-day work week.
+- \`[ ]\` **Double-billed insurance.** Rental companies add default damage waivers (insurance) to every bill, even if you provided a Certificate of Insurance (COI) during onboarding.
+- \`[ ]\` **Fuel recovery surcharges.** Returning equipment with a 95% full tank but getting billed a flat $150 refueling fee.
+- \`[ ]\` **Environmental & cleaning fees.** Verify if these flat fees were specified in the original quote.
+
+---
+
+## 3. Aircraft parts freight invoice audits
+
+Auditing aerospace and aircraft parts shipping invoices requires extreme precision due to specialized handling requirements.
+
+### Key checks:
+- **Hazardous material (HAZMAT) surcharges.** Check if the carrier billed HAZMAT handling fees for non-hazardous components.
+- **AOG (Aircraft on Ground) priority charges.** AOG shipments carry astronomical expediting rates. Verify that the shipment actually arrived on schedule; if late, dispute the priority surcharge.
+- **Dimensional weight audits.** Aerospace parts are often light but bulky. Inspect if the dimensional weight conversion was computed correctly under the carrier's cargo guidelines.
+
+By using specialized checklists and automated matching logic, operations teams can stop these complex billing leaks and recover thousands in overcharged fees.`,
+  },
 ];
 
 // ---------------------------------------------------------------------------

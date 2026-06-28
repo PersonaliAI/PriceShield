@@ -7,16 +7,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowUpRight,
-  Building2,
   ChevronDown,
   LayoutDashboard,
   LogOut,
   ReceiptText,
-  Shield,
-  ShoppingBag,
   TrendingDown,
   Calculator,
   FileSpreadsheet,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_META, FEATURED_POSTS } from "@/lib/blog";
@@ -226,6 +224,18 @@ export function Navbar() {
                             Get instant alerts on stealth vendor adjustments
                           </div>
                         </Link>
+                        <Link
+                          href="/solutions/invoice-ocr"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Invoice OCR Software
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Extract line items and data with AI OCR
+                          </div>
+                        </Link>
                       </div>
                     </motion.div>
                   )}
@@ -291,6 +301,42 @@ export function Navbar() {
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
                             Find what you lose to billing errors
+                          </div>
+                        </Link>
+                        <Link
+                          href="/tools/catering-invoice-template"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Catering Invoice Template
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Free template for food & event packages
+                          </div>
+                        </Link>
+                        <Link
+                          href="/tools/bed-and-breakfast-invoice-template"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            B&B Invoice Template
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Free lodging room stay invoice template
+                          </div>
+                        </Link>
+                        <Link
+                          href="/tools/massage-invoice-template"
+                          onClick={() => setOpen(false)}
+                          className="block py-2 pl-3 -ml-px"
+                        >
+                          <div className="text-sm font-medium leading-snug">
+                            Massage Invoice Template
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Free therapist session & email receipt tool
                           </div>
                         </Link>
                       </div>
@@ -525,6 +571,13 @@ function SolutionsMenu() {
       icon: AlertTriangle,
       tone: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     },
+    {
+      href: "/solutions/invoice-ocr",
+      label: "Invoice OCR Software",
+      desc: "Extract structured line items with AI OCR engine.",
+      icon: Cpu,
+      tone: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+    },
   ];
 
   return (
@@ -723,6 +776,27 @@ function ToolsMenu() {
       desc: "Calculate savings from catching supplier overcharges.",
       icon: TrendingDown,
       tone: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    },
+    {
+      href: "/tools/catering-invoice-template",
+      label: "Catering Invoice Template",
+      desc: "Free template for food and event packages.",
+      icon: FileSpreadsheet,
+      tone: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    },
+    {
+      href: "/tools/bed-and-breakfast-invoice-template",
+      label: "B&B Invoice Template",
+      desc: "Free nightly stay lodging invoice tool.",
+      icon: Calculator,
+      tone: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+    },
+    {
+      href: "/tools/massage-invoice-template",
+      label: "Massage Invoice Template",
+      desc: "Free therapist session & email receipt tool.",
+      icon: FileSpreadsheet,
+      tone: "bg-sky-500/10 text-sky-400 border-sky-500/20",
     },
   ];
 
