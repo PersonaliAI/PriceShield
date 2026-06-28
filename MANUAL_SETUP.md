@@ -101,7 +101,7 @@ gcloud iam service-accounts add-iam-policy-binding $SA \
 ```bash
 PROJECT_ID=price-shield
 REGION=us-central1
-API_URL=https://priceshield-api-647257091960.us-central1.run.app
+API_URL=https://priceshield-api-376030619262.us-central1.run.app
 SECRET="$(grep CRON_SECRET backend/env_vars.yaml | sed 's/.*: "\(.*\)"/\1/')"
 
 # Every 5 minutes — fire price-drop / restock alerts
@@ -154,7 +154,7 @@ gcloud run jobs create shopper-crawler \
   --max-retries=1 \
   --set-env-vars="SUPABASE_URL=https://kgzkienmztbbwyvywxit.supabase.co" \
   --set-env-vars="SUPABASE_SERVICE_ROLE_KEY=PASTE_THE_KEY_HERE" \
-  --set-env-vars="API_BASE_URL=https://priceshield-api-647257091960.us-central1.run.app" \
+  --set-env-vars="API_BASE_URL=https://priceshield-api-376030619262.us-central1.run.app" \
   --set-env-vars="CRAWLER_BATCH_SIZE=100" \
   --set-env-vars="CRAWLER_STALE_HOURS=24"
 
@@ -234,7 +234,7 @@ Shopper product:
    ```
 5. Add the webhook handler URL if not already set:
    ```
-   https://priceshield-api-647257091960.us-central1.run.app/webhook/lemonsqueezy
+   https://priceshield-api-376030619262.us-central1.run.app/webhook/lemonsqueezy
    ```
 6. Redeploy the API.
 

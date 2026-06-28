@@ -24,7 +24,7 @@ env:
 
   # ----- Cloud Run backend URL -----
   - variable: NEXT_PUBLIC_API_URL
-    value: "https://priceshield-api-647257091960.us-central1.run.app"
+    value: "https://priceshield-api-376030619262.us-central1.run.app"
     availability:
       - BUILD
       - RUNTIME
