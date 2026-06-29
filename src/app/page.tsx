@@ -94,7 +94,7 @@ export default function Home() {
         id="chatty-widget"
         src="https://chatty.personaliai.com/widget.js"
         data-id="9930ce3a-6152-4b2d-bc83-c78ab893a2e5"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
     </>
   );
