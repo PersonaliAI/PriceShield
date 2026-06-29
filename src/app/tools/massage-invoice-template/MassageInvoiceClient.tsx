@@ -134,8 +134,7 @@ export function MassageInvoiceClient() {
         tip
       };
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const response = await fetch(`${API_BASE}/api/v1/public/generate-pdf`, {
+      const response = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
