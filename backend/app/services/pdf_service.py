@@ -235,6 +235,7 @@ class PDFService:
             pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
             pdf.cell(80, 4, "EVENT DETAILS:", ln=True, align="R")
             
+            pdf.set_xy(115, pdf.get_y())
             pdf.set_font(font_family, 'B', 10)
             pdf.set_text_color(*primary_color)
             pdf.cell(80, 5, data.get("eventType", ""), ln=True, align="R")
@@ -242,10 +243,13 @@ class PDFService:
             pdf.set_font(font_family, '', 8.5)
             pdf.set_text_color(*secondary_color)
             if data.get("eventDate"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Date: {data.get('eventDate')}", ln=True, align="R")
             if data.get("eventVenue"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Venue: {data.get('eventVenue')}", ln=True, align="R")
             if data.get("guestCount"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Guests: {data.get('guestCount')}", ln=True, align="R")
                 
         # 2. B&B Stay Info
@@ -254,6 +258,7 @@ class PDFService:
             pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
             pdf.cell(80, 4, "STAY INFORMATION:", ln=True, align="R")
             
+            pdf.set_xy(115, pdf.get_y())
             pdf.set_font(font_family, 'B', 10)
             pdf.set_text_color(*primary_color)
             pdf.cell(80, 5, data.get("roomName", ""), ln=True, align="R")
@@ -261,10 +266,13 @@ class PDFService:
             pdf.set_font(font_family, '', 8.5)
             pdf.set_text_color(*secondary_color)
             if data.get("checkIn"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Check-in: {data.get('checkIn')}", ln=True, align="R")
             if data.get("checkOut"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Check-out: {data.get('checkOut')}", ln=True, align="R")
             if data.get("nights"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Nights: {data.get('nights')}", ln=True, align="R")
                 
         # 3. Massage Therapist Info
@@ -273,6 +281,7 @@ class PDFService:
             pdf.set_text_color(*accent_color if style != "classic" else secondary_color)
             pdf.cell(80, 4, "SERVICE DETAILS:", ln=True, align="R")
             
+            pdf.set_xy(115, pdf.get_y())
             pdf.set_font(font_family, 'B', 10)
             pdf.set_text_color(*primary_color)
             pdf.cell(80, 5, data.get("therapistName", ""), ln=True, align="R")
@@ -280,8 +289,10 @@ class PDFService:
             pdf.set_font(font_family, '', 8.5)
             pdf.set_text_color(*secondary_color)
             if data.get("licenseNumber"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"License: {data.get('licenseNumber')}", ln=True, align="R")
             if data.get("eventDate"):
+                pdf.set_xy(115, pdf.get_y())
                 pdf.cell(80, 4, f"Date: {data.get('eventDate')}", ln=True, align="R")
                 
         y_right_end = pdf.get_y()
