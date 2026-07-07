@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { AuditFlow } from "@/components/audit-flow";
 import {
   ArrowUpRight,
   Bell,
@@ -130,6 +131,8 @@ export function Products() {
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-10">
             Set it up once. Stop overpaying forever.
           </h2>
+
+          <AuditFlow />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {[
