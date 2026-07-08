@@ -37,6 +37,26 @@ import { api, UserSettings, SettingsUpdate, APIKeyListItem, APIKeyResponse } fro
 import SearchableDropdown from "@/components/dashboard/SearchableDropdown";
 import { getCountries, getTimezones, timezoneLabel } from "@/lib/locale";
 
+const MCP_BASE_URL = "https://priceshield-mcp-647257091960.us-central1.run.app";
+
+function Toggle({ on, onClick, disabled }: { on: boolean; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+        on ? "bg-emerald-500" : "bg-muted"
+      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+          on ? "translate-x-5" : ""
+        }`}
+      />
+    </button>
+  );
+}
+
 export default function SettingsPage() {
   const { getToken, user } = useAuth();
   const searchParams = useSearchParams();
@@ -78,12 +98,8 @@ export default function SettingsPage() {
   const [isCreatingKey, setIsCreatingKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
 
-  // Claude OAuth copy states
-  const [copiedOAuthSse, setCopiedOAuthSse] = useState(false);
-  const [copiedOAuthAuth, setCopiedOAuthAuth] = useState(false);
-  const [copiedOAuthToken, setCopiedOAuthToken] = useState(false);
-  const [copiedOAuthClientId, setCopiedOAuthClientId] = useState(false);
-  const [copiedOAuthClientSecret, setCopiedOAuthClientSecret] = useState(false);
+  // Claude connector copy state
+  const [copiedConnector, setCopiedConnector] = useState(false);
 
   const copyToClipboard = (text: string, setter: (v: boolean) => void) => {
     navigator.clipboard.writeText(text);
@@ -467,7 +483,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">Our AI <strong className="text-foreground">extracts every line item</strong> from the PDF automatically</p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="shrink-0 h-6 w-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold-3">3</span>
+                <span className="shrink-0 h-6 w-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold">3</span>
                 <p className="text-sm text-muted-foreground">You get <strong className="text-foreground">instant alerts</strong> on Telegram or email if any prices went up &gt;2%</p>
               </div>
             </div>
@@ -557,17 +573,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end mr-2">
                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Alerts</span>
-                       <button
-                         onClick={() => !isFree && toggleChannel("telegram")}
-                         disabled={isFree}
-                         className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                           alertChannels.includes("telegram") ? "bg-emerald-500" : "bg-muted"
-                         } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-                       >
-                         <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                           alertChannels.includes("telegram") ? "translate-x-5" : ""
-                         }`} />
-                       </button>
+                       <Toggle on={alertChannels.includes("telegram")} onClick={() => toggleChannel("telegram")} disabled={isFree} />
                     </div>
                     <div className="border-l border-border/40 h-8 mx-2 hidden sm:block" />
                     <div className="flex flex-col items-end">
@@ -585,17 +591,7 @@ export default function SettingsPage() {
                 ) : (
                   <div className="flex items-center gap-4">
                     <Badge variant="secondary" className="border-0 h-6">Not linked</Badge>
-                    <button
-                      onClick={() => !isFree && toggleChannel("telegram")}
-                      disabled={isFree}
-                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                        alertChannels.includes("telegram") ? "bg-emerald-500" : "bg-muted"
-                      } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                        alertChannels.includes("telegram") ? "translate-x-5" : ""
-                      }`} />
-                    </button>
+                    <Toggle on={alertChannels.includes("telegram")} onClick={() => toggleChannel("telegram")} disabled={isFree} />
                   </div>
                 )}
               </div>
@@ -644,20 +640,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">Transactional email via OneSignal</p>
                 </div>
               </div>
-              <button
-                onClick={() => toggleChannel("email")}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
-                  alertChannels.includes("email")
-                    ? "bg-emerald-500"
-                    : "bg-muted"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    alertChannels.includes("email") ? "translate-x-5" : ""
-                  }`}
-                />
-              </button>
+              <Toggle on={alertChannels.includes("email")} onClick={() => toggleChannel("email")} />
             </div>
             
             {alertChannels.includes("email") && (
@@ -690,17 +673,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end mr-2">
                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Alerts</span>
-                       <button
-                         onClick={() => !isFree && toggleChannel("slack")}
-                         disabled={isFree}
-                         className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                           alertChannels.includes("slack") ? "bg-emerald-500" : "bg-muted"
-                         } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-                       >
-                         <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                           alertChannels.includes("slack") ? "translate-x-5" : ""
-                         }`} />
-                       </button>
+                       <Toggle on={alertChannels.includes("slack")} onClick={() => toggleChannel("slack")} disabled={isFree} />
                     </div>
                     <div className="border-l border-border/40 h-8 mx-2 hidden sm:block" />
                     <div className="flex flex-col items-end">
@@ -718,17 +691,7 @@ export default function SettingsPage() {
                 ) : (
                   <div className="flex items-center gap-4">
                     <Badge variant="secondary" className="border-0 h-6">Not linked</Badge>
-                    <button
-                      onClick={() => !isFree && toggleChannel("slack")}
-                      disabled={isFree}
-                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                        alertChannels.includes("slack") ? "bg-emerald-500" : "bg-muted"
-                      } ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                        alertChannels.includes("slack") ? "translate-x-5" : ""
-                      }`} />
-                    </button>
+                    <Toggle on={alertChannels.includes("slack")} onClick={() => toggleChannel("slack")} disabled={isFree} />
                   </div>
                 )}
               </div>
@@ -892,95 +855,31 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Daily Report */}
-          <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}>
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">Daily Summary</p>
-                <button
-                  onClick={() => handleTestReport("daily")}
-                  disabled={triggeringReport === "daily" || isFree}
-                  className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
-                >
-                  {triggeringReport === "daily" ? "Sending..." : "Test"}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">Every morning at 8:00 AM</p>
-            </div>
-            <button
-              onClick={() => !isFree && setReportDaily(!reportDaily)}
-              disabled={isFree}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                reportDaily ? "bg-emerald-500" : "bg-muted"
-              } ${isFree ? "cursor-not-allowed" : ""}`}
+          {[
+            { cycle: "daily", title: "Daily Summary", desc: "Every morning at 8:00 AM", on: reportDaily, set: setReportDaily },
+            { cycle: "weekly", title: "Weekly Digest", desc: "Every Monday morning", on: reportWeekly, set: setReportWeekly },
+            { cycle: "monthly", title: "Monthly Insight", desc: "First day of each month", on: reportMonthly, set: setReportMonthly },
+          ].map((r) => (
+            <div
+              key={r.cycle}
+              className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}
             >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                  reportDaily ? "translate-x-5" : ""
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Weekly Report */}
-          <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}>
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">Weekly Digest</p>
-                <button
-                  onClick={() => handleTestReport("weekly")}
-                  disabled={triggeringReport === "weekly" || isFree}
-                  className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
-                >
-                  {triggeringReport === "weekly" ? "Sending..." : "Test"}
-                </button>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{r.title}</p>
+                  <button
+                    onClick={() => handleTestReport(r.cycle)}
+                    disabled={triggeringReport === r.cycle || isFree}
+                    className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
+                  >
+                    {triggeringReport === r.cycle ? "Sending..." : "Test"}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">{r.desc}</p>
               </div>
-              <p className="text-xs text-muted-foreground">Every Monday morning</p>
+              <Toggle on={r.on} onClick={() => r.set(!r.on)} disabled={isFree} />
             </div>
-            <button
-              onClick={() => !isFree && setReportWeekly(!reportWeekly)}
-              disabled={isFree}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                reportWeekly ? "bg-emerald-500" : "bg-muted"
-              } ${isFree ? "cursor-not-allowed" : ""}`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                  reportWeekly ? "translate-x-5" : ""
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Monthly Report */}
-          <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/5 ${isFree ? "opacity-50 grayscale" : ""}`}>
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">Monthly Insight</p>
-                <button
-                  onClick={() => handleTestReport("monthly")}
-                  disabled={triggeringReport === "monthly" || isFree}
-                  className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 hover:bg-blue-500/20 disabled:opacity-50"
-                >
-                  {triggeringReport === "monthly" ? "Sending..." : "Test"}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">First day of each month</p>
-            </div>
-            <button
-              onClick={() => !isFree && setReportMonthly(!reportMonthly)}
-              disabled={isFree}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                reportMonthly ? "bg-emerald-500" : "bg-muted"
-              } ${isFree ? "cursor-not-allowed" : ""}`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                  reportMonthly ? "translate-x-5" : ""
-                }`}
-              />
-            </button>
-          </div>
+          ))}
 
           {isFree && (
             <p className="text-sm text-rose-400 mt-2 flex items-center gap-1.5">
@@ -1092,9 +991,9 @@ export default function SettingsPage() {
                 <Shield className="h-5 w-5 text-purple-400" />
               </div>
               <div>
-                <CardTitle>Claude Web Integration (OAuth 2.0)</CardTitle>
+                <CardTitle>Claude Web Integration</CardTitle>
                 <CardDescription>
-                  Configure a native custom connector in the Claude Web App to audit invoices securely
+                  Add PriceShield as a custom connector in Claude.ai — sign-in and authorization are handled automatically
                 </CardDescription>
               </div>
             </div>
@@ -1103,105 +1002,33 @@ export default function SettingsPage() {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-muted-foreground">Connector URL</label>
+              <button
+                onClick={() => copyToClipboard(`${MCP_BASE_URL}/mcp`, setCopiedConnector)}
+                className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+              >
+                {copiedConnector ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                {copiedConnector ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
+              {MCP_BASE_URL}/mcp
+            </div>
+          </div>
+
           <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 space-y-3">
             <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">How to set up in Claude.ai</p>
             <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1.5 pl-1 leading-relaxed">
-              <li>Open <strong>Claude.ai</strong>, click on your profile picture, and select <strong>Settings</strong> or <strong>Connectors</strong>.</li>
-              <li>Click <strong>Add Connector</strong> and select <strong>Custom MCP (SSE)</strong>.</li>
-              <li>Provide a Name (e.g. <code className="bg-zinc-900/60 px-1 py-0.5 rounded text-purple-300">PriceShield</code>).</li>
-              <li>Copy and paste the configuration parameters shown below into their respective fields.</li>
-              <li>Click <strong>Authorize</strong> to log in and establish the secure user-scoped connection.</li>
+              <li>Open <strong>Claude.ai</strong> → <strong>Settings</strong> → <strong>Connectors</strong> → <strong>Add custom connector</strong>.</li>
+              <li>Name it <code className="bg-zinc-900/60 px-1 py-0.5 rounded text-purple-300">PriceShield</code> and paste the Connector URL above.</li>
+              <li>Click <strong>Connect</strong> and log in with your PriceShield account when prompted.</li>
             </ol>
-          </div>
-
-          <div className="space-y-4">
-            {/* SSE URL */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-muted-foreground">SSE Connection URL</label>
-                <button
-                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/sse", setCopiedOAuthSse)}
-                  className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
-                >
-                  {copiedOAuthSse ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  {copiedOAuthSse ? "Copied" : "Copy"}
-                </button>
-              </div>
-              <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                https://priceshield-mcp-647257091960.us-central1.run.app/sse
-              </div>
-            </div>
-
-            {/* Authorize URL */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-muted-foreground">Authorization URL</label>
-                <button
-                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/authorize", setCopiedOAuthAuth)}
-                  className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
-                >
-                  {copiedOAuthAuth ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  {copiedOAuthAuth ? "Copied" : "Copy"}
-                </button>
-              </div>
-              <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                https://priceshield-mcp-647257091960.us-central1.run.app/authorize
-              </div>
-            </div>
-
-            {/* Token URL */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-muted-foreground">Token URL</label>
-                <button
-                  onClick={() => copyToClipboard("https://priceshield-mcp-647257091960.us-central1.run.app/token", setCopiedOAuthToken)}
-                  className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
-                >
-                  {copiedOAuthToken ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  {copiedOAuthToken ? "Copied" : "Copy"}
-                </button>
-              </div>
-              <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                https://priceshield-mcp-647257091960.us-central1.run.app/token
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Client ID */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground">Client ID <span className="text-[10px] opacity-60">(Any string)</span></label>
-                  <button
-                    onClick={() => copyToClipboard("priceshield", setCopiedOAuthClientId)}
-                    className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
-                  >
-                    {copiedOAuthClientId ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    {copiedOAuthClientId ? "Copied" : "Copy"}
-                  </button>
-                </div>
-                <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                  priceshield
-                </div>
-              </div>
-
-              {/* Client Secret */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground">Client Secret <span className="text-[10px] opacity-60">(Any string)</span></label>
-                  <button
-                    onClick={() => copyToClipboard("priceshield-secret", setCopiedOAuthClientSecret)}
-                    className="text-[10px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
-                  >
-                    {copiedOAuthClientSecret ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    {copiedOAuthClientSecret ? "Copied" : "Copy"}
-                  </button>
-                </div>
-                <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs font-mono select-all truncate">
-                  priceshield-secret
-                </div>
-              </div>
-            </div>
+            <p className="text-[11px] text-muted-foreground">
+              No client ID or secret needed — Claude registers itself via OAuth dynamic client registration.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -1292,7 +1119,7 @@ export default function SettingsPage() {
   "mcpServers": {
     "priceshield-mcp": {
       "type": "sse",
-      "url": "https://priceshield-mcp-647257091960.us-central1.run.app/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}"
+      "url": "${MCP_BASE_URL}/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}"
     }
   }
 }`}
@@ -1306,7 +1133,7 @@ export default function SettingsPage() {
                   <li>Click **+ Add New MCP Server**.</li>
                   <li>Name: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400">priceshield-mcp</code></li>
                   <li>Type: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400">sse</code></li>
-                  <li>URL: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400 font-mono text-[9px]">https://priceshield-mcp-647257091960.us-central1.run.app/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}</code></li>
+                  <li>URL: <code className="bg-zinc-900/60 px-1 rounded text-zinc-400 font-mono text-[9px]">{`${MCP_BASE_URL}/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}`}</code></li>
                 </ul>
               </div>
             </div>

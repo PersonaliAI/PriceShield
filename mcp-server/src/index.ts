@@ -46,7 +46,7 @@ function createMcpServer(userId: string): Server {
   const server = new Server(
     {
       name: "priceshield-mcp-server",
-      version: "1.0.0",
+      version: "2.0.0",
     },
     {
       capabilities: {
@@ -165,6 +165,46 @@ function createMcpServer(userId: string): Server {
               vendor_name: {
                 type: "string",
                 description: "Optional vendor name filter",
+              },
+            },
+          },
+        },
+        {
+          name: "get_spend_summary",
+          description:
+            "Aggregate total spend by vendor over a period. Returns per-vendor invoice count, total spend, and line-item count, plus overall totals. Use for questions like 'how much did I spend last month?' or 'which vendor do I buy the most from?'.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              days: {
+                type: "number",
+                description: "Look-back window in days (default 30, max 365)",
+              },
+              vendor_name: {
+                type: "string",
+                description: "Optional vendor name filter (case-insensitive partial match)",
+              },
+            },
+          },
+        },
+        {
+          name: "get_price_changes",
+          description:
+            "Compute price changes for every tracked item by comparing the most recent purchase price against the vendor baseline price. Returns items sorted by percentage change (largest increases first). Use for 'what went up recently?' and margin-impact overviews.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              min_change_pct: {
+                type: "number",
+                description: "Only include items whose absolute price change exceeds this percentage (default 0 = all changes)",
+              },
+              vendor_name: {
+                type: "string",
+                description: "Optional vendor name filter (case-insensitive partial match)",
+              },
+              limit: {
+                type: "number",
+                description: "Maximum number of items to return (default 50)",
               },
             },
           },
@@ -414,6 +454,146 @@ function createMcpServer(userId: string): Server {
               {
                 type: "text",
                 text: JSON.stringify(Array.from(seen.values()), null, 2),
+              },
+            ],
+          };
+        }
+
+        case "get_spend_summary": {
+          const days = Math.min(Math.max((args?.days as number) || 30, 1), 365);
+          const vendorName = args?.vendor_name as string | undefined;
+          const sinceIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .slice(0, 10);
+
+          let query = supabase
+            .from("invoices")
+            .select("vendor_name, invoice_date, grand_total, currency, line_items(total_price)")
+            .eq("user_id", userId)
+            .eq("is_baseline", false)
+            .gte("invoice_date", sinceIso);
+
+          if (vendorName) {
+            query = query.ilike("vendor_name", `%${vendorName}%`);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          const byVendor = new Map<string, any>();
+          let overallSpend = 0;
+          for (const inv of (data as any[]) || []) {
+            const items = inv.line_items || [];
+            const itemSum = items.reduce((s: number, li: any) => s + (Number(li.total_price) || 0), 0);
+            const spend = Number(inv.grand_total) || itemSum;
+            overallSpend += spend;
+            const v = byVendor.get(inv.vendor_name) || {
+              vendor_name: inv.vendor_name,
+              invoice_count: 0,
+              total_spend: 0,
+              line_item_count: 0,
+              currency: inv.currency,
+            };
+            v.invoice_count += 1;
+            v.total_spend = Math.round((v.total_spend + spend) * 100) / 100;
+            v.line_item_count += items.length;
+            byVendor.set(inv.vendor_name, v);
+          }
+
+          const vendors = Array.from(byVendor.values()).sort(
+            (a, b) => b.total_spend - a.total_spend
+          );
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    period_days: days,
+                    since: sinceIso,
+                    invoice_count: ((data as any[]) || []).length,
+                    total_spend: Math.round(overallSpend * 100) / 100,
+                    vendors,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+          };
+        }
+
+        case "get_price_changes": {
+          const minChangePct = Math.abs((args?.min_change_pct as number) || 0);
+          const vendorName = args?.vendor_name as string | undefined;
+          const limit = Math.min((args?.limit as number) || 50, 200);
+
+          // Baseline prices: item name + vendor -> baseline unit price
+          let baseQuery = supabase
+            .from("line_items")
+            .select("item_name, unit_price, unit_of_measure, invoices!inner(vendor_name, is_baseline, user_id)")
+            .eq("invoices.is_baseline", true)
+            .eq("invoices.user_id", userId);
+          if (vendorName) {
+            baseQuery = baseQuery.ilike("invoices.vendor_name", `%${vendorName}%`);
+          }
+          const { data: baseData, error: baseError } = await baseQuery;
+          if (baseError) throw baseError;
+
+          const baselines = new Map<string, any>();
+          for (const li of (baseData as any[]) || []) {
+            const key = `${li.item_name?.toLowerCase()}|||${li.invoices?.vendor_name?.toLowerCase()}`;
+            baselines.set(key, li);
+          }
+
+          // Most recent purchase price per item
+          let curQuery = supabase
+            .from("line_items")
+            .select("item_name, unit_price, quantity, unit_of_measure, invoices!inner(vendor_name, invoice_date, is_baseline, user_id)")
+            .eq("invoices.is_baseline", false)
+            .eq("invoices.user_id", userId);
+          if (vendorName) {
+            curQuery = curQuery.ilike("invoices.vendor_name", `%${vendorName}%`);
+          }
+          const { data: curData, error: curError } = await curQuery;
+          if (curError) throw curError;
+
+          const latest = new Map<string, any>();
+          for (const li of (curData as any[]) || []) {
+            const key = `${li.item_name?.toLowerCase()}|||${li.invoices?.vendor_name?.toLowerCase()}`;
+            const prev = latest.get(key);
+            if (!prev || new Date(li.invoices?.invoice_date) > new Date(prev.invoices?.invoice_date)) {
+              latest.set(key, li);
+            }
+          }
+
+          const changes: any[] = [];
+          for (const [key, li] of latest) {
+            const base = baselines.get(key);
+            if (!base || !base.unit_price) continue;
+            const basePrice = Number(base.unit_price);
+            const curPrice = Number(li.unit_price);
+            if (!basePrice) continue;
+            const changePct = ((curPrice - basePrice) / basePrice) * 100;
+            if (Math.abs(changePct) < minChangePct) continue;
+            changes.push({
+              item_name: li.item_name,
+              vendor_name: li.invoices?.vendor_name,
+              baseline_price: basePrice,
+              current_price: curPrice,
+              change_pct: Math.round(changePct * 10) / 10,
+              unit_of_measure: li.unit_of_measure,
+              last_purchased: li.invoices?.invoice_date,
+            });
+          }
+          changes.sort((a, b) => b.change_pct - a.change_pct);
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(changes.slice(0, limit), null, 2),
               },
             ],
           };

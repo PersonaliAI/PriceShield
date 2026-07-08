@@ -263,6 +263,29 @@ _TOOL_DECLARATIONS = types.Tool(function_declarations=[
         ),
     ),
     types.FunctionDeclaration(
+        name="get_spend_summary",
+        description="Aggregate total spend by vendor over a period. Returns per-vendor invoice count, total spend and item count plus overall totals. Use for 'how much did I spend' and 'top vendors by spend' questions.",
+        parameters=types.Schema(
+            type=types.Type.OBJECT,
+            properties={
+                "days": types.Schema(type=types.Type.INTEGER, description="Look-back window in days (default 30, max 365)"),
+                "vendor_name": types.Schema(type=types.Type.STRING, description="Optional vendor filter"),
+            },
+        ),
+    ),
+    types.FunctionDeclaration(
+        name="get_price_changes",
+        description="Compute current price vs baseline for EVERY tracked item in one call, sorted by biggest increase. The fastest way to answer 'what went up?' or build a full price-change overview — prefer this over calling get_price_trends per item.",
+        parameters=types.Schema(
+            type=types.Type.OBJECT,
+            properties={
+                "min_change_pct": types.Schema(type=types.Type.NUMBER, description="Only include changes above this absolute % (default 0)"),
+                "vendor_name": types.Schema(type=types.Type.STRING, description="Optional vendor filter"),
+                "limit": types.Schema(type=types.Type.INTEGER, description="Max items (default 50)"),
+            },
+        ),
+    ),
+    types.FunctionDeclaration(
         name="calculate_margin_impact",
         description="Calculate total margin impact for an item by comparing recent prices against baseline. Returns price delta and estimated cost overrun.",
         parameters=types.Schema(
@@ -281,12 +304,22 @@ SYSTEM_PROMPT = (
     "Investigate supplier pricing, detect margin leaks, identify stealth price hikes, and give actionable recommendations. "
     "ALWAYS use tools to retrieve actual data before drawing conclusions — never guess prices. "
     "When you find price increases, calculate exact deltas and percentage changes. "
-    "IMPORTANT — efficiency: when fetching trends for multiple products, call get_price_trends for ALL products in a SINGLE response (parallel calls). Do NOT call them one at a time. "
-    "When asked to compare or visualise trends across products, call build_chart ONCE with all series combined BEFORE writing your text summary. "
-    "For cross-product comparison charts, normalise prices to % change from baseline so different units are comparable on one axis. "
-    "Call build_table for ranked lists, price summaries, or any structured comparison — use it alongside build_chart or on its own. "
-    "IMPORTANT: when you call build_chart or build_table, do NOT repeat the same data as a markdown table or list in your text — the rendered widget replaces that. Your text should provide interpretation, not raw data. "
-    "Format your final answer in markdown with headers, bullet points, and data tables where applicable."
+    "\n\nTOOL STRATEGY:\n"
+    "- 'What went up?' / price-change overviews → get_price_changes (one call covers every item; do NOT loop get_price_trends).\n"
+    "- Spend questions ('how much did I spend', 'top vendors') → get_spend_summary.\n"
+    "- Deep-dive on ONE item's history → get_price_trends.\n"
+    "- When fetching trends for multiple products, call get_price_trends for ALL products in a SINGLE response (parallel calls) — never one at a time.\n"
+    "\nVISUALISATION:\n"
+    "- When asked to compare or visualise trends across products, call build_chart ONCE with all series combined BEFORE writing your text summary.\n"
+    "- For cross-product comparison charts, normalise prices to % change from baseline so different units are comparable on one axis.\n"
+    "- Call build_table for ranked lists, price summaries, or any structured comparison.\n"
+    "- When you call build_chart or build_table, do NOT repeat the same data as a markdown table or list in your text — the widget replaces it. Your text provides interpretation, not raw data.\n"
+    "\nANSWER STYLE:\n"
+    "- Lead with the headline finding and the dollar impact (e.g. 'Dairy costs rose 8.2%, costing you ~$340/month').\n"
+    "- Use the currency that appears in the data — never assume USD.\n"
+    "- End with 1–3 concrete recommended actions (renegotiate, switch vendor, lock a contract price) whenever the data supports them.\n"
+    "- If the data is empty or insufficient, say exactly what is missing and how the user can fix it (e.g. upload a baseline invoice) — never fabricate numbers.\n"
+    "- Format in markdown with headers and bullet points."
 )
 
 

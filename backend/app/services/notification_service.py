@@ -30,15 +30,26 @@ class NotificationService:
     # ------------------------------------------------------------------ #
     @staticmethod
     def format_hike_alert(alert: PriceAlert) -> str:
-        """Format the price-hike alert using the required template."""
-        return (
-            f"🚨 <b>PriceShield Alert:</b> {alert.vendor_name} just snuck in price hikes "
-            f"on today's delivery.\n\n"
-            f"Total margin lost today: ${alert.total_margin_lost:.2f}\n"
-            f"Biggest jump: <b>{alert.biggest_jump_item}</b> went up "
-            f"{alert.biggest_jump_pct}% (Now ${next((f.new_price for f in alert.flagged_items if f.item_name == alert.biggest_jump_item), 0):.2f})\n\n"
-            f"Reply 'PROOF' to see the full list of flagged items."
-        )
+        """Format the price-hike alert: headline impact, top increases, proof hint."""
+        n = len(alert.flagged_items)
+        lines = [
+            f"🚨 <b>Price Hike Detected — {alert.vendor_name}</b>",
+            f"Invoice {alert.invoice_date} · {n} item{'s' if n != 1 else ''} flagged",
+            "",
+            f"Estimated margin impact: <b>${alert.total_margin_lost:.2f}</b>",
+            "",
+        ]
+        top = sorted(alert.flagged_items, key=lambda f: f.margin_lost, reverse=True)[:3]
+        for f in top:
+            lines.append(
+                f"• <b>{f.item_name}</b>: ${f.old_price:.2f} → ${f.new_price:.2f} "
+                f"(+{f.variance_pct}%, −${f.margin_lost:.2f})"
+            )
+        if n > len(top):
+            lines.append(f"…and {n - len(top)} more item{'s' if n - len(top) != 1 else ''}.")
+        lines.append("")
+        lines.append("Reply 'PROOF' to see the full list of flagged items.")
+        return "\n".join(lines)
 
     @staticmethod
     def format_all_clear(vendor_name: str) -> str:
@@ -149,7 +160,13 @@ class NotificationService:
         """
 
     @staticmethod
-    def _build_report_email_html(user_name: str, timeframe: str, total_loss: float, alerts: list[PriceAlert]) -> str:
+    def _build_report_email_html(
+        user_name: str,
+        timeframe: str,
+        total_loss: float,
+        alerts: list[PriceAlert],
+        invoices_audited: int = 0,
+    ) -> str:
         """Build HTML email for periodic reports (Daily/Weekly/Monthly)."""
         rows_html = ""
         for alert in alerts:
@@ -162,6 +179,57 @@ class NotificationService:
                 f"</tr>"
             )
 
+        hikes_count = sum(len(a.flagged_items) for a in alerts if a.has_hikes)
+        vendors_count = len({a.vendor_name for a in alerts if a.has_hikes})
+
+        # Top 5 individual increases across all alerts, by margin impact
+        all_flags = [f for a in alerts if a.has_hikes for f in a.flagged_items]
+        top_rows_html = ""
+        for f in sorted(all_flags, key=lambda x: x.margin_lost, reverse=True)[:5]:
+            top_rows_html += (
+                f"<tr>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #2a2a3e;'>{f.item_name}</td>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #2a2a3e;text-align:right;'>${f.old_price:.2f}</td>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #2a2a3e;text-align:right;color:#f87171;'>${f.new_price:.2f}</td>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #2a2a3e;text-align:right;color:#f87171;'>+{f.variance_pct}%</td>"
+                f"<td style='padding:10px 12px;border-bottom:1px solid #2a2a3e;text-align:right;'>${f.margin_lost:.2f}</td>"
+                f"</tr>"
+            )
+        top_section = ""
+        if top_rows_html:
+            top_section = f"""
+                <h3 style="font-size:16px;margin:32px 0 16px;color:#fff;">Top Price Increases</h3>
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead>
+                        <tr style="background:#1a1a2e;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">
+                            <th style="padding:10px 12px;text-align:left;">Item</th>
+                            <th style="padding:10px 12px;text-align:right;">Was</th>
+                            <th style="padding:10px 12px;text-align:right;">Now</th>
+                            <th style="padding:10px 12px;text-align:right;">Change</th>
+                            <th style="padding:10px 12px;text-align:right;">Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>{top_rows_html}</tbody>
+                </table>
+            """
+
+        kpi_row = f"""
+                <div style="display:flex;gap:12px;margin-bottom:24px;">
+                    <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:16px;text-align:center;">
+                        <p style="margin:0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Invoices Audited</p>
+                        <p style="margin:6px 0 0;font-size:22px;font-weight:700;color:#e2e8f0;">{invoices_audited}</p>
+                    </div>
+                    <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:16px;text-align:center;">
+                        <p style="margin:0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Hikes Detected</p>
+                        <p style="margin:6px 0 0;font-size:22px;font-weight:700;color:#fbbf24;">{hikes_count}</p>
+                    </div>
+                    <div style="flex:1;background:#1a1a2e;border-radius:8px;padding:16px;text-align:center;">
+                        <p style="margin:0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Vendors Affected</p>
+                        <p style="margin:6px 0 0;font-size:22px;font-weight:700;color:#e2e8f0;">{vendors_count}</p>
+                    </div>
+                </div>
+        """
+
         return f"""
         <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f1a;color:#e2e8f0;border-radius:12px;overflow:hidden;">
             <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:32px;">
@@ -169,11 +237,11 @@ class NotificationService:
                 <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Hi {user_name}, here is your automated margin audit summary.</p>
             </div>
             <div style="padding:32px;">
-                <div style="background:#1a1a2e;border-radius:12px;padding:24px;text-align:center;margin-bottom:32px;border:1px solid #312e81;">
+                <div style="background:#1a1a2e;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px;border:1px solid #312e81;">
                     <p style="margin:0;font-size:14px;color:#94a3b8;">Total Margin Leaked ({timeframe})</p>
                     <p style="margin:8px 0 0;font-size:36px;font-weight:800;color:#f87171;">${total_loss:.2f}</p>
                 </div>
-                
+                {kpi_row}
                 <h3 style="font-size:16px;margin-bottom:16px;color:#fff;">Invoice Summary</h3>
                 <table style="width:100%;border-collapse:collapse;font-size:14px;">
                     <thead>
@@ -185,7 +253,7 @@ class NotificationService:
                     </thead>
                     <tbody>{rows_html if rows_html else "<tr><td colspan='3' style='padding:32px;text-align:center;color:#94a3b8;'>Zero price hikes detected in this period. 🎉</td></tr>"}</tbody>
                 </table>
-                
+                {top_section}
                 <div style="margin-top:32px;padding-top:24px;border-top:1px solid #2a2a3e;text-align:center;">
                     <a href="https://trypriceshield.com/dashboard" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Full Dashboard</a>
                 </div>
@@ -520,13 +588,17 @@ class NotificationService:
             email_html = f"<div style='font-family:sans-serif;padding:20px;background:#0f0f1a;color:#fff;'>{msg_html}</div>"
             push_title = "📊 Historical Audit Complete"
         elif alert.has_hikes:
+            n_items = len(alert.flagged_items)
             text_message = self.format_hike_alert(alert)
-            email_subject = f"🚨 Price Hike: {alert.vendor_name} — ${alert.total_margin_lost:.2f} margin lost"
+            email_subject = (
+                f"Price hike: {alert.vendor_name} — ${alert.total_margin_lost:.2f} margin impact "
+                f"({n_items} item{'s' if n_items != 1 else ''})"
+            )
             email_html = self._build_hike_email_html(alert)
             push_title = f"🚨 Price Hike: {alert.vendor_name}"
         else:
             text_message = self.format_all_clear(alert.vendor_name)
-            email_subject = f"✅ {alert.vendor_name} — All Clear"
+            email_subject = f"{alert.vendor_name}: invoice audited — no price changes"
             email_html = self._build_all_clear_email_html(alert.vendor_name)
             push_title = f"✅ {alert.vendor_name} — All Clear"
 
@@ -578,7 +650,8 @@ class NotificationService:
         user_email: str,
         user_name: str,
         timeframe: str,
-        alerts: list[PriceAlert]
+        alerts: list[PriceAlert],
+        invoices_audited: int = 0,
     ) -> bool:
         """Collect alerts and send a periodic summary report with PDF download link."""
         if not user_email:
@@ -616,7 +689,7 @@ class NotificationService:
             except Exception:
                 pass
         
-        html = self._build_report_email_html(user_name, timeframe, total_loss, alerts)
+        html = self._build_report_email_html(user_name, timeframe, total_loss, alerts, invoices_audited)
         
         if pdf_url:
             pdf_button = f"""

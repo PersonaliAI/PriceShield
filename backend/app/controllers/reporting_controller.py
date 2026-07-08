@@ -1,6 +1,7 @@
 """Reporting controller — handles aggregation and dispatch of periodic summaries."""
 
 import logging
+import os
 import pytz
 from croniter import croniter
 from datetime import datetime, timedelta, timezone
@@ -14,7 +15,7 @@ from app.models.invoice import PriceAlert
 router = APIRouter(prefix="/reports", tags=["Internal"])
 logger = logging.getLogger(__name__)
 
-INTERNAL_AUTH_KEY = "super-secret-cron-key"
+INTERNAL_AUTH_KEY = os.environ.get("CRON_SECRET", "super-secret-cron-key")
 
 # Fixed cron expressions per cycle (evaluated in each user's local timezone).
 # Cron must fire at least hourly from Cloud Scheduler for timezone windows to work.
@@ -151,6 +152,7 @@ async def trigger_reports(
             user_name=user.display_name or "there",
             timeframe=timeframe,
             alerts=adapted_alerts,
+            invoices_audited=len(period_invoices),
         )
         if success:
             count += 1
