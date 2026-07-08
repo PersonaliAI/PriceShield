@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Server-side only: hardcode the production backend URL.
 // This avoids any issues with stale NEXT_PUBLIC_* env vars baked into builds.
-const BACKEND_URL = "https://priceshield-api-376030619262.us-central1.run.app";
+const BACKEND_URL = "https://priceshield-api-647257091960.us-central1.run.app";
 
 export async function POST(request: NextRequest) {
   const targetUrl = `${BACKEND_URL}/api/v1/public/generate-pdf`;

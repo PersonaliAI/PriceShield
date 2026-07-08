@@ -706,7 +706,7 @@ export default function SettingsPage() {
                     Automatically link your PriceShield account and enable deep interactive audits and AI CFO chat in Slack.
                   </p>
                   <a 
-                    href={`${process.env.NEXT_PUBLIC_API_URL || 'https://priceshield-api-376030619262.us-central1.run.app'}/webhook/slack/install?uid=${user?.id}`}
+                    href={`${process.env.NEXT_PUBLIC_API_URL || 'https://priceshield-api-647257091960.us-central1.run.app'}/webhook/slack/install?uid=${user?.id}`}
                     className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2 rounded-md transition-all shadow-lg shadow-purple-900/20"
                   >
                     <Plus className="h-3 w-3" /> Connect to Slack
