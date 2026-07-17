@@ -482,24 +482,24 @@ export default function DashboardPage() {
                 <AreaChart data={trendData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="oklch(0.696 0.17 162.48)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="oklch(0.696 0.17 162.48)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.26 0.01 260)" />
-                  <XAxis dataKey="date" stroke="oklch(0.5 0 0)" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="oklch(0.5 0 0)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "oklch(0.17 0.008 260)",
-                      border: "1px solid oklch(0.26 0.01 260)",
+                      backgroundColor: "var(--card)",
+                      border: "1px solid var(--border)",
                       borderRadius: "0.5rem",
-                      color: "oklch(0.95 0.01 260)",
+                      color: "var(--foreground)",
                       fontSize: "0.875rem",
                     }}
                     formatter={(value) => [`$${Number(value).toFixed(2)}`, "Unit Price"]}
                   />
-                  <Area type="monotone" dataKey="unit_price" stroke="oklch(0.696 0.17 162.48)" strokeWidth={2} fill="url(#priceGradient)" />
+                  <Area type="monotone" dataKey="unit_price" stroke="var(--primary)" strokeWidth={2} fill="url(#priceGradient)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

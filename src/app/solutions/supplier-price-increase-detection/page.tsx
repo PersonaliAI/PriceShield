@@ -69,7 +69,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-black text-foreground pt-24 pb-16 relative overflow-hidden">
+      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden">
         {/* Glow Elements */}
         <div className="absolute top-0 left-1/3 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-rose-500/5 rounded-full blur-[150px] pointer-events-none" />
@@ -103,7 +103,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500/40 animate-pulse-glow" />
               </div>
-              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-white/95 leading-tight">
+              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-foreground/95 leading-tight">
                 Supplier Price Increase{" "}
                 <span className="font-normal bg-gradient-to-r from-amber-400 via-orange-300 to-rose-300 bg-clip-text text-transparent">
                   detected instantly.
@@ -115,7 +115,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
               <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
                   size="sm"
-                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-lg transition-all border-none"
+                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-foreground hover:bg-foreground/90 text-background rounded-lg transition-all border-none"
                   render={<Link href="/login" />}
                 >
                   Configure Price Alerts
@@ -197,7 +197,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
           {/* Deep Feature Sections */}
           <section className="py-16 border-t border-border/60">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 How we detect supplier price increases and protect margins
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
@@ -210,7 +210,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                 <div className="size-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4 border border-amber-500/20">
                   <Sliders className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Custom Thresholds</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Custom Thresholds</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Decide what counts as a price increase. Alert your team only when item variance exceeds 2%, 5%, or specific dollar figures on your custom list.
                 </p>
@@ -220,7 +220,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                 <div className="size-10 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center mb-4 border border-orange-500/20">
                   <BellRing className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Omnichannel Alerts</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Omnichannel Alerts</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Receive notifications where you already communicate. Get push alerts in Telegram, Slack, WhatsApp, or weekly email summary reports.
                 </p>
@@ -230,7 +230,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
                 <div className="size-10 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center mb-4 border border-rose-500/20">
                   <AlertTriangle className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Contract Auditing</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Contract Auditing</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Compare prices against pre-set group purchasing organization (GPO) or supplier contract pricing. Flag deviating charges instantly.
                 </p>
@@ -242,7 +242,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
           <section className="py-12 border-t border-border/60">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-4">
-                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                   Detect supplier price increase hikes before payments clear
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -265,14 +265,14 @@ export default function SupplierPriceIncreaseDetectionPage() {
               </div>
 
               <div className="rounded-xl border border-border bg-gradient-to-b from-card to-card/20 p-6 space-y-4">
-                <h3 className="text-sm font-semibold text-white">Configure Your Alerts</h3>
+                <h3 className="text-sm font-semibold text-foreground">Configure Your Alerts</h3>
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold text-white">
+                    <div className="flex justify-between text-xs font-semibold text-foreground">
                       <span>Threshold Sensitivity</span>
                       <span className="text-amber-400">2.0% (Medium)</span>
                     </div>
-                    <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
                       <div className="h-full w-2/5 bg-amber-400" />
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export default function SupplierPriceIncreaseDetectionPage() {
           {/* Call to Action */}
           <section className="py-12 border-t border-border/60 text-center">
             <div className="rounded-2xl border border-border bg-gradient-to-r from-card to-amber-500/5 p-8 max-w-3xl mx-auto space-y-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 Never miss another supplier price hike
               </h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">

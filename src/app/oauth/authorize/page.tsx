@@ -70,9 +70,9 @@ export default function OAuthAuthorizePage() {
 
   if (loading || (loadingClient && !error) || !user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#09090b] text-white space-y-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground space-y-4">
         <Loader2 className="h-8 w-8 text-emerald-400 animate-spin" />
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           {loading ? "Verifying session..." : "Fetching connection details..."}
         </p>
       </div>
@@ -142,23 +142,23 @@ export default function OAuthAuthorizePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-[#09090b] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-6 bg-background relative overflow-hidden">
       {/* Background glow effects */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-emerald-500/5 blur-3xl animate-pulse-glow" />
         <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-purple-500/5 blur-3xl animate-pulse-glow [animation-delay:1.5s]" />
       </div>
 
-      <Card className="w-full max-w-lg bg-zinc-950/80 backdrop-blur border-zinc-800/80 shadow-2xl">
+      <Card className="w-full max-w-lg bg-card/80 backdrop-blur border-border shadow-2xl">
         <CardHeader className="text-center space-y-4 pb-4">
           <div className="flex items-center justify-center gap-6">
             <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-950/20">
               <Shield className="h-7 w-7 text-emerald-400" />
             </div>
-            <div className="flex items-center text-zinc-600 gap-1.5 animate-pulse">
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-600" />
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+            <div className="flex items-center text-muted-foreground/60 gap-1.5 animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70" />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/80" />
             </div>
             <div className="h-14 w-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-lg shadow-purple-950/20 overflow-hidden shrink-0">
               {clientMetadata?.logo_uri ? (
@@ -176,10 +176,10 @@ export default function OAuthAuthorizePage() {
             </div>
           </div>
           <div>
-            <CardTitle className="text-xl font-bold tracking-tight text-white">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground">
               Connect PriceShield to {clientMetadata?.client_name || "Application"}
             </CardTitle>
-            <CardDescription className="text-zinc-400 text-xs mt-1.5">
+            <CardDescription className="text-muted-foreground text-xs mt-1.5">
               {clientMetadata?.client_name || "The application"} is requesting permission to access your PriceShield invoice database.
             </CardDescription>
           </div>
@@ -194,7 +194,7 @@ export default function OAuthAuthorizePage() {
           )}
 
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               This connector will allow {clientMetadata?.client_name || "the application"} to:
             </p>
             <div className="space-y-2.5">
@@ -203,8 +203,8 @@ export default function OAuthAuthorizePage() {
                   <Check className="h-3 w-3" />
                 </div>
                 <div className="text-xs">
-                  <p className="font-semibold text-zinc-200">Read and Query Invoices</p>
-                  <p className="text-zinc-400 mt-0.5">Retrieve list of invoices, vendor names, invoice dates, and baseline details.</p>
+                  <p className="font-semibold text-foreground/90">Read and Query Invoices</p>
+                  <p className="text-muted-foreground mt-0.5">Retrieve list of invoices, vendor names, invoice dates, and baseline details.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -212,8 +212,8 @@ export default function OAuthAuthorizePage() {
                   <Check className="h-3 w-3" />
                 </div>
                 <div className="text-xs">
-                  <p className="font-semibold text-zinc-200">Track Supplier Prices & Trends</p>
-                  <p className="text-zinc-400 mt-0.5">Audit item unit prices, quantities, and check historical price trends over time.</p>
+                  <p className="font-semibold text-foreground/90">Track Supplier Prices & Trends</p>
+                  <p className="text-muted-foreground mt-0.5">Audit item unit prices, quantities, and check historical price trends over time.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -221,16 +221,16 @@ export default function OAuthAuthorizePage() {
                   <Check className="h-3 w-3" />
                 </div>
                 <div className="text-xs">
-                  <p className="font-semibold text-zinc-200">Search Product Catalogs</p>
-                  <p className="text-zinc-400 mt-0.5">Search catalog products and compare market competitor prices.</p>
+                  <p className="font-semibold text-foreground/90">Search Product Catalogs</p>
+                  <p className="text-muted-foreground mt-0.5">Search catalog products and compare market competitor prices.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-zinc-800/80 pt-4 text-center">
-            <p className="text-[11px] text-zinc-500 font-medium">
-              Authorizing as: <span className="text-zinc-300 font-bold">{user.email}</span>
+          <div className="border-t border-border pt-4 text-center">
+            <p className="text-[11px] text-muted-foreground font-medium">
+              Authorizing as: <span className="text-foreground/90 font-bold">{user.email}</span>
             </p>
           </div>
 
@@ -239,7 +239,7 @@ export default function OAuthAuthorizePage() {
               variant="outline"
               onClick={handleCancel}
               disabled={authorizing}
-              className="flex-1 h-11 border-zinc-800 hover:bg-zinc-900 hover:text-white text-zinc-400 text-xs font-semibold"
+              className="flex-1 h-11 border-border hover:bg-muted hover:text-foreground text-muted-foreground text-xs font-semibold"
             >
               Cancel
             </Button>

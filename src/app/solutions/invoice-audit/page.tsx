@@ -67,7 +67,7 @@ export default function InvoiceAuditPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-black text-foreground pt-24 pb-16 relative overflow-hidden">
+      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden">
         {/* Glow Elements */}
         <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
@@ -101,7 +101,7 @@ export default function InvoiceAuditPage() {
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-pulse-glow" />
               </div>
-              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-white/95 leading-tight">
+              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-foreground/95 leading-tight">
                 Run an Invoice Audit{" "}
                 <span className="font-normal bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-300 bg-clip-text text-transparent">
                   in just 5 seconds.
@@ -113,7 +113,7 @@ export default function InvoiceAuditPage() {
               <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
                   size="sm"
-                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-lg transition-all"
+                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-foreground hover:bg-foreground/90 text-background rounded-lg transition-all"
                   render={<Link href="/login" />}
                 >
                   Upload Your First Invoice
@@ -149,7 +149,7 @@ export default function InvoiceAuditPage() {
 
                   {/* Mockup Audit Analysis */}
                   <div className="space-y-3">
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-rose-500/20 flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-foreground/[0.02] border border-rose-500/20 flex items-start gap-3">
                       <AlertTriangle className="size-4 text-rose-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -162,7 +162,7 @@ export default function InvoiceAuditPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.03] flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.03] flex items-start gap-3">
                       <CheckCircle2 className="size-4 text-emerald-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -175,7 +175,7 @@ export default function InvoiceAuditPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.03] flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.03] flex items-start gap-3">
                       <CheckCircle2 className="size-4 text-emerald-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -202,7 +202,7 @@ export default function InvoiceAuditPage() {
           {/* Steps Section */}
           <section className="py-16 border-t border-border/60">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 How PriceShield runs automated invoice audits
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
@@ -215,7 +215,7 @@ export default function InvoiceAuditPage() {
                 <div className="size-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-sm mb-4 border border-emerald-500/20">
                   1
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Forward Invoices</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Forward Invoices</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Configure your supplier emails (Gmail, Outlook) to automatically forward receipt invoices to your custom `@trypriceshield.com` mailbox.
                 </p>
@@ -225,7 +225,7 @@ export default function InvoiceAuditPage() {
                 <div className="size-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-sm mb-4 border border-emerald-500/20">
                   2
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">AI Extraction & Audit</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">AI Extraction & Audit</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   PriceShield's extraction AI parses each line item, tax, and delivery fee. It references historical baselines and contracts.
                 </p>
@@ -235,7 +235,7 @@ export default function InvoiceAuditPage() {
                 <div className="size-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-sm mb-4 border border-emerald-500/20">
                   3
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Instant Alert Notification</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Instant Alert Notification</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Receive alerts containing the exact overcharge detail on your phone or computer. File claims with distributors backed by hard data.
                 </p>
@@ -247,7 +247,7 @@ export default function InvoiceAuditPage() {
           <section className="py-12 border-t border-border/60">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-4">
-                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                   Why hospitality invoice audits fail when done manually
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -270,7 +270,7 @@ export default function InvoiceAuditPage() {
               </div>
 
               <div className="rounded-xl border border-border bg-gradient-to-b from-card to-card/20 p-6 space-y-4">
-                <h3 className="text-sm font-semibold text-white">Manual vs. Automated Invoice Audits</h3>
+                <h3 className="text-sm font-semibold text-foreground">Manual vs. Automated Invoice Audits</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between border-b border-border/40 pb-2">
                     <span className="text-xs text-muted-foreground">Audit time per invoice</span>
@@ -278,7 +278,7 @@ export default function InvoiceAuditPage() {
                   </div>
                   <div className="flex justify-between border-b border-border/40 pb-2">
                     <span className="text-xs text-muted-foreground">SKU matching accuracy</span>
-                    <span className="text-xs font-semibold text-white">Highly prone to human error vs 97% AI</span>
+                    <span className="text-xs font-semibold text-foreground">Highly prone to human error vs 97% AI</span>
                   </div>
                   <div className="flex justify-between pb-1">
                     <span className="text-xs text-muted-foreground">Detection capability</span>
@@ -292,7 +292,7 @@ export default function InvoiceAuditPage() {
           {/* Call to Action */}
           <section className="py-12 border-t border-border/60 text-center">
             <div className="rounded-2xl border border-border bg-gradient-to-r from-card to-emerald-500/5 p-8 max-w-3xl mx-auto space-y-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 Perform your first invoice audit free
               </h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">

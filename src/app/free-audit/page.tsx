@@ -70,7 +70,7 @@ export default function FreeAuditPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-black text-foreground pt-24 pb-16 relative overflow-hidden">
+      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden">
         {/* Glow */}
         <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
@@ -140,7 +140,7 @@ export default function FreeAuditPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-rose-500/20 flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-foreground/[0.02] border border-rose-500/20 flex items-start gap-3">
                       <AlertTriangle className="size-4 text-rose-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ export default function FreeAuditPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.03] flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.03] flex items-start gap-3">
                       <CheckCircle2 className="size-4 text-emerald-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -174,7 +174,7 @@ export default function FreeAuditPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.03] flex items-start gap-3">
+                    <div className="p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.03] flex items-start gap-3">
                       <CheckCircle2 className="size-4 text-emerald-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">

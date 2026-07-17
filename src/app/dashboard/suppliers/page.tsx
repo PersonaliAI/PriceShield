@@ -118,7 +118,7 @@ export default function SuppliersPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Suppliers & Baselines</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2">Suppliers & Baselines</h1>
           <p className="text-muted-foreground max-w-xl">
             Manage your AI-detected price baselines. Correct extractions, update unit prices, or remove outdated vendors.
           </p>
@@ -153,7 +153,7 @@ export default function SuppliersPage() {
                   className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-all ${
                     selectedVendor === v 
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                      : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ export default function SuppliersPage() {
                 <Shield className="h-8 w-8 text-emerald-500/20" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-medium text-white/80">No Supplier Selected</h3>
+                <h3 className="text-lg font-medium text-foreground/80">No Supplier Selected</h3>
                 <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                     Select a supplier from the sidebar to view and manage their price baseline.
                 </p>
@@ -188,7 +188,7 @@ export default function SuppliersPage() {
               <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-6">
                 <div className="space-y-1">
                   <Badge variant="outline" className="text-emerald-400 border-emerald-400/20 bg-emerald-400/5 mb-1 uppercase tracking-widest text-[10px]">Active Baseline</Badge>
-                  <CardTitle className="text-2xl text-white">{selectedVendor}</CardTitle>
+                  <CardTitle className="text-2xl text-foreground">{selectedVendor}</CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button 
@@ -204,7 +204,7 @@ export default function SuppliersPage() {
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="text-[11px] uppercase tracking-wider text-muted-foreground bg-white/5">
+                    <thead className="text-[11px] uppercase tracking-wider text-muted-foreground bg-muted">
                       <tr>
                         <th className="px-6 py-4 font-bold">Item Name</th>
                         <th className="px-6 py-4 font-bold">SKU</th>
@@ -217,8 +217,8 @@ export default function SuppliersPage() {
                       {Object.entries(baselines[selectedVendor] || {})
                         .filter(([name]) => !name.startsWith("_"))
                         .map(([name, data]: [string, any]) => (
-                        <tr key={name} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="px-6 py-4 font-medium text-white/90 max-w-[200px] truncate">{name}</td>
+                        <tr key={name} className="hover:bg-foreground/[0.02] transition-colors group">
+                          <td className="px-6 py-4 font-medium text-foreground/90 max-w-[200px] truncate">{name}</td>
                           <td className="px-6 py-4 text-muted-foreground font-mono text-xs">{data.sku || "N/A"}</td>
                           <td className="px-6 py-4 text-center">
                             <span className="text-emerald-400 font-bold">
@@ -279,7 +279,7 @@ export default function SuppliersPage() {
                 step="0.01"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                className="bg-white/5 border-white/10"
+                className="bg-muted/50 border-border"
               />
             </div>
             <div className="grid gap-2">
@@ -287,7 +287,7 @@ export default function SuppliersPage() {
               <Input 
                 value={editSku}
                 onChange={(e) => setEditSku(e.target.value)}
-                className="bg-white/5 border-white/10"
+                className="bg-muted/50 border-border"
               />
             </div>
           </div>

@@ -69,7 +69,7 @@ export default function SupplierPriceTrackingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-black text-foreground pt-24 pb-16 relative overflow-hidden">
+      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden">
         {/* Glow Elements */}
         <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[150px] pointer-events-none" />
@@ -103,7 +103,7 @@ export default function SupplierPriceTrackingPage() {
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500/40 animate-pulse-glow" />
               </div>
-              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-white/95 leading-tight">
+              <h1 className="font-heading text-xl sm:text-2xl lg:text-[28px] font-light tracking-wide text-foreground/95 leading-tight">
                 Track Supplier Prices{" "}
                 <span className="font-normal bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-300 bg-clip-text text-transparent">
                   without spreadsheets.
@@ -115,7 +115,7 @@ export default function SupplierPriceTrackingPage() {
               <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
                   size="sm"
-                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-lg transition-all"
+                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-foreground hover:bg-foreground/90 text-background rounded-lg transition-all"
                   render={<Link href="/login" />}
                 >
                   Start Tracking Free
@@ -177,7 +177,7 @@ export default function SupplierPriceTrackingPage() {
                         status: "up",
                       },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
+                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.03] hover:bg-foreground/[0.04] hover:border-foreground/[0.08] transition-all duration-300">
                         <div>
                           <div className="text-[11px] font-medium text-zinc-200">{item.name}</div>
                           <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
@@ -224,7 +224,7 @@ export default function SupplierPriceTrackingPage() {
           {/* Deep Feature Sections */}
           <section className="py-16 border-t border-border/60">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 How automated supplier price tracking protects your operations
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
@@ -237,7 +237,7 @@ export default function SupplierPriceTrackingPage() {
                 <div className="size-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center mb-4 border border-blue-500/20">
                   <TrendingDown className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Drift Tracking</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Drift Tracking</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Most inflation happens gradually—a 10¢ increase here, 20¢ there. PriceShield builds historical baselines and tracks total cumulative drift on every ingredient.
                 </p>
@@ -247,7 +247,7 @@ export default function SupplierPriceTrackingPage() {
                 <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20">
                   <Receipt className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Cross-Supplier Auditing</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Cross-Supplier Auditing</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Compare equivalent products between your suppliers and local purveyors. Our system standardizes SKU names, so you see alternative vendor pricing instantly.
                 </p>
@@ -257,7 +257,7 @@ export default function SupplierPriceTrackingPage() {
                 <div className="size-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4 border border-indigo-500/20">
                   <ShieldAlert className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">Proactive Guarding</h3>
+                <h3 className="text-base font-semibold text-foreground mb-2">Proactive Guarding</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Get notified the moment a supplier breaches your pre-set price tolerances. Keep your purveyors honest with verifiable transaction histories.
                 </p>
@@ -272,18 +272,18 @@ export default function SupplierPriceTrackingPage() {
 
           {/* FAQ Block */}
           <section className="py-12 border-t border-border/60">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center">
               Supplier Price Tracking FAQs
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-white">How does manual tracking compare to PriceShield?</h3>
+                <h3 className="text-sm font-semibold text-foreground">How does manual tracking compare to PriceShield?</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Manual tracking requires writing down price lines in spreadsheet tables weekly. It takes 3-4 hours of labor. PriceShield does it automatically in 5 seconds via invoice email forwarding.
                 </p>
               </div>
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-white">What formats of invoices are supported?</h3>
+                <h3 className="text-sm font-semibold text-foreground">What formats of invoices are supported?</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   We support PDF invoices from all major distributors, scanned paper invoices, phone photos, and direct supplier portal CSV files.
                 </p>

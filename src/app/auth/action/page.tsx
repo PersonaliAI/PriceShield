@@ -149,7 +149,7 @@ function AuthActionHandler() {
                     <Input
                       type="password"
                       placeholder="Minimum 6 characters"
-                      className="pl-10 h-11 bg-black/20 border-border/40 focus:border-emerald-500/50 transition-colors"
+                      className="pl-10 h-11 bg-muted/20 border-border/40 focus:border-emerald-500/50 transition-colors"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

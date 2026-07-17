@@ -250,7 +250,7 @@ export function InvoiceToCsvClient() {
           <FileSpreadsheet className="size-3.5" />
           <span>Free Invoice to CSV Converter</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
           Convert Invoices to{" "}
           <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
             Clean Spreadsheet Data.
@@ -292,7 +292,7 @@ export function InvoiceToCsvClient() {
               <div className="flex flex-col items-center gap-4">
                 <div
                   className={`rounded-2xl p-5 transition-colors duration-300 ${
-                    dragging ? "bg-emerald-500/10" : "bg-black/40"
+                    dragging ? "bg-emerald-500/10" : "bg-muted/40"
                   }`}
                 >
                   <Upload
@@ -302,7 +302,7 @@ export function InvoiceToCsvClient() {
                   />
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-white">
+                  <p className="text-base font-semibold text-foreground">
                     Drop your invoice PDF or image here
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -331,7 +331,7 @@ export function InvoiceToCsvClient() {
                 <Loader2 className="size-12 text-emerald-400 animate-spin" />
               </div>
               <div>
-                <p className="text-base font-semibold text-white">Analyzing invoice…</p>
+                <p className="text-base font-semibold text-foreground">Analyzing invoice…</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Extracting line items, quantities, and prices
                 </p>
@@ -349,7 +349,7 @@ export function InvoiceToCsvClient() {
             <div className="rounded-2xl border border-border bg-card overflow-hidden">
               {/* File info bar */}
               {file && (
-                <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-border/60 bg-black/30">
+                <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-border/60 bg-muted/30">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <FileText className="size-3.5 text-emerald-400" />
                     <span className="font-medium text-foreground">{file.name}</span>
@@ -369,7 +369,7 @@ export function InvoiceToCsvClient() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border/60 bg-black/40">
+                    <tr className="border-b border-border/60 bg-muted/40">
                       <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Item Description
                       </th>
@@ -393,7 +393,7 @@ export function InvoiceToCsvClient() {
                       <tr
                         key={item.id}
                         className={`border-b border-border/30 transition-colors hover:bg-muted/30 ${
-                          idx % 2 === 0 ? "bg-black/30" : "bg-card"
+                          idx % 2 === 0 ? "bg-muted/30" : "bg-card"
                         }`}
                       >
                         <td className="px-4 py-2.5">
@@ -528,7 +528,7 @@ export function InvoiceToCsvClient() {
                 <Sparkles className="size-5 text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-foreground">
                   {remaining > 0 ? (
                     <>
                       <span className="font-mono text-emerald-400">{remaining}</span> free
@@ -579,7 +579,7 @@ export function InvoiceToCsvClient() {
                 {["PDF", "PNG", "JPG", "JPEG"].map((fmt) => (
                   <span
                     key={fmt}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/40 border border-border/60 text-xs font-mono text-foreground/70"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/40 border border-border/60 text-xs font-mono text-foreground/70"
                   >
                     .{fmt.toLowerCase()}
                   </span>
@@ -592,7 +592,7 @@ export function InvoiceToCsvClient() {
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
             <div className="relative rounded-2xl border border-border bg-card p-6 space-y-4">
-              <h3 className="text-base font-bold text-white">Want automated extraction at scale?</h3>
+              <h3 className="text-base font-bold text-foreground">Want automated extraction at scale?</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 PriceShield uses AI to extract, compare, and audit every invoice automatically. No
                 manual data entry — just forward your supplier emails.
@@ -612,12 +612,12 @@ export function InvoiceToCsvClient() {
 
       {/* ────────────────── FAQ CARDS ────────────────── */}
       <section className="py-8 border-t border-border/60">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center">
           Invoice Data Extraction — FAQ
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <BarChart3 className="size-4 text-emerald-400" />
               Why Convert Invoices to CSV?
             </h3>
@@ -630,7 +630,7 @@ export function InvoiceToCsvClient() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <ScanSearch className="size-4 text-blue-400" />
               How Does Invoice Data Extraction Work?
             </h3>
@@ -643,7 +643,7 @@ export function InvoiceToCsvClient() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <HelpCircle className="size-4 text-amber-400" />
               What Data Can Be Extracted?
             </h3>

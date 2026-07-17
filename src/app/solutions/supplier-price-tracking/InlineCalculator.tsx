@@ -22,7 +22,7 @@ export function InlineCalculator() {
     <div className="rounded-2xl border border-border bg-gradient-to-b from-card to-card/50 p-6 md:p-10 flex flex-col md:flex-row items-center gap-10">
       <div className="flex-1 space-y-4">
         <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Interactive Calculator</span>
-        <h2 className="text-2xl md:text-3xl font-bold text-white">Calculate your leaks</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">Calculate your leaks</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
           Industry estimates show hospitality businesses leak 2% to 4% of total supplier spend to stealth price hikes. Try our fully interactive{" "}
           <Link href="/tools/margin-leakage-calculator" className="text-emerald-400 underline hover:text-emerald-300">
@@ -34,21 +34,21 @@ export function InlineCalculator() {
           <label htmlFor="inline-spend-input" className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">
             Average Monthly Supplier Spend
           </label>
-          <div className="flex items-center gap-2 max-w-[240px] bg-black/40 rounded-lg p-2.5 border border-border">
+          <div className="flex items-center gap-2 max-w-[240px] bg-muted/40 rounded-lg p-2.5 border border-border">
             <span className="text-muted-foreground font-semibold">$</span>
             <input
               id="inline-spend-input"
               type="number"
               value={spend || ""}
               onChange={(e) => handleSpendChange(e.target.value)}
-              className="bg-transparent border-none outline-none w-full text-sm font-semibold font-mono text-white"
+              className="bg-transparent border-none outline-none w-full text-sm font-semibold font-mono text-foreground"
               placeholder="e.g. 25000"
             />
           </div>
         </div>
       </div>
 
-      <div className="w-full md:w-80 rounded-xl bg-black/60 border border-border/80 p-6 space-y-6 shrink-0 text-center md:text-left">
+      <div className="w-full md:w-80 rounded-xl bg-muted/60 border border-border/80 p-6 space-y-6 shrink-0 text-center md:text-left">
         <div>
           <div className="text-xs text-muted-foreground uppercase font-bold">Estimated Monthly Leakage</div>
           <div className="text-3xl font-mono font-bold text-rose-500 mt-1">

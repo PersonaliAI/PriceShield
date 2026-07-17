@@ -57,7 +57,7 @@ const StatusDisplay = ({ logs, progress, isProcessing }: { logs: string[]; progr
   return (
     <div className="w-full max-w-md mx-auto py-10 px-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col items-center space-y-8 text-center animate-in fade-in zoom-in duration-500">
       <div className="space-y-3">
-        <h3 className="text-2xl font-bold text-white tracking-tight">{status}</h3>
+        <h3 className="text-2xl font-bold text-foreground tracking-tight">{status}</h3>
         <p className="text-sm text-emerald-500/60">
           {progress < 40
             ? "Extracting line items from your PDF"
@@ -69,7 +69,7 @@ const StatusDisplay = ({ logs, progress, isProcessing }: { logs: string[]; progr
       </div>
 
       <div className="w-full space-y-4">
-        <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5">
+        <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
           <div
             className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(16,185,129,0.5)]"
             style={{ width: `${progress}%` }}

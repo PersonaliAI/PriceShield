@@ -83,13 +83,13 @@ function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: "#09090b", border: "1px solid #52525b", borderRadius: 10,
-      padding: "10px 14px", boxShadow: "0 12px 40px rgba(0,0,0,0.95)", fontSize: 12, minWidth: 160,
+      background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10,
+      padding: "10px 14px", boxShadow: "0 12px 40px rgba(0,0,0,0.35)", fontSize: 12, minWidth: 160,
     }}>
-      <p style={{ color: "#e4e4e7", fontWeight: 700, marginBottom: 6 }}>{label}</p>
+      <p style={{ color: "var(--foreground)", fontWeight: 700, marginBottom: 6 }}>{label}</p>
       {payload.map((entry: any) => (
         <p key={entry.name} style={{ color: entry.color, marginBottom: 3 }}>
-          <span style={{ color: "#a1a1aa" }}>{entry.name}: </span>
+          <span style={{ color: "var(--muted-foreground)" }}>{entry.name}: </span>
           <span style={{ fontWeight: 600 }}>{typeof entry.value === "number" ? entry.value.toFixed(2) : entry.value}</span>
         </p>
       ))}
@@ -102,17 +102,17 @@ function InlineChart({ spec }: { spec: ChartSpec }) {
   const ChartComponent = spec.chart_type === "bar" ? BarChart : LineChart;
 
   return (
-    <div className="my-4 rounded-2xl bg-zinc-950/60 border border-emerald-500/20 p-4 shadow-lg">
+    <div className="my-4 rounded-2xl bg-card/60 border border-emerald-500/20 p-4 shadow-lg">
       {spec.title && (
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">{spec.title}</p>
       )}
       <ResponsiveContainer width="100%" height={260}>
         <ChartComponent data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-          <XAxis dataKey="x" tick={{ fontSize: 10, fill: "#71717a" }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="x" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
           <YAxis
-            tick={{ fontSize: 10, fill: "#71717a" }}
-            label={spec.y_label ? { value: spec.y_label, angle: -90, position: "insideLeft", style: { fontSize: 10, fill: "#71717a" } } : undefined}
+            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            label={spec.y_label ? { value: spec.y_label, angle: -90, position: "insideLeft", style: { fontSize: 10, fill: "var(--muted-foreground)" } } : undefined}
           />
           <Tooltip content={<ChartTooltip />} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -129,18 +129,18 @@ function InlineChart({ spec }: { spec: ChartSpec }) {
 
 function InlineTable({ spec }: { spec: TableSpec }) {
   return (
-    <div className="my-4 rounded-2xl bg-zinc-950/60 border border-emerald-500/20 shadow-lg overflow-hidden">
+    <div className="my-4 rounded-2xl bg-card/60 border border-emerald-500/20 shadow-lg overflow-hidden">
       {spec.title && (
-        <div className="px-4 py-3 border-b border-zinc-800">
+        <div className="px-4 py-3 border-b border-border">
           <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">{spec.title}</p>
         </div>
       )}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-zinc-900/80">
+            <tr className="bg-muted/80">
               {spec.headers.map((h, i) => (
-                <th key={i} className="px-4 py-2.5 text-left font-semibold text-zinc-300 whitespace-nowrap border-b border-zinc-800">
+                <th key={i} className="px-4 py-2.5 text-left font-semibold text-muted-foreground whitespace-nowrap border-b border-border">
                   {h}
                 </th>
               ))}
@@ -148,9 +148,9 @@ function InlineTable({ spec }: { spec: TableSpec }) {
           </thead>
           <tbody>
             {spec.rows.map((row, ri) => (
-              <tr key={ri} className={ri % 2 === 0 ? "bg-transparent" : "bg-zinc-900/30"}>
+              <tr key={ri} className={ri % 2 === 0 ? "bg-transparent" : "bg-muted/30"}>
                 {row.map((cell, ci) => (
-                  <td key={ci} className="px-4 py-2 text-zinc-300 whitespace-nowrap border-b border-zinc-800/50 last:border-b-0">
+                  <td key={ci} className="px-4 py-2 text-muted-foreground whitespace-nowrap border-b border-border/50 last:border-b-0">
                     {cell}
                   </td>
                 ))}
@@ -554,7 +554,7 @@ export default function AICFOPage() {
                         : "bg-muted/10 border border-border/30 text-foreground shadow-sm rounded-tl-none"
                     )}>
                       {msg.role === "assistant" && msg.thinkingSteps && msg.thinkingSteps.length > 0 && (
-                        <div className="mb-4 rounded-2xl bg-zinc-950/40 border border-purple-500/20 shadow-xl overflow-hidden max-w-full">
+                        <div className="mb-4 rounded-2xl bg-card/40 border border-purple-500/20 shadow-xl overflow-hidden max-w-full">
                           {/* Accordion Trigger Header */}
                           <button
                             type="button"
@@ -613,7 +613,7 @@ export default function AICFOPage() {
                                           <span className="text-[10px] font-bold">!</span>
                                         </div>
                                       ) : (
-                                        <div className="h-4 w-4 rounded-full bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 border border-zinc-700">
+                                        <div className="h-4 w-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center shrink-0 border border-border">
                                           <span className="text-[8px] font-bold">{idx + 1}</span>
                                         </div>
                                       )}
@@ -621,19 +621,19 @@ export default function AICFOPage() {
                                         className={cn(
                                           "font-medium",
                                           isCompleted
-                                            ? "text-zinc-400"
+                                            ? "text-muted-foreground"
                                             : isActive
                                             ? "text-purple-300 font-bold"
-                                            : "text-zinc-500"
+                                            : "text-muted-foreground/60"
                                         )}
                                       >
                                         {step.content}
                                       </span>
                                     </div>
-                                    
+
                                     {step.type === "tool" && step.details && (
                                       <div className="pl-6 mt-1.5">
-                                        <pre className="p-2 text-[10px] font-mono text-zinc-400 bg-zinc-950/60 rounded-lg border border-border/20 max-w-full overflow-x-auto whitespace-pre-wrap">
+                                        <pre className="p-2 text-[10px] font-mono text-muted-foreground bg-muted/60 rounded-lg border border-border/20 max-w-full overflow-x-auto whitespace-pre-wrap">
                                           {step.details}
                                         </pre>
                                       </div>
@@ -686,7 +686,7 @@ export default function AICFOPage() {
                           setCopiedIdx(i);
                           setTimeout(() => setCopiedIdx(null), 2000);
                         }}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 transition-all"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
                         title="Copy markdown"
                       >
                         {copiedIdx === i ? <CheckIcon className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
@@ -695,7 +695,7 @@ export default function AICFOPage() {
                       {i > 0 && messages[i - 1]?.role === "user" && (
                         <button
                           onClick={() => handleSendMessage(undefined, messages[i - 1].content)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 transition-all"
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
                           title="Regenerate response"
                         >
                           <RefreshCw className="h-3 w-3" />
@@ -791,7 +791,7 @@ export default function AICFOPage() {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.05);
+          background: color-mix(in oklch, var(--foreground) 8%, transparent);
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -802,10 +802,10 @@ export default function AICFOPage() {
           font-weight: 800 !important;
         }
         .markdown-content pre {
-          background: rgba(255, 255, 255, 0.05);
+          background: color-mix(in oklch, var(--foreground) 6%, transparent);
           padding: 1rem;
           border-radius: 1rem;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid var(--border);
         }
       `}</style>
     </div>

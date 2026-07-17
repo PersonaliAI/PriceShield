@@ -49,7 +49,7 @@ export function CalculatorClient() {
           <Sparkles className="size-3.5" />
           <span>Interactive Margin Leakage Calculator</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
           Calculate Your Supplier <br />
           <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
             Margin Leakage.
@@ -64,13 +64,13 @@ export function CalculatorClient() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Side: Inputs */}
         <div className="lg:col-span-7 rounded-2xl border border-border bg-card p-6 md:p-8 space-y-6">
-          <h2 className="text-lg font-bold text-white mb-4">1. Your Operations</h2>
+          <h2 className="text-lg font-bold text-foreground mb-4">1. Your Operations</h2>
 
           {/* Monthly Spend */}
           <div className="space-y-2">
             <div className="flex justify-between items-center text-xs font-semibold">
               <label htmlFor="spend-range" className="text-muted-foreground">Monthly Supplier Spend</label>
-              <span className="text-white font-mono text-sm">${spend.toLocaleString()}</span>
+              <span className="text-foreground font-mono text-sm">${spend.toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-4">
               <input
@@ -81,7 +81,7 @@ export function CalculatorClient() {
                 step="5000"
                 value={spend}
                 onChange={(e) => setSpend(Number(e.target.value))}
-                className="w-full h-1.5 bg-black/60 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="w-full h-1.5 bg-muted/60 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
@@ -95,7 +95,7 @@ export function CalculatorClient() {
           <div className="space-y-2">
             <div className="flex justify-between items-center text-xs font-semibold">
               <label htmlFor="invoices-range" className="text-muted-foreground">Average Monthly Invoices</label>
-              <span className="text-white font-mono text-sm">{invoices} invoices</span>
+              <span className="text-foreground font-mono text-sm">{invoices} invoices</span>
             </div>
             <div className="flex items-center gap-4">
               <input
@@ -106,7 +106,7 @@ export function CalculatorClient() {
                 step="5"
                 value={invoices}
                 onChange={(e) => setInvoices(Number(e.target.value))}
-                className="w-full h-1.5 bg-black/60 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="w-full h-1.5 bg-muted/60 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
@@ -117,7 +117,7 @@ export function CalculatorClient() {
           </div>
 
           <hr className="border-border/60" />
-          <h2 className="text-lg font-bold text-white mb-4">2. Leakage Assumptions</h2>
+          <h2 className="text-lg font-bold text-foreground mb-4">2. Leakage Assumptions</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Invoice Error Rate */}
@@ -137,7 +137,7 @@ export function CalculatorClient() {
                 step="0.5"
                 value={errorRate}
                 onChange={(e) => setErrorRate(Number(e.target.value))}
-                className="w-full h-1.5 bg-black/60 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                className="w-full h-1.5 bg-muted/60 rounded-lg appearance-none cursor-pointer accent-rose-500"
               />
               <p className="text-[10px] text-muted-foreground">
                 Wrong pricing, double billed line items, incorrect taxes.
@@ -161,7 +161,7 @@ export function CalculatorClient() {
                 step="0.5"
                 value={creepRate}
                 onChange={(e) => setCreepRate(Number(e.target.value))}
-                className="w-full h-1.5 bg-black/60 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                className="w-full h-1.5 bg-muted/60 rounded-lg appearance-none cursor-pointer accent-amber-500"
               />
               <p className="text-[10px] text-muted-foreground">
                 Gradual weekly price drift on major ingredients without notice.
@@ -193,7 +193,7 @@ export function CalculatorClient() {
                     <span className="size-2 rounded-full bg-rose-500" />
                     Invoice Error Leakage:
                   </span>
-                  <span className="text-white font-mono font-semibold">
+                  <span className="text-foreground font-mono font-semibold">
                     ${monthlyErrorLeakage.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
                   </span>
                 </div>
@@ -203,7 +203,7 @@ export function CalculatorClient() {
                     <span className="size-2 rounded-full bg-amber-500" />
                     Supplier Price Creep:
                   </span>
-                  <span className="text-white font-mono font-semibold">
+                  <span className="text-foreground font-mono font-semibold">
                     ${monthlyCreepLeakage.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo
                   </span>
                 </div>
@@ -213,13 +213,13 @@ export function CalculatorClient() {
                     <Clock className="size-3.5 text-blue-400" />
                     Manual Auditing Labor:
                   </span>
-                  <span className="text-white font-mono font-semibold">
+                  <span className="text-foreground font-mono font-semibold">
                     {manualAuditHours.toFixed(1)} hrs (${manualAuditCost.toFixed(0)}/mo)
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center text-sm font-bold pt-1">
-                  <span className="text-white">Total Annual Cost:</span>
+                  <span className="text-foreground">Total Annual Cost:</span>
                   <span className="text-rose-500 font-mono">
                     ${(totalAnnualLeakage + annualManualAuditCost).toLocaleString(undefined, { maximumFractionDigits: 0 })}/yr
                   </span>
@@ -253,12 +253,12 @@ export function CalculatorClient() {
 
       {/* Info Cards / FAQ below Calculator */}
       <section className="py-8 border-t border-border/60">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center">
           Understanding Supplier Price Creep
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <DollarSign className="size-4 text-emerald-400" />
               Stealth Inflation
             </h3>
@@ -268,7 +268,7 @@ export function CalculatorClient() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <Layers className="size-4 text-blue-400" />
               Cross-Vendor Comparison
             </h3>
@@ -278,7 +278,7 @@ export function CalculatorClient() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <Clock className="size-4 text-amber-400" />
               Bookkeeping Time Saved
             </h3>

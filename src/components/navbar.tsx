@@ -17,6 +17,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { CATEGORY_META, FEATURED_POSTS } from "@/lib/blog";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,7 @@ export function Navbar() {
 
         {/* Right */}
         <div className="flex items-center justify-end gap-3">
+          <ThemeToggle />
           {isAuthed ? (
             <UserMenu email={user?.email ?? ""} onSignOut={signOut} />
           ) : (
@@ -407,14 +409,15 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
-              <div className="pt-3 border-t border-border">
+              <div className="pt-3 border-t border-border flex items-center gap-3">
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="flex-1"
                   render={<Link href="/login" onClick={() => setOpen(false)} />}
                 >
                   Log in
                 </Button>
+                <ThemeToggle className="border border-border" />
               </div>
             </div>
           </motion.div>

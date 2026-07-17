@@ -206,7 +206,7 @@ export function BbInvoiceClient() {
       {/* Left panel: Creator Interface */}
       <div className="space-y-6 print:hidden">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-2">
             Bed & Breakfast Invoice Generator
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -216,7 +216,7 @@ export function BbInvoiceClient() {
 
         {/* Style Preset Selector */}
         <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Palette className="size-4 text-emerald-400" />
             Invoice Style Preset
           </h2>
@@ -228,7 +228,7 @@ export function BbInvoiceClient() {
                 className={`py-2 px-3 rounded-lg text-xs font-semibold uppercase tracking-wider border transition-all cursor-pointer text-center ${
                   style === s
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                    : "bg-black/30 text-zinc-400 border-border hover:text-zinc-200"
+                    : "bg-muted/30 text-muted-foreground border-border hover:text-foreground"
                 }`}
               >
                 {s}
@@ -239,7 +239,7 @@ export function BbInvoiceClient() {
 
         {/* Business details */}
         <div className="p-5 rounded-xl border border-border bg-card space-y-4">
-          <h2 className="text-sm font-semibold text-white border-b border-border pb-2 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2 flex items-center gap-2">
             <Sparkles className="size-4 text-emerald-400" />
             Your B&B Property Details
           </h2>
@@ -250,7 +250,7 @@ export function BbInvoiceClient() {
                 type="text"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -259,7 +259,7 @@ export function BbInvoiceClient() {
                 type="email"
                 value={businessEmail}
                 onChange={(e) => setBusinessEmail(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -268,7 +268,7 @@ export function BbInvoiceClient() {
                 type="text"
                 value={businessPhone}
                 onChange={(e) => setBusinessPhone(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -277,7 +277,7 @@ export function BbInvoiceClient() {
                 value={businessAddress}
                 onChange={(e) => setBusinessAddress(e.target.value)}
                 rows={2}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500 resize-none"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500 resize-none"
               />
             </div>
           </div>
@@ -285,7 +285,7 @@ export function BbInvoiceClient() {
 
         {/* Guest & Stay Details */}
         <div className="p-5 rounded-xl border border-border bg-card space-y-4">
-          <h2 className="text-sm font-semibold text-white border-b border-border pb-2 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2 flex items-center gap-2">
             <Bed className="size-4 text-emerald-400" />
             Guest & Booking Details
           </h2>
@@ -296,7 +296,7 @@ export function BbInvoiceClient() {
                 type="text"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -305,7 +305,7 @@ export function BbInvoiceClient() {
                 type="email"
                 value={guestEmail}
                 onChange={(e) => setGuestEmail(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -314,7 +314,7 @@ export function BbInvoiceClient() {
                 value={guestAddress}
                 onChange={(e) => setGuestAddress(e.target.value)}
                 rows={1}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500 resize-none"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500 resize-none"
               />
             </div>
             <div className="space-y-1">
@@ -323,7 +323,7 @@ export function BbInvoiceClient() {
                 type="text"
                 value={invoiceNumber}
                 onChange={(e) => setInvoiceNumber(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -335,7 +335,7 @@ export function BbInvoiceClient() {
                 type="text"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -344,7 +344,7 @@ export function BbInvoiceClient() {
                 type="date"
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -353,7 +353,7 @@ export function BbInvoiceClient() {
                 type="date"
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -362,7 +362,7 @@ export function BbInvoiceClient() {
                 type="number"
                 value={nights}
                 onChange={(e) => setNights(Number(e.target.value))}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -371,7 +371,7 @@ export function BbInvoiceClient() {
                 type="number"
                 value={nightlyRate}
                 onChange={(e) => setNightlyRate(parseFloat(e.target.value) || 0)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -380,7 +380,7 @@ export function BbInvoiceClient() {
         {/* Additional Charges */}
         <div className="p-5 rounded-xl border border-border bg-card space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-2">
-            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <FileText className="size-4 text-emerald-400" />
               Additional Charges (Breakfast, Spa, Parking)
             </h2>
@@ -394,14 +394,14 @@ export function BbInvoiceClient() {
 
           <div className="space-y-3">
             {items.map((item) => (
-              <div key={item.id} className="flex gap-3 items-end bg-black/25 p-3 rounded border border-border/40">
+              <div key={item.id} className="flex gap-3 items-end bg-muted/25 p-3 rounded border border-border/40">
                 <div className="flex-1 space-y-1">
                   <label className="text-[9px] uppercase font-bold text-zinc-500">Charge Description</label>
                   <input
                     type="text"
                     value={item.description}
                     onChange={(e) => handleItemChange(item.id, "description", e.target.value)}
-                    className="w-full bg-black/40 border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-muted/40 border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div className="w-16 space-y-1">
@@ -410,7 +410,7 @@ export function BbInvoiceClient() {
                     type="number"
                     value={item.qty}
                     onChange={(e) => handleItemChange(item.id, "qty", Number(e.target.value))}
-                    className="w-full bg-black/40 border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-muted/40 border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div className="w-20 space-y-1">
@@ -419,7 +419,7 @@ export function BbInvoiceClient() {
                     type="number"
                     value={item.price}
                     onChange={(e) => handleItemChange(item.id, "price", parseFloat(e.target.value) || 0)}
-                    className="w-full bg-black/40 border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-muted/40 border border-border rounded px-2.5 py-1 text-xs text-foreground focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <button
@@ -435,7 +435,7 @@ export function BbInvoiceClient() {
 
         {/* Taxes */}
         <div className="p-5 rounded-xl border border-border bg-card space-y-4">
-          <h2 className="text-sm font-semibold text-white border-b border-border pb-2 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2 flex items-center gap-2">
             <DollarSign className="size-4 text-emerald-400" />
             Hospitality & Lodging Taxes
           </h2>
@@ -446,7 +446,7 @@ export function BbInvoiceClient() {
                 type="number"
                 value={lodgingTaxRate}
                 onChange={(e) => setLodgingTaxRate(parseFloat(e.target.value) || 0)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1">
@@ -455,7 +455,7 @@ export function BbInvoiceClient() {
                 type="number"
                 value={stateTaxRate}
                 onChange={(e) => setStateTaxRate(parseFloat(e.target.value) || 0)}
-                className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -466,7 +466,7 @@ export function BbInvoiceClient() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full bg-black/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500 resize-none"
+              className="w-full bg-muted/40 border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-emerald-500 resize-none"
             />
           </div>
         </div>
@@ -478,7 +478,7 @@ export function BbInvoiceClient() {
               Hospitality Margin Defense
             </span>
           </div>
-          <h3 className="text-sm font-semibold text-white">Running a Bed & Breakfast is a high-cost operation</h3>
+          <h3 className="text-sm font-semibold text-foreground">Running a Bed & Breakfast is a high-cost operation</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
             From food ingredients to bed linens, laundry, and energy, your supplier costs can spiral out of control. PriceShield audits your incoming supplier invoices in 5 seconds and warns you about price hikes instantly.
           </p>
@@ -500,7 +500,7 @@ export function BbInvoiceClient() {
           <div className="flex gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-medium text-xs px-3 py-1.5 rounded-lg border border-zinc-800 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-muted hover:bg-muted/70 text-muted-foreground hover:text-foreground font-medium text-xs px-3 py-1.5 rounded-lg border border-border transition-colors cursor-pointer"
             >
               <Printer className="size-3.5" /> Print
             </button>

@@ -78,7 +78,7 @@ export default function InvoiceOcrPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-black text-foreground pt-24 pb-16 relative overflow-hidden">
+      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden">
         {/* Ambient Glows */}
         <div className="absolute top-0 left-1/4 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
         <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
@@ -112,7 +112,7 @@ export default function InvoiceOcrPage() {
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-pulse-glow" />
               </div>
-              <h1 className="font-heading text-3xl sm:text-4xl lg:text-[40px] font-light tracking-wide text-white leading-tight">
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-[40px] font-light tracking-wide text-foreground leading-tight">
                 Not Just Invoice OCR.{" "}
                 <span className="font-normal bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-300 bg-clip-text text-transparent">
                   Structured Invoice Intelligence.
@@ -124,7 +124,7 @@ export default function InvoiceOcrPage() {
               <div className="flex items-center gap-4 pt-2 justify-center md:justify-start">
                 <Button
                   size="sm"
-                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-lg transition-all"
+                  className="cursor-pointer font-medium text-xs h-9 px-4 bg-foreground hover:bg-foreground/90 text-background rounded-lg transition-all"
                   render={<Link href="/login" />}
                 >
                   Start OCR Extraction Free
@@ -176,15 +176,15 @@ export default function InvoiceOcrPage() {
                     <div className="mt-4 pt-2">
                       <div className="text-[9px] uppercase tracking-wider text-zinc-500 mb-2">Extracted Line Items:</div>
                       <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                        <div className="flex justify-between bg-white/[0.02] p-2 rounded border border-white/[0.04]">
+                        <div className="flex justify-between bg-foreground/[0.02] p-2 rounded border border-foreground/[0.04]">
                           <span className="text-zinc-300 truncate max-w-[150px]">CANOLA FRY OIL 35LB</span>
                           <span className="text-zinc-400">3 x $42.50 = $127.50</span>
                         </div>
-                        <div className="flex justify-between bg-white/[0.02] p-2 rounded border border-white/[0.04]">
+                        <div className="flex justify-between bg-foreground/[0.02] p-2 rounded border border-foreground/[0.04]">
                           <span className="text-zinc-300 truncate max-w-[150px]">WHOLE MILK H.D. GALLON</span>
                           <span className="text-zinc-400">10 x $4.10 = $41.00</span>
                         </div>
-                        <div className="flex justify-between bg-white/[0.02] p-2 rounded border border-white/[0.04]">
+                        <div className="flex justify-between bg-foreground/[0.02] p-2 rounded border border-foreground/[0.04]">
                           <span className="text-zinc-300 truncate max-w-[150px]">USDA CHOICE TENDERLOIN</span>
                           <span className="text-zinc-400">45 lb x $14.80 = $666.00</span>
                         </div>
@@ -199,7 +199,7 @@ export default function InvoiceOcrPage() {
           {/* The OCR Difference */}
           <section className="py-16 border-t border-border/60">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 Why standard OCR isn't enough for invoices
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
@@ -212,7 +212,7 @@ export default function InvoiceOcrPage() {
                 <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 w-fit border border-emerald-500/20">
                   <RefreshCw className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white">Zero Template Setup</h3>
+                <h3 className="text-base font-semibold text-foreground">Zero Template Setup</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   No need to build coordinates or bounding boxes for different vendors. Our visual-semantic AI automatically identifies headers, columns, and rows on any invoice layout instantly.
                 </p>
@@ -222,7 +222,7 @@ export default function InvoiceOcrPage() {
                 <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 w-fit border border-emerald-500/20">
                   <Table className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white">Tabular Accuracy</h3>
+                <h3 className="text-base font-semibold text-foreground">Tabular Accuracy</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Line items in invoices are wrapped inside multi-page tables. Standard OCR scrambles columns like quantities and prices. PriceShield extracts clean table grids, matching each unit cost to its description.
                 </p>
@@ -232,7 +232,7 @@ export default function InvoiceOcrPage() {
                 <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 w-fit border border-emerald-500/20">
                   <Sparkles className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white">Semantic Normalization</h3>
+                <h3 className="text-base font-semibold text-foreground">Semantic Normalization</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Suppliers constantly rename product text strings. Our engine normalizes raw OCR strings into a single SKU profile, so you can track product price drift over time.
                 </p>
@@ -242,13 +242,13 @@ export default function InvoiceOcrPage() {
 
           {/* Detailed comparison */}
           <section className="py-12 border-t border-border/60">
-            <h2 className="text-2xl font-bold text-center text-white mb-8">
+            <h2 className="text-2xl font-bold text-center text-foreground mb-8">
               Compare PriceShield with Traditional OCR Software
             </h2>
             <div className="overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-white/[0.02] border-b border-border text-zinc-300">
+                  <tr className="bg-foreground/[0.02] border-b border-border text-muted-foreground">
                     <th className="p-4 font-semibold">Capability</th>
                     <th className="p-4 font-semibold">Traditional Invoice OCR</th>
                     <th className="p-4 font-semibold text-emerald-400">PriceShield AI Engine</th>
@@ -256,27 +256,27 @@ export default function InvoiceOcrPage() {
                 </thead>
                 <tbody className="divide-y divide-border text-zinc-400">
                   <tr>
-                    <td className="p-4 font-medium text-white">Layout Adaptability</td>
+                    <td className="p-4 font-medium text-foreground">Layout Adaptability</td>
                     <td className="p-4">Breaks on column wraps or new vendor formats</td>
                     <td className="p-4 text-emerald-400">Zero templates required; handles any layout</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-medium text-white">Line-Item Cost Auditing</td>
+                    <td className="p-4 font-medium text-foreground">Line-Item Cost Auditing</td>
                     <td className="p-4">None (text dump only)</td>
                     <td className="p-4 text-emerald-400">Compares extracted prices to past baselines automatically</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-medium text-white">Product Name Matching</td>
+                    <td className="p-4 font-medium text-foreground">Product Name Matching</td>
                     <td className="p-4">Requires exact string matches</td>
                     <td className="p-4 text-emerald-400">AI-driven fuzzy SKU & semantic mapping</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-medium text-white">Ingestion Modes</td>
+                    <td className="p-4 font-medium text-foreground">Ingestion Modes</td>
                     <td className="p-4">Manual uploads only</td>
                     <td className="p-4 text-emerald-400">Upload, email auto-forwarding, or API integration</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-medium text-white">Workflow Integration</td>
+                    <td className="p-4 font-medium text-foreground">Workflow Integration</td>
                     <td className="p-4">CSV downloads only</td>
                     <td className="p-4 text-emerald-400">CSV, Slack/Telegram push notifications, and API hooks</td>
                   </tr>
@@ -287,7 +287,7 @@ export default function InvoiceOcrPage() {
 
           {/* How it works */}
           <section className="py-12 border-t border-border/60">
-            <h2 className="text-2xl font-bold text-center text-white mb-12">
+            <h2 className="text-2xl font-bold text-center text-foreground mb-12">
               Automate invoice data entry in three steps
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -295,7 +295,7 @@ export default function InvoiceOcrPage() {
                 <div className="size-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/20">
                   1
                 </div>
-                <h3 className="text-sm font-semibold text-white">Upload or Forward</h3>
+                <h3 className="text-sm font-semibold text-foreground">Upload or Forward</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Drag and drop vendor PDFs or configure your mail settings to automatically forward receipts to your PriceShield routing address.
                 </p>
@@ -305,7 +305,7 @@ export default function InvoiceOcrPage() {
                 <div className="size-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/20">
                   2
                 </div>
-                <h3 className="text-sm font-semibold text-white">Instant Data Parsing</h3>
+                <h3 className="text-sm font-semibold text-foreground">Instant Data Parsing</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Our neural OCR analyzes the layout in 5 seconds. It structures the header metadata, tax rows, shipping fees, and individual line items.
                 </p>
@@ -315,7 +315,7 @@ export default function InvoiceOcrPage() {
                 <div className="size-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/20">
                   3
                 </div>
-                <h3 className="text-sm font-semibold text-white">Download or Sync</h3>
+                <h3 className="text-sm font-semibold text-foreground">Download or Sync</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Download clean CSV or Excel files, review audit anomalies on your dashboard, or query pricing trends directly via our AI CFO.
                 </p>
@@ -326,7 +326,7 @@ export default function InvoiceOcrPage() {
           {/* CTA Banner */}
           <section className="py-12 border-t border-border/60 text-center">
             <div className="rounded-2xl border border-border bg-gradient-to-r from-card to-emerald-500/5 p-8 max-w-3xl mx-auto space-y-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 Start extracting invoice data today
               </h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">

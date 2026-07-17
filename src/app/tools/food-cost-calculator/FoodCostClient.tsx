@@ -92,7 +92,7 @@ export function FoodCostClient() {
           <Sparkles className="size-3.5" />
           <span>Interactive Food Cost Calculator</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
           Calculate Your Recipe&apos;s{" "}
           <br className="hidden sm:inline" />
           <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
@@ -111,7 +111,7 @@ export function FoodCostClient() {
         <div className="lg:col-span-7 space-y-6">
           {/* Section 1: Recipe Details */}
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-6">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <ChefHat className="size-5 text-emerald-400" />
               1. Recipe Details
             </h2>
@@ -130,7 +130,7 @@ export function FoodCostClient() {
                   value={recipeName}
                   onChange={(e) => setRecipeName(e.target.value)}
                   placeholder="e.g. Grilled Chicken"
-                  className="w-full rounded-lg border border-border bg-black/60 px-3 py-2 text-sm text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full rounded-lg border border-border bg-muted/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                 />
               </div>
               <div className="space-y-1.5">
@@ -148,7 +148,7 @@ export function FoodCostClient() {
                   onChange={(e) =>
                     setServings(Math.max(1, Number(e.target.value)))
                   }
-                  className="w-full rounded-lg border border-border bg-black/60 px-3 py-2 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full rounded-lg border border-border bg-muted/60 px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                 />
               </div>
             </div>
@@ -157,7 +157,7 @@ export function FoodCostClient() {
           {/* Section 2: Ingredients */}
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <Scale className="size-5 text-emerald-400" />
                 2. Ingredients
               </h2>
@@ -180,7 +180,7 @@ export function FoodCostClient() {
               {ingredients.map((ing) => (
                 <div
                   key={ing.id}
-                  className="grid grid-cols-1 sm:grid-cols-[1fr_80px_90px_100px_32px] gap-2 items-center rounded-lg border border-border/60 bg-black/30 p-2 sm:p-1.5"
+                  className="grid grid-cols-1 sm:grid-cols-[1fr_80px_90px_100px_32px] gap-2 items-center rounded-lg border border-border/60 bg-muted/30 p-2 sm:p-1.5"
                 >
                   {/* Name */}
                   <input
@@ -190,7 +190,7 @@ export function FoodCostClient() {
                       updateIngredient(ing.id, "name", e.target.value)
                     }
                     placeholder="Ingredient name"
-                    className="w-full rounded-md border border-border bg-black/60 px-2.5 py-1.5 text-sm text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    className="w-full rounded-md border border-border bg-muted/60 px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                   />
                   {/* Quantity */}
                   <input
@@ -205,7 +205,7 @@ export function FoodCostClient() {
                         Math.max(0, Number(e.target.value)),
                       )
                     }
-                    className="w-full rounded-md border border-border bg-black/60 px-2.5 py-1.5 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    className="w-full rounded-md border border-border bg-muted/60 px-2.5 py-1.5 text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                   />
                   {/* Unit */}
                   <select
@@ -213,7 +213,7 @@ export function FoodCostClient() {
                     onChange={(e) =>
                       updateIngredient(ing.id, "unit", e.target.value)
                     }
-                    className="w-full rounded-md border border-border bg-black/60 px-2 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/50 appearance-none cursor-pointer"
+                    className="w-full rounded-md border border-border bg-muted/60 px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500/50 appearance-none cursor-pointer"
                   >
                     {UNITS.map((u) => (
                       <option key={u} value={u}>
@@ -238,7 +238,7 @@ export function FoodCostClient() {
                           Math.max(0, Number(e.target.value)),
                         )
                       }
-                      className="w-full rounded-md border border-border bg-black/60 pl-6 pr-2.5 py-1.5 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                      className="w-full rounded-md border border-border bg-muted/60 pl-6 pr-2.5 py-1.5 text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                     />
                   </div>
                   {/* Remove */}
@@ -266,7 +266,7 @@ export function FoodCostClient() {
 
           {/* Section 3: Target Food Cost Slider */}
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <Percent className="size-5 text-emerald-400" />
               3. Menu Pricing Target
             </h2>
@@ -290,7 +290,7 @@ export function FoodCostClient() {
                 step={1}
                 value={targetFoodCost}
                 onChange={(e) => setTargetFoodCost(Number(e.target.value))}
-                className="w-full h-1.5 bg-black/60 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="w-full h-1.5 bg-muted/60 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                 <span>20%</span>
@@ -332,7 +332,7 @@ export function FoodCostClient() {
                     <span className="size-2 rounded-full bg-teal-400" />
                     Cost Per Serving:
                   </span>
-                  <span className="text-white font-mono font-semibold">
+                  <span className="text-foreground font-mono font-semibold">
                     $
                     {costPerServing.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -356,7 +356,7 @@ export function FoodCostClient() {
                     <span className="size-2 rounded-full bg-blue-400" />
                     Profit Per Serving:
                   </span>
-                  <span className="text-white font-mono font-semibold">
+                  <span className="text-foreground font-mono font-semibold">
                     $
                     {profitPerServing.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -366,7 +366,7 @@ export function FoodCostClient() {
                 </div>
 
                 <div className="flex justify-between items-center text-sm font-bold pt-1">
-                  <span className="text-white">Recommended Menu Price:</span>
+                  <span className="text-foreground">Recommended Menu Price:</span>
                   <span className="text-emerald-400 font-mono">
                     $
                     {recommendedPrice.toLocaleString(undefined, {
@@ -385,7 +385,7 @@ export function FoodCostClient() {
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
                   Industry Benchmarks
                 </span>
-                <div className="relative h-5 bg-black/60 rounded-full overflow-hidden">
+                <div className="relative h-5 bg-muted/60 rounded-full overflow-hidden">
                   {/* Benchmark zones */}
                   {benchmarks.map((b, i) => {
                     const left = ((b.min - 20) / (45 - 20)) * 100;
@@ -431,7 +431,7 @@ export function FoodCostClient() {
                             {b.label}
                           </span>
                         </div>
-                        <span className="text-[10px] text-white font-mono">
+                        <span className="text-[10px] text-foreground font-mono">
                           {b.min}–{b.max}%
                         </span>
                       </div>
@@ -466,12 +466,12 @@ export function FoodCostClient() {
 
       {/* ─── Educational / FAQ Cards ─── */}
       <section className="py-8 border-t border-border/60">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center">
           Understanding Restaurant Food Cost
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <DollarSign className="size-4 text-emerald-400" />
               What is Food Cost Percentage?
             </h3>
@@ -480,7 +480,7 @@ export function FoodCostClient() {
               ingredient costs. It&apos;s one of the most important metrics for
               restaurant profitability.
             </p>
-            <div className="rounded-lg bg-black/40 border border-border/40 p-3">
+            <div className="rounded-lg bg-muted/40 border border-border/40 p-3">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                 Formula
               </p>
@@ -491,7 +491,7 @@ export function FoodCostClient() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <UtensilsCrossed className="size-4 text-teal-400" />
               Industry Benchmarks
             </h3>
@@ -511,14 +511,14 @@ export function FoodCostClient() {
                   className="flex justify-between text-xs border-b border-border/30 pb-1.5 last:border-0 last:pb-0"
                 >
                   <span className="text-muted-foreground">{item.type}</span>
-                  <span className="text-white font-mono">{item.range}</span>
+                  <span className="text-foreground font-mono">{item.range}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
               <TrendingDown className="size-4 text-blue-400" />
               How to Lower Food Cost
             </h3>

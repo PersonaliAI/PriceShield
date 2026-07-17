@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import { ABTestProvider } from "@/components/ab-test-provider";
 import { QueryProvider } from "@/lib/query-client";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -234,7 +235,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} ${plusJakartaSans.variable} dark h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${plusJakartaSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <link
@@ -251,17 +253,19 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <QueryProvider>
-          <AuthProvider>
-            <Suspense fallback={null}>
-              <AnalyticsProvider>
-                <ABTestProvider>
-                  <main className="flex-1 flex flex-col">{children}</main>
-                </ABTestProvider>
-              </AnalyticsProvider>
-            </Suspense>
-          </AuthProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <Suspense fallback={null}>
+                <AnalyticsProvider>
+                  <ABTestProvider>
+                    <main className="flex-1 flex flex-col">{children}</main>
+                  </ABTestProvider>
+                </AnalyticsProvider>
+              </Suspense>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

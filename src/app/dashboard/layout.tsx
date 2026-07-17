@@ -22,6 +22,7 @@ import { useAuth } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/protected-route";
 import { useState, useEffect } from "react";
 import OnboardingModal from "@/components/dashboard/OnboardingModal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { api } from "@/lib/api";
 import "katex/dist/katex.min.css";
 
@@ -79,7 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isMounted) {
     return (
-      <div className="min-h-screen bg-[#06080a] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
       </div>
     );
@@ -138,13 +139,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {user?.email && (
               <p className="px-3 text-xs text-muted-foreground truncate">{user.email}</p>
             )}
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 w-full transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSignOut}
+                className="flex-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+              <ThemeToggle />
+            </div>
           </div>
         </aside>
 
@@ -217,13 +221,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {user?.email && (
                     <p className="px-3 py-2 text-xs text-muted-foreground truncate">{user.email}</p>
                   )}
-                  <button
-                    onClick={handleSignOut}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 w-full transition-colors"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSignOut}
+                      className="flex-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
             </div>
