@@ -5,6 +5,7 @@ import { Download, Loader2, RefreshCw, Search, History as HistoryIcon } from "lu
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -147,35 +148,25 @@ export default function InvoiceHistoryPage() {
       </div>
 
       <Card className="bg-card/50 border-border/50">
-        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
+        <CardHeader className="space-y-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <HistoryIcon className="h-4 w-4 text-emerald-400" />
             {total} Extracted Invoice{total === 1 ? "" : "s"}
           </CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search invoice #, vendor, item..."
-                className="pl-8 w-56 h-9"
-              />
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-40 h-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search invoice #, vendor, item..."
+              className="pl-8 h-9 w-full"
             />
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-40 h-9"
-            />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <DatePicker value={startDate} onChange={setStartDate} placeholder="Start date" className="w-full" />
+            <DatePicker value={endDate} onChange={setEndDate} placeholder="End date" className="w-full" />
             <Select value={selectedVendor} onValueChange={(val) => val && setSelectedVendor(val)}>
-              <SelectTrigger className="w-44 h-9">
+              <SelectTrigger className="w-full h-9 col-span-2 sm:col-span-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
