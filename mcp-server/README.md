@@ -176,7 +176,7 @@ In stdio mode the server scopes itself to `DEFAULT_USER_ID` (or the first profil
 
 Settings → Connectors → Add custom connector:
 
-- **URL:** `https://priceshield-mcp-647257091960.us-central1.run.app/mcp`
+- **URL:** `https://mcp.trypriceshield.com/mcp`
 
 The OAuth flow (dynamic registration → authorize → token) is handled automatically; the user logs in with their PriceShield account.
 
@@ -189,7 +189,7 @@ The OAuth flow (dynamic registration → authorize → token) is handled automat
   "mcpServers": {
     "priceshield": {
       "type": "sse",
-      "url": "https://priceshield-mcp-647257091960.us-central1.run.app/sse?api_key=YOUR_API_KEY"
+      "url": "https://mcp.trypriceshield.com/sse?api_key=YOUR_API_KEY"
     }
   }
 }

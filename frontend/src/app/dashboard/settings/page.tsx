@@ -37,7 +37,7 @@ import { api, UserSettings, SettingsUpdate, APIKeyListItem, APIKeyResponse } fro
 import SearchableDropdown from "@/components/dashboard/SearchableDropdown";
 import { getCountries, getTimezones, timezoneLabel } from "@/lib/locale";
 
-const MCP_BASE_URL = "https://priceshield-mcp-647257091960.us-central1.run.app";
+const MCP_BASE_URL = "https://mcp.trypriceshield.com";
 
 function Toggle({ on, onClick, disabled }: { on: boolean; onClick: () => void; disabled?: boolean }) {
   return (

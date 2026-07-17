@@ -21,7 +21,7 @@ if env_file.exists():
             os.environ.setdefault(k.strip(), v.strip())
 
 USER_ID = "24d1c135-0e1a-475c-a14a-ed1a6a6be8a7"
-MCP_URL = os.environ.get("MCP_SERVER_URL", "https://priceshield-mcp-wkooktwifa-uc.a.run.app")
+MCP_URL = os.environ.get("MCP_SERVER_URL", "https://mcp.trypriceshield.com")
 API_URL = "https://priceshield-api-wkooktwifa-uc.a.run.app"
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")

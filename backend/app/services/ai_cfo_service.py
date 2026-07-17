@@ -118,7 +118,7 @@ class MCPClient:
 def _resolve_mcp_client(token: str) -> MCPClient | None:
     candidates = [u for u in [
         os.environ.get("MCP_SERVER_URL"),
-        "https://priceshield-mcp-647257091960.us-central1.run.app",
+        "https://mcp.trypriceshield.com",
         "http://localhost:3000",
         "http://localhost:8000",
     ] if u]

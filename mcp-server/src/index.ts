@@ -873,7 +873,7 @@ async function run() {
     const portArgIndex = process.argv.indexOf("--port");
     const port = portArgIndex !== -1 ? parseInt(process.argv[portArgIndex + 1], 10) : parseInt(process.env.PORT || "3000", 10);
 
-    const BASE_URL = process.env.BASE_URL || `https://priceshield-mcp-647257091960.us-central1.run.app`;
+    const BASE_URL = process.env.BASE_URL || `https://mcp.trypriceshield.com`;
 
     const app = express();
     // Cloud Run terminates TLS and proxies through exactly one hop, so trust

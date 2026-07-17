@@ -39,7 +39,7 @@ export default function OAuthAuthorizePage() {
 
     const fetchClientDetails = async () => {
       try {
-        const mcpServerUrl = process.env.NEXT_PUBLIC_MCP_URL || "https://priceshield-mcp-647257091960.us-central1.run.app";
+        const mcpServerUrl = process.env.NEXT_PUBLIC_MCP_URL || "https://mcp.trypriceshield.com";
         const response = await fetch(`${mcpServerUrl}/authorize/client-details?client_id=${clientId}`);
         if (!response.ok) {
           if (response.status === 404) {
@@ -107,7 +107,7 @@ export default function OAuthAuthorizePage() {
         throw new Error("Unable to retrieve Supabase authentication token");
       }
 
-      const mcpServerUrl = process.env.NEXT_PUBLIC_MCP_URL || "https://priceshield-mcp-647257091960.us-central1.run.app";
+      const mcpServerUrl = process.env.NEXT_PUBLIC_MCP_URL || "https://mcp.trypriceshield.com";
       const response = await fetch(`${mcpServerUrl}/authorize/confirm`, {
         method: "POST",
         headers: {
