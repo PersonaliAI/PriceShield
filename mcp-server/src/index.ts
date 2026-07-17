@@ -876,7 +876,11 @@ async function run() {
     const BASE_URL = process.env.BASE_URL || `https://priceshield-mcp-647257091960.us-central1.run.app`;
 
     const app = express();
-    app.set("trust proxy", true);
+    // Cloud Run terminates TLS and proxies through exactly one hop, so trust
+    // only that hop — `true` trusts an unbounded chain of X-Forwarded-For
+    // values, which express-rate-limit (used internally by mcpAuthRouter for
+    // /register and /token) correctly rejects as unsafe for IP-based limits.
+    app.set("trust proxy", 1);
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
