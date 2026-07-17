@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import io
 import logging
+from datetime import date as date_cls
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from openpyxl import Workbook
+from openpyxl.styles import Font
 
 from app.middleware.auth import get_current_user_uid
+from app.models.invoice import Invoice
 from app.services.supabase_service import SupabaseService
 
 logger = logging.getLogger(__name__)
@@ -155,3 +160,156 @@ async def get_vendors(user_id: str = Depends(get_current_user_uid)):
     except Exception as exc:
         logger.error("Vendors error: %s", exc)
         return {"vendors": []}
+
+
+def _fetch_history_invoices(
+    supabase: SupabaseService,
+    user_id: str,
+    vendor_name: Optional[str],
+    start_date: Optional[date_cls],
+    end_date: Optional[date_cls],
+    search: Optional[str],
+) -> list[Invoice]:
+    """Fetch invoices for the extraction-history view, applying filters in-memory."""
+    if vendor_name:
+        invoices = supabase.get_invoices_for_vendor(user_id, vendor_name, limit=1000)
+    else:
+        invoices = supabase.get_all_invoices(user_id, limit=1000)
+
+    if start_date:
+        invoices = [inv for inv in invoices if inv.invoice_date >= start_date]
+    if end_date:
+        invoices = [inv for inv in invoices if inv.invoice_date <= end_date]
+    if search:
+        needle = search.strip().lower()
+        invoices = [
+            inv for inv in invoices
+            if needle in (inv.invoice_number or "").lower()
+            or needle in inv.vendor_name.lower()
+            or any(needle in item.item_name.lower() for item in inv.items)
+        ]
+
+    return invoices
+
+
+@router.get("/history", summary="Get invoice extraction history")
+async def get_history(
+    vendor_name: Optional[str] = Query(None, description="Filter by vendor"),
+    start_date: Optional[date_cls] = Query(None, description="Filter invoices on/after this date"),
+    end_date: Optional[date_cls] = Query(None, description="Filter invoices on/before this date"),
+    search: Optional[str] = Query(None, description="Search invoice #, vendor, or item name"),
+    limit: int = Query(25, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    user_id: str = Depends(get_current_user_uid),
+):
+    """Return a paginated, filterable list of extracted invoices (one row per invoice)."""
+    supabase = _get_supabase()
+    if supabase is None:
+        return {"rows": [], "total": 0}
+    try:
+        invoices = _fetch_history_invoices(supabase, user_id, vendor_name, start_date, end_date, search)
+        total = len(invoices)
+        paginated = invoices[offset : offset + limit]
+
+        rows = [
+            {
+                "id": inv.id,
+                "invoice_date": inv.invoice_date.isoformat(),
+                "vendor_name": inv.vendor_name,
+                "invoice_number": inv.invoice_number,
+                "item_count": len(inv.items),
+                "subtotal": inv.subtotal,
+                "tax_total": inv.tax_total,
+                "grand_total": inv.grand_total,
+                "currency": inv.currency,
+                "created_at": inv.created_at.isoformat() if inv.created_at else None,
+            }
+            for inv in paginated
+        ]
+        return {"rows": rows, "total": total}
+    except Exception as exc:
+        logger.error("History error: %s", exc)
+        return {"rows": [], "total": 0}
+
+
+@router.get("/history/export", summary="Export invoice extraction history to Excel")
+async def export_history(
+    vendor_name: Optional[str] = Query(None),
+    start_date: Optional[date_cls] = Query(None),
+    end_date: Optional[date_cls] = Query(None),
+    search: Optional[str] = Query(None),
+    user_id: str = Depends(get_current_user_uid),
+):
+    """Build an .xlsx workbook of extracted invoices (summary + line items) and stream it back."""
+    supabase = _get_supabase()
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Data store unavailable")
+
+    try:
+        invoices = _fetch_history_invoices(supabase, user_id, vendor_name, start_date, end_date, search)
+
+        wb = Workbook()
+        bold = Font(bold=True)
+
+        summary_ws = wb.active
+        summary_ws.title = "Invoices"
+        summary_headers = [
+            "Invoice Date", "Vendor", "Invoice #", "Item Count",
+            "Subtotal", "Tax Total", "Grand Total", "Currency", "Extracted At",
+        ]
+        summary_ws.append(summary_headers)
+        for cell in summary_ws[1]:
+            cell.font = bold
+        for inv in invoices:
+            summary_ws.append([
+                inv.invoice_date.isoformat(),
+                inv.vendor_name,
+                inv.invoice_number,
+                len(inv.items),
+                inv.subtotal,
+                inv.tax_total,
+                inv.grand_total,
+                inv.currency,
+                inv.created_at.isoformat() if inv.created_at else None,
+            ])
+
+        items_ws = wb.create_sheet("Line Items")
+        item_headers = [
+            "Invoice Date", "Vendor", "Invoice #", "Item Name", "SKU",
+            "Quantity", "Unit of Measure", "Unit Price", "Total Price",
+        ]
+        items_ws.append(item_headers)
+        for cell in items_ws[1]:
+            cell.font = bold
+        for inv in invoices:
+            for item in inv.items:
+                items_ws.append([
+                    inv.invoice_date.isoformat(),
+                    inv.vendor_name,
+                    inv.invoice_number,
+                    item.item_name,
+                    item.sku,
+                    item.quantity,
+                    item.unit_of_measure,
+                    item.unit_price,
+                    item.total_price,
+                ])
+
+        for ws in (summary_ws, items_ws):
+            for col_cells in ws.columns:
+                length = max((len(str(c.value)) for c in col_cells if c.value is not None), default=10)
+                ws.column_dimensions[col_cells[0].column_letter].width = min(max(length + 2, 10), 40)
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        filename = f"priceshield-invoice-history-{date_cls.today().isoformat()}.xlsx"
+        return Response(
+            content=buffer.getvalue(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    except Exception as exc:
+        logger.exception("History export error for user %s", user_id)
+        raise HTTPException(status_code=500, detail="Failed to generate export") from exc
