@@ -134,6 +134,26 @@ export interface InvoiceRow {
   variance_pct: number;
 }
 
+export interface InvoiceHistoryRow {
+  id: string;
+  invoice_date: string;
+  vendor_name: string;
+  invoice_number: string | null;
+  item_count: number;
+  subtotal: number | null;
+  tax_total: number | null;
+  grand_total: number | null;
+  currency: string;
+  created_at: string | null;
+}
+
+export interface InvoiceHistoryFilters {
+  vendor?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+
 export interface AuditResult {
   status: string;
   invoices_processed: number;
@@ -208,6 +228,52 @@ export const api = {
 
   getVendors: (token: string) =>
     request<{ vendors: string[] }>(`/api/dashboard/vendors`, { token }),
+
+  getInvoiceHistory: (
+    token: string,
+    filters: InvoiceHistoryFilters = {},
+    limit: number = 25,
+    offset: number = 0
+  ) => {
+    const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+    if (filters.vendor && filters.vendor !== "All Vendors") params.set("vendor_name", filters.vendor);
+    if (filters.startDate) params.set("start_date", filters.startDate);
+    if (filters.endDate) params.set("end_date", filters.endDate);
+    if (filters.search) params.set("search", filters.search);
+    return request<{ rows: InvoiceHistoryRow[]; total: number }>(
+      `/api/dashboard/history?${params.toString()}`,
+      { token }
+    );
+  },
+
+  async exportInvoiceHistory(token: string, filters: InvoiceHistoryFilters = {}): Promise<void> {
+    const params = new URLSearchParams();
+    if (filters.vendor && filters.vendor !== "All Vendors") params.set("vendor_name", filters.vendor);
+    if (filters.startDate) params.set("start_date", filters.startDate);
+    if (filters.endDate) params.set("end_date", filters.endDate);
+    if (filters.search) params.set("search", filters.search);
+
+    const res = await fetch(`${API_BASE}/api/dashboard/history/export?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(error.detail || "Export failed");
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get("Content-Disposition") || "";
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    const filename = match ? match[1] : `priceshield-invoice-history-${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
 
   async createAuditJob(token: string): Promise<{ job_id: string }> {
     return request<{ job_id: string }>(`/onboarding/create-job`, {
