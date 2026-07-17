@@ -223,6 +223,17 @@ async def get_history(
                 "grand_total": inv.grand_total,
                 "currency": inv.currency,
                 "created_at": inv.created_at.isoformat() if inv.created_at else None,
+                "items": [
+                    {
+                        "item_name": item.item_name,
+                        "sku": item.sku,
+                        "quantity": item.quantity,
+                        "unit_of_measure": item.unit_of_measure,
+                        "unit_price": item.unit_price,
+                        "total_price": item.total_price,
+                    }
+                    for item in inv.items
+                ],
             }
             for inv in paginated
         ]

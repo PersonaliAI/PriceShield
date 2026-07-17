@@ -134,6 +134,15 @@ export interface InvoiceRow {
   variance_pct: number;
 }
 
+export interface InvoiceHistoryLineItem {
+  item_name: string;
+  sku: string | null;
+  quantity: number;
+  unit_of_measure: string | null;
+  unit_price: number;
+  total_price: number | null;
+}
+
 export interface InvoiceHistoryRow {
   id: string;
   invoice_date: string;
@@ -143,6 +152,7 @@ export interface InvoiceHistoryRow {
   subtotal: number | null;
   tax_total: number | null;
   grand_total: number | null;
+  items: InvoiceHistoryLineItem[];
   currency: string;
   created_at: string | null;
 }

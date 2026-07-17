@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Download, Loader2, RefreshCw, Search, History as HistoryIcon } from "lucide-react";
+import { useState, useEffect, useCallback, Fragment } from "react";
+import { ChevronDown, ChevronRight, Download, Loader2, RefreshCw, Search, History as HistoryIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,16 @@ export default function InvoiceHistoryPage() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [offset, setOffset] = useState(0);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
@@ -204,6 +214,7 @@ export default function InvoiceHistoryPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-8" />
                     <TableHead>Date</TableHead>
                     <TableHead>Vendor</TableHead>
                     <TableHead>Invoice #</TableHead>
@@ -215,26 +226,81 @@ export default function InvoiceHistoryPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="text-muted-foreground">{row.invoice_date}</TableCell>
-                      <TableCell className="font-medium">{row.vendor_name}</TableCell>
-                      <TableCell>{row.invoice_number || "—"}</TableCell>
-                      <TableCell className="text-right">{row.item_count}</TableCell>
-                      <TableCell className="text-right">
-                        {row.subtotal != null ? `${row.currency} ${row.subtotal.toFixed(2)}` : "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {row.tax_total != null ? `${row.currency} ${row.tax_total.toFixed(2)}` : "—"}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {row.grand_total != null ? `${row.currency} ${row.grand_total.toFixed(2)}` : "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {row.created_at ? new Date(row.created_at).toLocaleDateString() : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {rows.map((row) => {
+                    const isExpanded = expandedIds.has(row.id);
+                    return (
+                      <Fragment key={row.id}>
+                        <TableRow
+                          className="cursor-pointer hover:bg-muted/30"
+                          onClick={() => toggleExpanded(row.id)}
+                        >
+                          <TableCell>
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{row.invoice_date}</TableCell>
+                          <TableCell className="font-medium">{row.vendor_name}</TableCell>
+                          <TableCell>{row.invoice_number || "—"}</TableCell>
+                          <TableCell className="text-right">{row.item_count}</TableCell>
+                          <TableCell className="text-right">
+                            {row.subtotal != null ? `${row.currency} ${row.subtotal.toFixed(2)}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {row.tax_total != null ? `${row.currency} ${row.tax_total.toFixed(2)}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {row.grand_total != null ? `${row.currency} ${row.grand_total.toFixed(2)}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {row.created_at ? new Date(row.created_at).toLocaleDateString() : "—"}
+                          </TableCell>
+                        </TableRow>
+                        {isExpanded && (
+                          <TableRow className="hover:bg-transparent">
+                            <TableCell colSpan={9} className="bg-muted/10 p-0">
+                              {row.items.length === 0 ? (
+                                <p className="text-sm text-muted-foreground py-4 px-8">
+                                  No line items recorded for this invoice.
+                                </p>
+                              ) : (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-b-border/50">
+                                      <TableHead className="pl-8">Item</TableHead>
+                                      <TableHead>SKU</TableHead>
+                                      <TableHead className="text-right">Qty</TableHead>
+                                      <TableHead>UoM</TableHead>
+                                      <TableHead className="text-right">Unit Price</TableHead>
+                                      <TableHead className="text-right pr-8">Total</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {row.items.map((item, idx) => (
+                                      <TableRow key={idx} className="hover:bg-transparent border-b-border/30">
+                                        <TableCell className="pl-8 font-medium">{item.item_name}</TableCell>
+                                        <TableCell className="text-muted-foreground">{item.sku || "—"}</TableCell>
+                                        <TableCell className="text-right">{item.quantity}</TableCell>
+                                        <TableCell className="text-muted-foreground">{item.unit_of_measure || "—"}</TableCell>
+                                        <TableCell className="text-right">
+                                          {row.currency} {item.unit_price.toFixed(2)}
+                                        </TableCell>
+                                        <TableCell className="text-right pr-8">
+                                          {item.total_price != null ? `${row.currency} ${item.total_price.toFixed(2)}` : "—"}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </TableBody>
               </Table>
 
