@@ -97,6 +97,7 @@ export default function SettingsPage() {
   const [newKeyResponse, setNewKeyResponse] = useState<APIKeyResponse | null>(null);
   const [isCreatingKey, setIsCreatingKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [copiedSseUrl, setCopiedSseUrl] = useState(false);
 
   // Claude connector copy state
   const [copiedConnector, setCopiedConnector] = useState(false);
@@ -1108,9 +1109,35 @@ export default function SettingsPage() {
               </Button>
             </div>
 
+            <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-2">
+              <p className="text-xs font-bold text-indigo-300 uppercase tracking-widest">SSE Endpoint URL</p>
+              <p className="text-[10px] text-zinc-400">
+                Works with <strong>any</strong> SSE-based MCP client (Claude Desktop, Cursor, Kin, or your own tooling) —
+                paste this as the server&apos;s SSE / connection URL, with no extra headers needed:
+              </p>
+              <div className="flex items-stretch gap-2">
+                <div className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 font-mono text-[10px] text-zinc-300 break-all min-w-0 select-all">
+                  {`${MCP_BASE_URL}/sse?api_key=${newKeyResponse?.raw_key || "YOUR_API_KEY"}`}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    copyToClipboard(
+                      `${MCP_BASE_URL}/sse?api_key=${newKeyResponse?.raw_key || ""}`,
+                      setCopiedSseUrl
+                    )
+                  }
+                  className="h-[34px] px-3 shrink-0 flex items-center justify-center border-zinc-700/50 hover:bg-zinc-900"
+                >
+                  {copiedSseUrl ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
+            </div>
+
             <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-4 space-y-3">
-              <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest">MCP Configuration Guides</p>
-              
+              <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest">Example Configs</p>
+
               <div className="space-y-2">
                 <p className="text-[11px] text-zinc-400 font-semibold">1. Claude Desktop Config</p>
                 <p className="text-[10px] text-zinc-500">Add this to your <code className="bg-zinc-900/60 px-1 py-0.5 rounded">claude_desktop_config.json</code> file:</p>
