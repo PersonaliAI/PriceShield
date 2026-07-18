@@ -705,10 +705,13 @@ class SupabaseClientsStore implements OAuthRegisteredClientsStore {
   private async loadClients() {
     if (this.loaded) return;
     try {
-      console.log("Loading clients from Supabase storage...");
-      const { data, error } = await supabase.storage
-        .from(this.bucketName)
-        .download(this.storagePath);
+      console.log("Loading clients from Supabase storage (cache-busted)...");
+      const fetchUrl = `${supabaseUrl}/storage/v1/object/authenticated/${this.bucketName}/${this.storagePath}?t=${Date.now()}`;
+      const response = await fetch(fetchUrl, {
+        headers: {
+          "Authorization": `Bearer ${supabaseKey}`,
+        }
+      });
       
       // Clear cache first and restore default Claude client
       this.clients.clear();
@@ -720,15 +723,15 @@ class SupabaseClientsStore implements OAuthRegisteredClientsStore {
         redirect_uris: ["https://claude.ai/oauth/callback"],
       });
 
-      if (!error && data) {
-        const text = await data.text();
+      if (response.ok) {
+        const text = await response.text();
         const list = JSON.parse(text);
         for (const client of list) {
           this.clients.set(client.client_id, client);
         }
-        console.log(`Loaded ${list.length} clients from Supabase storage.`);
+        console.log(`Loaded ${list.length} clients from Supabase storage (cache-busted).`);
       } else {
-        console.log("No existing clients found in storage or error downloading: ", error);
+        console.log(`No existing clients found in storage or error downloading: ${response.status} ${response.statusText}`);
       }
       this.loaded = true;
     } catch (err) {
