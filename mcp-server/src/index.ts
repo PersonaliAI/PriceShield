@@ -995,10 +995,27 @@ async function run() {
     // ---------------------------------------------------------------
     // Bearer Auth Middleware for MCP endpoints
     // ---------------------------------------------------------------
-    const bearerAuth = requireBearerAuth({
+    const baseBearerAuth = requireBearerAuth({
       verifier: oauthProvider,
       requiredScopes: [],
     });
+
+    const bearerAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.setHeader(
+          "WWW-Authenticate",
+          `Bearer resource_metadata="${BASE_URL}/.well-known/oauth-protected-resource/mcp"`
+        );
+        res.status(401).json({
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Unauthorized: Missing or invalid token" },
+          id: null,
+        });
+        return;
+      }
+      baseBearerAuth(req, res, next);
+    };
 
     // ---------------------------------------------------------------
     // Transport stores
