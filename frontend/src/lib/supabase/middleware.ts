@@ -41,14 +41,7 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (!user && path.startsWith("/dashboard")) {
-    const nextParam = encodeURIComponent(path);
-    const res = NextResponse.redirect(`${origin}/login?next=${nextParam}`);
-    request.cookies.getAll().forEach((c) => {
-      if (c.name.startsWith("sb-")) {
-        res.cookies.set(c.name, "", { maxAge: 0, path: "/" });
-      }
-    });
-    return res;
+    return NextResponse.redirect(`${origin}/login`);
   }
 
   if (user && AUTH_PAGES.includes(path)) {
