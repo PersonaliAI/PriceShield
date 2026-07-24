@@ -75,10 +75,13 @@ export default function LoginPage() {
         setSuccess("Password reset link sent! Check your inbox.");
         setIsReset(false);
       } else if (isSignUp) {
-        await signUp(email, password);
-        // Best effort: send verification right away
-        try { await sendVerification(); } catch (e) { console.error("Auto-verification failed:", e); }
-        router.push(nextPath);
+        const data = await signUp(email, password);
+        if (data?.session) {
+          router.push(nextPath);
+        } else {
+          setSuccess("Account created successfully! Please check your email inbox to verify your account.");
+          setIsSignUp(false);
+        }
       } else {
         await signIn(email, password);
         router.push(nextPath);

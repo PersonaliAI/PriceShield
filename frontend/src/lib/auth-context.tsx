@@ -17,7 +17,7 @@ interface AuthContextType {
   loading: boolean;
   idToken: string | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<{ user: User | null; session: Session | null } | null>;
   signInWithGoogle: (next?: string) => Promise<void>;
   signOut: () => Promise<void>;
   getToken: () => Promise<string | null>;
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -102,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     if (error) throw error;
+    return data;
   };
 
   const signInWithGoogle = async (next?: string) => {
