@@ -14,6 +14,7 @@ const PLANS = [
     name: "Free Audit",
     price: "$0",
     description: "See what the AI catches on your own invoices — before you pay anything.",
+    trial: null,
     features: [
       "5 invoice uploads (no expiry)",
       "AI reads every line item",
@@ -33,6 +34,7 @@ const PLANS = [
     name: "Pro Shield",
     price: "$49 / month",
     description: "Automatic protection. Catches hikes the day they happen — not months later.",
+    trial: "14-Day Free Trial",
     features: [
       "1 business location",
       "Forward invoices by email — AI audits automatically",
@@ -49,6 +51,7 @@ const PLANS = [
     name: "Multi-Location",
     price: "$149 / month",
     description: "For small businesses running more than one site. One dashboard, full visibility.",
+    trial: "14-Day Free Trial",
     features: [
       "Up to 5 business locations",
       "Combined cost view across all sites",
@@ -151,8 +154,13 @@ export default function BillingPage() {
                 </div>
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription className="pt-2">{plan.description}</CardDescription>
-                <div className="mt-4 pb-2 border-b border-border/50">
+                <div className="mt-4 pb-2 border-b border-border/50 flex items-baseline justify-between">
                   <span className="text-4xl font-bold">{plan.price}</span>
+                  {plan.trial && (
+                    <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-semibold text-xs px-2.5 py-0.5">
+                      {plan.trial}
+                    </Badge>
+                  )}
                 </div>
               </CardHeader>
 
@@ -175,7 +183,7 @@ export default function BillingPage() {
                 </ul>
               </CardContent>
 
-              <CardFooter className="pt-4">
+              <CardFooter className="pt-4 flex flex-col gap-2">
                 {isCurrent ? (
                   <Button className="w-full h-11 pointer-events-none" variant="secondary">
                     Your Current Plan
@@ -198,10 +206,15 @@ export default function BillingPage() {
                       <Loader2 className="h-5 w-5 animate-spin mx-auto" />
                     ) : (
                       <span className="flex items-center">
-                        Upgrade to {plan.name} <ArrowRight className="h-4 w-4 ml-2" />
+                        Start 14-Day Free Trial <ArrowRight className="h-4 w-4 ml-2" />
                       </span>
                     )}
                   </Button>
+                )}
+                {plan.trial && !isCurrent && (
+                  <p className="text-[11px] text-muted-foreground text-center font-medium">
+                    14 days free • No charge today • Cancel anytime
+                  </p>
                 )}
               </CardFooter>
             </Card>

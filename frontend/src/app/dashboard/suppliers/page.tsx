@@ -127,7 +127,7 @@ export default function SuppliersPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Vendor List */}
-        <Card className="lg:col-span-4 border-white/5 bg-zinc-950/50 backdrop-blur-xl h-fit">
+        <Card className="lg:col-span-4 border-border bg-card/80 backdrop-blur-xl h-fit">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Truck className="h-5 w-5 text-emerald-400" /> All Suppliers
@@ -136,7 +136,7 @@ export default function SuppliersPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Filter vendors..." 
-                className="pl-9 bg-zinc-900/50 border-white/10" 
+                className="pl-9 bg-muted/40 border-border" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -157,7 +157,7 @@ export default function SuppliersPage() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center text-[10px] font-black uppercase text-emerald-500/50">
+                    <div className="h-8 w-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[10px] font-black uppercase text-emerald-500 font-mono">
                         {v.substring(0, 2)}
                     </div>
                     {v}
@@ -170,14 +170,14 @@ export default function SuppliersPage() {
         </Card>
 
         {/* Item Details */}
-        <Card className="lg:col-span-8 border-white/5 bg-zinc-950/50 backdrop-blur-xl min-h-[500px]">
+        <Card className="lg:col-span-8 border-border bg-card/80 backdrop-blur-xl min-h-[500px]">
           {!selectedVendor ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4">
-              <div className="h-16 w-16 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center">
-                <Shield className="h-8 w-8 text-emerald-500/20" />
+              <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Shield className="h-8 w-8 text-emerald-500" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-medium text-foreground/80">No Supplier Selected</h3>
+                <h3 className="text-lg font-medium text-foreground">No Supplier Selected</h3>
                 <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                     Select a supplier from the sidebar to view and manage their price baseline.
                 </p>
@@ -185,7 +185,7 @@ export default function SuppliersPage() {
             </div>
           ) : (
             <>
-              <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-6">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-6">
                 <div className="space-y-1">
                   <Badge variant="outline" className="text-emerald-400 border-emerald-400/20 bg-emerald-400/5 mb-1 uppercase tracking-widest text-[10px]">Active Baseline</Badge>
                   <CardTitle className="text-2xl text-foreground">{selectedVendor}</CardTitle>
