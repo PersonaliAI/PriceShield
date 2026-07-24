@@ -263,7 +263,7 @@ export function InvoiceToCsvClient() {
       </div>
 
       {/* Main 2-column grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start min-w-0 w-full max-w-full">
         {/* ────────────────── LEFT COLUMN ────────────────── */}
         <div className="lg:col-span-7 space-y-6">
           {/* Upload / Preview area */}

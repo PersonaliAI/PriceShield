@@ -106,7 +106,7 @@ export function FoodCostClient() {
       </div>
 
       {/* Main Grid: Inputs and Output Results */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start min-w-0 w-full max-w-full">
         {/* ─── Left Side: Inputs ─── */}
         <div className="lg:col-span-7 space-y-6">
           {/* Section 1: Recipe Details */}

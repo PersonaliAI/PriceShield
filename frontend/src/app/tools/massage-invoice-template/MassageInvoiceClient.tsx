@@ -201,7 +201,7 @@ export function MassageInvoiceClient() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-8 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-8 items-start min-w-0 w-full max-w-full">
       {/* Stylesheet injected for page printing */}
       <style jsx global>{`
         @media print {
@@ -560,8 +560,8 @@ export function MassageInvoiceClient() {
 
         {/* Paper Invoice sheet */}
         {previewTab === "print" ? (
-          <div className="w-full overflow-x-auto pb-4 print:overflow-visible">
-            <div className={`print-area bg-white text-black p-8 rounded-lg shadow-2xl border border-zinc-200 min-w-[600px] lg:min-w-0 lg:w-full min-h-[840px] text-[11px] leading-relaxed relative ${
+          <div className="w-full min-w-0 max-w-full overflow-x-auto pb-4 print:overflow-visible">
+            <div className={`print-area bg-white text-black p-8 rounded-lg shadow-2xl border border-zinc-200 w-[600px] shrink-0 lg:w-full min-h-[840px] text-[11px] leading-relaxed relative ${
               style === "boutique" ? "font-serif" : "font-sans"
             }`}>
               {/* Style accents */}
