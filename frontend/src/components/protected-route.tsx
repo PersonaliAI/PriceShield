@@ -67,6 +67,14 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     if (loading || user || redirectingRef.current) return;
     redirectingRef.current = true;
 
+    // Clear stale sb- cookies to prevent infinite redirect loops between /dashboard and /login
+    for (const part of document.cookie.split(";")) {
+      const name = part.split("=")[0]?.trim();
+      if (name && name.startsWith("sb-")) {
+        document.cookie = `${name}=; Max-Age=0; path=/`;
+      }
+    }
+
     const next = pathname && !pathname.startsWith("/login") ? pathname : "";
     const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
 
