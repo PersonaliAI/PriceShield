@@ -147,13 +147,13 @@ export function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="md:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-background border-b border-border shadow-2xl"
+            className="fixed inset-x-0 top-16 bottom-0 z-40 md:hidden overflow-y-auto bg-background border-b border-border shadow-2xl overscroll-contain"
           >
-            <div className="mx-auto max-w-5xl px-6 py-6 pb-12 flex flex-col gap-4">
+            <div className="mx-auto max-w-5xl px-6 py-6 pb-28 flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
