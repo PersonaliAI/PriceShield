@@ -259,14 +259,14 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col w-full max-w-full overflow-x-hidden">
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
               <Suspense fallback={null}>
                 <AnalyticsProvider>
                   <ABTestProvider>
-                    <main className="flex-1 flex flex-col">{children}</main>
+                    <main className="flex-1 flex flex-col w-full max-w-full overflow-x-hidden">{children}</main>
                   </ABTestProvider>
                 </AnalyticsProvider>
               </Suspense>

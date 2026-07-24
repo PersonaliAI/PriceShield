@@ -69,7 +69,7 @@ export default function CateringInvoicePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden">
+      <main className="flex-1 bg-background text-foreground pt-24 pb-16 relative overflow-hidden w-full max-w-full">
         {/* Ambient Glows */}
         <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
         <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
