@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("[auth] getSession timed out — proceeding without session");
         setLoading(false);
       }
-    }, 15_000);
+    }, 3_000);
 
     supabase.auth
       .getSession()

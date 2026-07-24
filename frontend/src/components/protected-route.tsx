@@ -67,13 +67,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     if (loading || user || redirectingRef.current) return;
     redirectingRef.current = true;
 
-    clearSupabaseCookiesAndStorage();
-
     const next = pathname && !pathname.startsWith("/login") ? pathname : "";
     const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
 
-    // Hard navigation so middleware re-runs against the freshly-wiped cookie
-    // jar. A soft router.replace would not re-run middleware in some cases.
     window.location.replace(loginHref);
   }, [loading, user, pathname]);
 
