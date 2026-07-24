@@ -79,7 +79,8 @@ export function Navbar() {
   }, [open]);
 
   return (
-    <header
+    <>
+      <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-200",
         scrolled || open
@@ -142,8 +143,9 @@ export function Navbar() {
           )}
         </div>
       </nav>
+    </header>
 
-      {/* Mobile dropdown */}
+      {/* Mobile dropdown overlay */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -423,7 +425,7 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }
 
