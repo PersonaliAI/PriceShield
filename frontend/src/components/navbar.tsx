@@ -151,9 +151,9 @@ export function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden bg-background border-b border-border"
+            className="md:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-background border-b border-border shadow-2xl"
           >
-            <div className="mx-auto max-w-5xl px-6 py-6 flex flex-col gap-4">
+            <div className="mx-auto max-w-5xl px-6 py-6 pb-12 flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
