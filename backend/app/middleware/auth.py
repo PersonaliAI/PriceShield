@@ -60,10 +60,10 @@ def _decode_token(token: str) -> dict:
     else:
         raise jwt.InvalidTokenError(f"Unsupported JWT algorithm: {alg}")
 
-async def get_current_user_uid(
+async def get_current_user_claims(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)
-) -> str:
-    """Extract and verify the Supabase access token. Returns the user's UUID."""
+) -> dict[str, str]:
+    """Extract and verify the Supabase access token. Returns dict with uid and email."""
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -75,7 +75,8 @@ async def get_current_user_uid(
         uid = decoded.get("sub")
         if not uid:
             raise jwt.InvalidTokenError("Token missing subject")
-        return uid
+        email = decoded.get("email") or ""
+        return {"uid": uid, "email": email}
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -87,12 +88,13 @@ async def get_current_user_uid(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication token"
         )
-    except Exception as e:
-        logger.exception("Auth: token verification failed: %s", e)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed"
-        )
+
+async def get_current_user_uid(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)
+) -> str:
+    """Extract and verify the Supabase access token. Returns the user's UUID."""
+    claims = await get_current_user_claims(credentials)
+    return claims["uid"]
 
 async def optional_user_uid(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)

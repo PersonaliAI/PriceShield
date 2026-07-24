@@ -307,7 +307,7 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
 
   return (
     <Dialog open={open}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 p-6 sm:p-8 shadow-2xl rounded-2xl [&>button]:hidden overflow-y-auto max-h-[calc(100vh-2rem)]">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg bg-card backdrop-blur-xl border border-border p-6 sm:p-8 shadow-2xl rounded-2xl [&>button]:hidden overflow-y-auto max-h-[calc(100vh-2rem)]">
         <Dots />
         {step === 1 && <StepWelcome onNext={() => setStep(2)} />}
         {step === 2 && (

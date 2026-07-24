@@ -29,12 +29,20 @@ class CheckoutResponse(BaseModel):
 @router.post("/api/subscriptions/checkout", response_model=CheckoutResponse)
 async def create_checkout(
     req: CheckoutRequest,
-    user_id: str = Depends(get_current_user_uid)
+    user_claims: dict[str, str] = Depends(get_current_user_claims)
 ) -> Any:
     """Generate a secure LemonSqueezy checkout URL for the requested tier."""
+    user_id = user_claims["uid"]
+    token_email = user_claims.get("email") or ""
+
     supabase = SupabaseService()
-    user = supabase.get_or_create_user(user_id, "")
+    user = supabase.get_or_create_user(user_id, token_email)
     
+    if (not user.email or user.email == "") and token_email:
+        user.email = token_email
+        supabase.save_user(user)
+        user = supabase.get_user(user_id) or user
+
     if not user.email:
         logger.warning(f"User {user_id} attempted checkout without an email address.")
         raise HTTPException(
