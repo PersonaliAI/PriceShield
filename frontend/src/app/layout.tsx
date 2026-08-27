@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
+import Script from "next/script";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -273,6 +274,11 @@ export default function RootLayout({
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
+        <Script
+          src="https://chatty.personaliai.com/widget.js"
+          data-id="2bbeb341-6d57-4c4b-af48-8b5db84a7244"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
