@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bot, Headphones, Sparkles, MessageSquare, User, X, type LucideIcon } from "lucide-react";
 import { ChattyWidget } from "@personaliai/react-widget";
 import "@personaliai/react-widget/styles.css";
+import ChattyErrorBoundary from "./chatty-error-boundary";
 
 interface ChattyLauncherProps {
   botId: string;
@@ -98,6 +99,10 @@ function defaultLook(): LauncherLook {
 export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [notificationGranted, setNotificationGranted] = useState(
+    () => typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted"
+  );
   const isMobile = useIsMobile();
   const [look, setLook] = useState<LauncherLook>(defaultLook);
 
@@ -148,26 +153,61 @@ export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
           pointerEvents: open ? "auto" : "none",
         }}
       >
-        <ChattyWidget
-          botId={botId}
-          originToken={null}
-          forceFullscreen={isMobile}
-          onWidgetClose={() => setOpen(false)}
-          onAssistantMessage={() => {
-            if (!open) setUnread((u) => u + 1);
-          }}
-        />
+        <ChattyErrorBoundary>
+          <ChattyWidget
+            botId={botId}
+            originToken={null}
+            forceFullscreen={isMobile}
+            notificationGranted={notificationGranted}
+            onWidgetReady={() => setReady(true)}
+            onWidgetClose={() => setOpen(false)}
+            onAssistantMessage={() => {
+              if (!open) setUnread((u) => u + 1);
+            }}
+            onRequestNotificationPermission={() => {
+              if (typeof window === "undefined" || !("Notification" in window)) return;
+              Notification.requestPermission().then((permission) => {
+                setNotificationGranted(permission === "granted");
+              });
+            }}
+            onTriggerNotification={(botName, bodyText, avatarUrl) => {
+              if (
+                typeof window === "undefined" ||
+                !("Notification" in window) ||
+                Notification.permission !== "granted" ||
+                document.visibilityState === "visible"
+              )
+                return;
+              const notification = new Notification(botName, {
+                body: bodyText,
+                icon: avatarUrl || undefined,
+              });
+              notification.onclick = () => {
+                window.focus();
+                setOpen(true);
+              };
+            }}
+          />
+        </ChattyErrorBoundary>
       </div>
 
       <button
         type="button"
         onClick={() => {
+          if (!ready && !open) return;
           setOpen((o) => !o);
           if (!open) setUnread(0);
         }}
         aria-label={open ? "Close chat" : "Open chat"}
-        className="fixed bottom-5 right-5 z-[2147483647] flex size-[60px] items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95"
-        style={{ background: look.bg, borderRadius: look.radius, boxShadow: look.shadow, color: look.iconColor }}
+        aria-busy={!ready}
+        className="fixed bottom-5 right-5 z-[2147483647] flex size-[60px] items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:cursor-wait"
+        style={{
+          background: look.bg,
+          borderRadius: look.radius,
+          boxShadow: look.shadow,
+          color: look.iconColor,
+          opacity: ready || open ? 1 : 0.6,
+        }}
       >
         {open ? (
           <X className="size-6" />

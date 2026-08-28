@@ -1,0 +1,35 @@
+{
+  "rollouts": [
+    {
+      "name": "projects/playvoid-280b1/locations/us-east4/backends/chatty/rollouts/rollout-2026-07-19-014",
+      "createTime": "2026-07-19T18:14:00.809405387Z",
+      "updateTime": "2026-07-19T18:16:17.880796Z",
+      "state": "SUCCEEDED",
+      "build": "projects/playvoid-280b1/locations/us-east4/backends/chatty/builds/build-2026-07-19-014",
+      "uid": "2d9fc74c-189c-4cb6-b60e-fd3c54ef1bbd",
+      "etag": "AememaZst7ydZ8PvNEDk-JiWpk7p_qJsmuPgz11YIYU",
+      "reconciling": false
+    },
+    {
+      "name": "projects/playvoid-280b1/locations/us-east4/backends/chatty/rollouts/rollout-2026-07-19-012",
+      "createTime": "2026-07-19T17:21:07.183914394Z",
+      "updateTime": "2026-07-19T17:23:34.301064Z",
+      "state": "SUCCEEDED",
+      "build": "projects/playvoid-280b1/locations/us-east4/backends/chatty/builds/build-2026-07-19-012",
+      "uid": "385dd566-0b16-4c2b-928d-6765401cedbf",
+      "etag": "btcncYuDBqhv6jbusQJeaPBRLloAfqvhmV3OZ7eTIgI",
+      "reconciling": false
+    },
+    {
+      "name": "projects/playvoid-280b1/locations/us-east4/backends/chatty/rollouts/rollout-2026-07-19-013",
+      "createTime": "2026-07-19T17:48:26.579185388Z",
+      "updateTime": "2026-07-19T17:49:17.220628Z",
+      "state": "FAILED",
+      "build": "projects/playvoid-280b1/locations/us-east4/backends/chatty/builds/build-2026-07-19-013",
+      "uid": "166e3717-e909-4932-9385-f0675a9d9e9c",
+      "etag": "SqXXYaYO6NQUoQURwXKL04SxDeM5vOgi9RgDZI1Eo3E",
+      "reconciling": false
+    }
+  ],
+  "nextPageToken": "CpkBClAKCHVzLWVhc3Q0EiFmaXJlYmFzZWFwcGhvc3RpbmcuZ29vZ2xlYXBpcy5jb20YASD-zK_p-AoqGGJhY2tlbmRzL2NoYXR0eS9yb2xsb3V0cxIWcm9sbG91dC0yMDI2LTA3LTE5LTAxMxokMTY2ZTM3MTctZTkwOS00OTMyLTkzODUtZjA2NzVhOWQ5ZTljIbW4_yP_tQ4T"
+}

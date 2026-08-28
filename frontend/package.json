@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
-    "@personaliai/react-widget": "^0.1.1",
+    "@personaliai/react-widget": "0.1.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.0",
     "@tanstack/react-query": "^5.62.0",

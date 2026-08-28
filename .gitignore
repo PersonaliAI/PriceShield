@@ -57,3 +57,5 @@ backend/firebase-service-account.json
 # ignore raw invoices and local testing/development folders
 /Invoices/
 /growth/
+.claude/
+
