@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bot, Headphones, Sparkles, MessageSquare, User, X, type LucideIcon } from "lucide-react";
 import { ChattyWidget } from "@personaliai/react-widget";
 import "@personaliai/react-widget/styles.css";
@@ -12,20 +12,30 @@ interface ChattyLauncherProps {
 
 const BACKEND_URL = "https://api.chatty.personaliai.com";
 
-// Matches the max-sm: breakpoint (640px) used on the panel container below —
-// ChattyWidget needs to know this separately so it can drop its own rounded
-// corners to match the container going edge-to-edge full-screen.
+// Ported 1:1 from the live public/widget.js iframe embed this replaced, so
+// the SDK-based launcher stays pixel/behavior-identical to it (see PR
+// discussion) rather than drifting into its own look.
+const MOBILE_BREAKPOINT = 480;
+
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() =>
-    typeof window === "undefined" ? false : window.matchMedia("(max-width: 639px)").matches
+    typeof window === "undefined" ? false : window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches
   );
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 639px)");
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
     const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
   return isMobile;
+}
+
+// widget.js exits immediately for crawlers/headless browsers so it doesn't
+// mount a floating button (or inflate load/analytics) for them.
+function isBotUserAgent(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = (navigator.userAgent || "").toLowerCase();
+  return /jina|bot|crawl|spider|headless|lighthouse/i.test(ua) || navigator.webdriver === true;
 }
 
 // WCAG-based "what icon color goes on this background" — mirrors
@@ -66,6 +76,17 @@ const LAUNCHER_STYLES: Record<string, { bg: string; radius: string; shadow: stri
   neubrutalism: { bg: "#111111", radius: "6px", shadow: "5px 5px 0 0 #111111", dot: "#ffde59" },
   "luxury-editorial": { bg: "#161412", radius: "50%", shadow: "0 8px 22px rgba(0,0,0,.3)", dot: "#b08a3e" },
 };
+// The chat-PANEL's own corner radius per design (distinct from
+// LAUNCHER_STYLES[x].radius above, which is the floating button's radius).
+// Matching this exactly on the outer panel wrapper avoids a hairline
+// anti-aliasing seam at the corner where a mismatched outer clip radius
+// would meet the SDK's own rounded inner content — see widget.js's
+// PANEL_RADIUS comment for the full rationale.
+const PANEL_RADIUS: Record<string, string> = {
+  minimal: "18px", playful: "28px", corporate: "10px", "dark-sleek": "16px",
+  "gradient-glow": "24px", glassmorphism: "20px", ecommerce: "14px",
+  "healthcare-calm": "18px", neubrutalism: "4px", "luxury-editorial": "6px",
+};
 const LEGACY_STYLE_MAP: Record<string, string> = {
   liquid: "glassmorphism", neumorphism: "corporate", claymorphism: "playful",
   bento: "minimal", brutalism: "neubrutalism", retro: "dark-sleek", aurora: "gradient-glow",
@@ -85,6 +106,7 @@ interface LauncherLook {
   bg: string;
   radius: string;
   shadow: string;
+  panelRadius: string;
   iconColor: string;
   Icon: LucideIcon | null;
   dotColor: string | null;
@@ -93,24 +115,90 @@ interface LauncherLook {
 
 function defaultLook(): LauncherLook {
   const d = LAUNCHER_STYLES.minimal;
-  return { bg: d.bg, radius: d.radius, shadow: d.shadow, iconColor: getOnColor(d.bg), Icon: null, dotColor: d.dot, imageUrl: null };
+  return {
+    bg: d.bg, radius: d.radius, shadow: d.shadow, panelRadius: PANEL_RADIUS.minimal,
+    iconColor: getOnColor(d.bg), Icon: null, dotColor: d.dot, imageUrl: null,
+  };
+}
+
+interface TriggerRule {
+  type: "time" | "url" | "scroll" | "exit";
+  value?: string | number;
+  message?: string;
+}
+
+// Subtle two-tone notification chime (Web Audio — no asset needed), ported
+// from widget.js's playPing(). Browsers only allow this after the visitor
+// has interacted with the page at least once; failures are silently ignored
+// same as the original.
+let sharedAudioCtx: AudioContext | null = null;
+function playPing() {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    sharedAudioCtx = sharedAudioCtx || new Ctx();
+    if (sharedAudioCtx.state === "suspended") sharedAudioCtx.resume();
+    const now = sharedAudioCtx.currentTime;
+    [880, 1320].forEach((freq, i) => {
+      const o = sharedAudioCtx!.createOscillator();
+      const g = sharedAudioCtx!.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      o.connect(g);
+      g.connect(sharedAudioCtx!.destination);
+      const t = now + i * 0.12;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      o.start(t);
+      o.stop(t + 0.2);
+    });
+  } catch {
+    // ignored, same as widget.js
+  }
+}
+
+function lsGet(k: string): string | null {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+}
+function lsSet(k: string, v: string) {
+  try {
+    localStorage.setItem(k, v);
+  } catch {
+    // ignored
+  }
 }
 
 export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [ready, setReady] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [notificationGranted, setNotificationGranted] = useState(
     () => typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted"
   );
   const isMobile = useIsMobile();
   const [look, setLook] = useState<LauncherLook>(defaultLook);
 
+  const [teaserVisible, setTeaserVisible] = useState(false);
+  const [teaserMessage, setTeaserMessage] = useState("");
+  const teaserTextRef = useRef("👋 Need help? Chat with us.");
+  const triggerRulesRef = useRef<TriggerRule[]>([]);
+  const triggeredRef = useRef<Record<string, boolean>>({});
+
+  const isBot = isBotUserAgent();
+
   // Mirrors widget.js's own theme fetch, but only for the launcher button —
   // the panel itself (ChattyWidget) already fetches and applies the bot's
   // full theme/color_scheme internally.
   useEffect(() => {
+    if (isBot) return;
     let cancelled = false;
+    const revealTimer = setTimeout(() => setRevealed(true), 3000);
     fetch(`${BACKEND_URL}/api/widget/theme?bot_id=${encodeURIComponent(botId)}&t=${Date.now()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
@@ -118,6 +206,7 @@ export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
         const [styleName] = String(d.widget_style || "").split(":");
         const design = normalizeDesign(styleName);
         const preset = LAUNCHER_STYLES[design];
+        const panelRadius = PANEL_RADIUS[design] || PANEL_RADIUS.minimal;
         const launcherScheme = d.color_scheme?.launcher as { bg?: string; text?: string } | undefined;
         const bg = launcherScheme?.bg || preset.bg || d.primary_color || "#f97316";
         const iconColor = launcherScheme?.text || getOnColor(bg);
@@ -135,19 +224,141 @@ export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
           dotColor = launcherScheme?.text || preset.dot;
         }
 
-        setLook({ bg, radius: preset.radius, shadow: preset.shadow, iconColor, Icon, dotColor, imageUrl });
+        setLook({ bg, radius: preset.radius, shadow: preset.shadow, panelRadius, iconColor, Icon, dotColor, imageUrl });
+
+        teaserTextRef.current = d.teaser_message || d.welcome_message || teaserTextRef.current;
+        if (d.trigger_rules) {
+          try {
+            const parsed = typeof d.trigger_rules === "string" ? JSON.parse(d.trigger_rules) : d.trigger_rules;
+            if (Array.isArray(parsed)) triggerRulesRef.current = triggerRulesRef.current.concat(parsed);
+          } catch {
+            // ignored
+          }
+        }
       })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [botId]);
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setRevealed(true);
+      });
+    return () => {
+      cancelled = true;
+      clearTimeout(revealTimer);
+    };
+  }, [botId, isBot]);
+
+  const hideTeaser = () => setTeaserVisible(false);
+  const showTeaser = (message?: string) => {
+    if (isBot || open) return;
+    if (lsGet(`chatty_teaser_${botId}`) === "dismissed") return;
+    setTeaserMessage(message || teaserTextRef.current);
+    setTeaserVisible(true);
+  };
+
+  // Proactive greeting teaser + its trigger rules (time/url/scroll/exit),
+  // ported from widget.js's initTriggers(). Falls back to a plain 6s-idle
+  // teaser when the bot has no configured trigger rules.
+  useEffect(() => {
+    if (isBot) return;
+    const rules = triggerRulesRef.current;
+    const cleanups: Array<() => void> = [];
+
+    if (rules.length === 0) {
+      const t = setTimeout(() => showTeaser(), 6000);
+      cleanups.push(() => clearTimeout(t));
+    } else {
+      const fire = (rule: TriggerRule) => {
+        const key = `${rule.type}_${String(rule.value || "")}`;
+        if (triggeredRef.current[key]) return;
+        triggeredRef.current[key] = true;
+        showTeaser(rule.message);
+      };
+
+      rules.forEach((rule) => {
+        if (rule.type === "time") {
+          const t = setTimeout(() => fire(rule), parseFloat(String(rule.value || 5)) * 1000);
+          cleanups.push(() => clearTimeout(t));
+        }
+        if (rule.type === "url") {
+          try {
+            const rx = new RegExp(String(rule.value || ".*"), "i");
+            if (rx.test(location.href)) {
+              const t = setTimeout(() => fire(rule), 1000);
+              cleanups.push(() => clearTimeout(t));
+            }
+          } catch {
+            // ignored, same as widget.js
+          }
+        }
+      });
+
+      const hasScroll = rules.some((r) => r.type === "scroll");
+      const hasExit = rules.some((r) => r.type === "exit");
+
+      if (hasScroll) {
+        const onScroll = () => {
+          const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+          if (totalHeight <= 0) return;
+          const pct = (window.scrollY / totalHeight) * 100;
+          rules.forEach((rule) => {
+            if (rule.type === "scroll" && pct >= parseFloat(String(rule.value || 50))) fire(rule);
+          });
+        };
+        window.addEventListener("scroll", onScroll);
+        cleanups.push(() => window.removeEventListener("scroll", onScroll));
+      }
+
+      if (hasExit) {
+        const onExit = (e: MouseEvent) => {
+          if (e.clientY < 20) rules.forEach((rule) => { if (rule.type === "exit") fire(rule); });
+        };
+        document.addEventListener("mouseleave", onExit);
+        cleanups.push(() => document.removeEventListener("mouseleave", onExit));
+      }
+    }
+
+    return () => cleanups.forEach((c) => c());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealed, isBot]);
+
+  // widget.js's window.Chatty public API — lets other scripts/buttons on the
+  // page open/close/toggle the widget without reaching into this component.
+  useEffect(() => {
+    if (isBot) return;
+    (window as unknown as { Chatty: unknown }).Chatty = {
+      open: () => setOpen(true),
+      close: () => setOpen(false),
+      toggle: () => setOpen((o) => !o),
+    };
+    return () => {
+      delete (window as unknown as { Chatty?: unknown }).Chatty;
+    };
+  }, [isBot]);
+
+  // Fail-safe: never spin forever if onWidgetReady never fires.
+  useEffect(() => {
+    if (isBot || ready) return;
+    const t = setTimeout(() => setReady(true), 8000);
+    return () => clearTimeout(t);
+  }, [isBot, ready]);
+
+  useEffect(() => {
+    if (ready && pendingOpen) {
+      setPendingOpen(false);
+      setOpen(true);
+    }
+  }, [ready, pendingOpen]);
+
+  if (isBot) return null;
+
+  const panelRadius = isMobile ? "0px" : look.panelRadius;
 
   return (
     <>
       <div
-        className="fixed z-[2147483646] flex flex-col overflow-hidden rounded-2xl shadow-2xl transition-all duration-200 ease-out
-          bottom-24 right-5 w-[380px] h-[560px] max-w-[calc(100vw-2.5rem)] max-h-[calc(100vh-7.5rem)]
-          max-sm:bottom-0 max-sm:right-0 max-sm:w-screen max-sm:h-[100dvh] max-sm:max-w-none max-sm:max-h-none max-sm:rounded-none"
+        className={`fixed z-[2147483646] flex flex-col overflow-hidden shadow-2xl transition-all duration-200 ease-out
+          ${isMobile ? "inset-0 w-screen h-[100dvh]" : "bottom-[92px] right-5 w-[380px] h-[560px] max-w-[calc(100vw-2.5rem)] max-h-[calc(100vh-7.5rem)]"}`}
         style={{
+          borderRadius: panelRadius,
           opacity: open ? 1 : 0,
           transform: open ? "none" : "translateY(12px)",
           pointerEvents: open ? "auto" : "none",
@@ -162,7 +373,10 @@ export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
             onWidgetReady={() => setReady(true)}
             onWidgetClose={() => setOpen(false)}
             onAssistantMessage={() => {
-              if (!open) setUnread((u) => u + 1);
+              if (!open) {
+                setUnread((u) => u + 1);
+                playPing();
+              }
             }}
             onRequestNotificationPermission={() => {
               if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -191,25 +405,70 @@ export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
         </ChattyErrorBoundary>
       </div>
 
+      {teaserVisible && (
+        <div
+          className="fixed bottom-[92px] right-5 max-w-[260px] rounded-2xl bg-white p-3 pr-8 text-sm leading-snug text-gray-900 shadow-xl transition-all duration-200 ease-out z-[2147483646] cursor-pointer"
+          style={{ zIndex: 2147483646 }}
+          onClick={() => {
+            hideTeaser();
+            setOpen(true);
+          }}
+        >
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={(e) => {
+              e.stopPropagation();
+              hideTeaser();
+              lsSet(`chatty_teaser_${botId}`, "dismissed");
+            }}
+            className="absolute right-2 top-1.5 text-lg leading-none text-gray-400"
+          >
+            &times;
+          </button>
+          {teaserMessage}
+        </div>
+      )}
+
       <button
         type="button"
         onClick={() => {
-          if (!ready && !open) return;
-          setOpen((o) => !o);
-          if (!open) setUnread(0);
+          if (!revealed) return;
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          if (pendingOpen) return;
+          hideTeaser();
+          if (!ready) {
+            setPendingOpen(true);
+            return;
+          }
+          setOpen(true);
+          setUnread(0);
         }}
         aria-label={open ? "Close chat" : "Open chat"}
-        aria-busy={!ready}
-        className="fixed bottom-5 right-5 z-[2147483647] flex size-[60px] items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:cursor-wait"
+        aria-busy={pendingOpen || (open && !ready)}
+        className="fixed bottom-5 right-5 z-[2147483647] flex size-[60px] items-center justify-center shadow-lg transition-[opacity,transform] duration-200 ease-out hover:scale-105 active:scale-95 disabled:cursor-wait"
         style={{
           background: look.bg,
           borderRadius: look.radius,
           boxShadow: look.shadow,
           color: look.iconColor,
-          opacity: ready || open ? 1 : 0.6,
+          opacity: revealed ? 1 : 0,
+          pointerEvents: revealed ? "auto" : "none",
+          // On mobile fullscreen, hide the floating launcher while open — the
+          // in-panel header close button handles closing, avoiding overlap
+          // with the composer (matches widget.js's hideLauncher behavior).
+          display: open && isMobile ? "none" : "flex",
         }}
       >
-        {open ? (
+        {pendingOpen || (open && !ready) ? (
+          <span
+            className="block size-[26px] animate-spin rounded-full border-[3px] border-current border-t-transparent opacity-70"
+            aria-hidden
+          />
+        ) : open ? (
           <X className="size-6" />
         ) : look.Icon ? (
           <look.Icon className="size-7" />
@@ -219,12 +478,13 @@ export default function ChattyLauncher({ botId }: ChattyLauncherProps) {
         ) : (
           <span className="block size-[17px] rounded-full opacity-90" style={{ background: look.dotColor || look.iconColor }} />
         )}
-        {!open && unread > 0 && (
-          <span className="absolute -top-1 -right-1 flex min-w-[20px] h-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white shadow">
-            {unread > 9 ? "9+" : unread}
-          </span>
-        )}
       </button>
+
+      {!open && unread > 0 && (
+        <div className="fixed bottom-16 right-3.5 z-[2147483647] flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white shadow">
+          {unread > 9 ? "9+" : unread}
+        </div>
+      )}
     </>
   );
 }
