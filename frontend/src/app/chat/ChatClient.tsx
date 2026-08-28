@@ -1,21 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChattyWidget } from "@personaliai/react-widget";
-import "@personaliai/react-widget/styles.css";
-import ChattyErrorBoundary from "@/components/chatty-error-boundary";
 
 const BOT_ID = "2bbeb341-6d57-4c4b-af48-8b5db84a7244";
 
 export default function ChatClient() {
-  const [, setReady] = useState(false);
-  const [notificationGranted, setNotificationGranted] = useState(
-    () => typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted"
-  );
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+
+    // Attach open shadow root for style isolation
+    const shadow = container.shadowRoot || container.attachShadow({ mode: "open" });
+
+    // Inject stylesheet
+    if (!shadow.querySelector("link")) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://chatty.personaliai.com/chatty-app.css";
+      shadow.appendChild(link);
+    }
+
+    let unmountFn: (() => void) | undefined;
+
+    const mountApp = () => {
+      const ChattyDOM = (
+        window as unknown as {
+          ChattyDOM?: {
+            mount: (
+              target: HTMLElement | ShadowRoot,
+              opts: unknown
+            ) => { unmount: () => void };
+          };
+        }
+      ).ChattyDOM;
+
+      if (ChattyDOM && ChattyDOM.mount) {
+        const instance = ChattyDOM.mount(shadow, {
+          botId: BOT_ID,
+          mobileFullscreen: false,
+        });
+        unmountFn = instance?.unmount;
+      }
+    };
+
+    if ((window as unknown as { ChattyDOM?: unknown }).ChattyDOM) {
+      mountApp();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://chatty.personaliai.com/chatty-app.js";
+      script.async = true;
+      script.onload = mountApp;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      unmountFn?.();
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">
@@ -62,38 +109,12 @@ export default function ChatClient() {
         </div>
       </header>
 
-      {/* Main Chat Container - Native Vector DOM (100% Crisp at any zoom level, no iframe blur) */}
+      {/* Main Chat Container - Direct Shadow DOM Mount (100% Vector Sharp, Zero SDK / Iframe) */}
       <main className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 md:p-8">
-        <div className="w-full max-w-3xl flex flex-col h-[calc(100vh-8rem)] min-h-[600px] max-h-[820px] rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm shadow-2xl overflow-hidden relative">
-          <ChattyErrorBoundary>
-            <ChattyWidget
-              botId={BOT_ID}
-              originToken={null}
-              notificationGranted={notificationGranted}
-              onWidgetReady={() => setReady(true)}
-              onRequestNotificationPermission={() => {
-                if (typeof window === "undefined" || !("Notification" in window)) return;
-                Notification.requestPermission().then((permission) => {
-                  setNotificationGranted(permission === "granted");
-                });
-              }}
-              onTriggerNotification={(botName, bodyText, avatarUrl) => {
-                if (
-                  typeof window === "undefined" ||
-                  !("Notification" in window) ||
-                  Notification.permission !== "granted" ||
-                  document.visibilityState === "visible"
-                )
-                  return;
-                const notification = new Notification(botName, {
-                  body: bodyText,
-                  icon: avatarUrl || undefined,
-                });
-                notification.onclick = () => window.focus();
-              }}
-            />
-          </ChattyErrorBoundary>
-        </div>
+        <div
+          ref={containerRef}
+          className="w-full max-w-3xl flex flex-col h-[calc(100vh-8rem)] min-h-[600px] max-h-[820px] rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm shadow-2xl overflow-hidden relative"
+        />
       </main>
 
       {/* Footer */}
