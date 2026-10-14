@@ -162,7 +162,7 @@ const jsonLd = {
       sameAs: [
         "https://twitter.com/trypriceshield",
         "https://linkedin.com/company/priceshield",
-        "https://github.com/Damayantha/PriceShield",
+        "https://github.com/PersonaliAI/PriceShield",
       ],
       contactPoint: {
         "@type": "ContactPoint",

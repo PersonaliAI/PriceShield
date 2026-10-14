@@ -14,12 +14,6 @@ const links = {
     { label: "Invoice Audit", href: "/solutions/invoice-audit" },
     { label: "Price Hike Detect", href: "/solutions/supplier-price-increase-detection" },
     { label: "Invoice OCR Software", href: "/solutions/invoice-ocr" },
-    { label: "Margin Leakage Calculator", href: "/tools/margin-leakage-calculator" },
-    { label: "Food Cost Calculator", href: "/tools/food-cost-calculator" },
-    { label: "Invoice to CSV Converter", href: "/tools/invoice-to-csv" },
-    { label: "Catering Invoice Template", href: "/tools/catering-invoice-template" },
-    { label: "B&B Invoice Template", href: "/tools/bed-and-breakfast-invoice-template" },
-    { label: "Massage Invoice Template", href: "/tools/massage-invoice-template" },
   ],
   Resources: [
     { label: "Blog", href: "/blog" },
@@ -82,7 +76,7 @@ export function Footer() {
               Twitter
             </Link>
             <Link
-              href="https://github.com/Damayantha/PriceShield"
+              href="https://github.com/PersonaliAI/PriceShield"
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               GitHub

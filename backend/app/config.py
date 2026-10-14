@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     slack_redirect_uri: str = "https://priceshield-api-wkooktwifa-uc.a.run.app/webhook/slack/oauth"
     whatsapp_token: str = ""
     whatsapp_phone_number_id: str = ""
-    onesignal_app_id: str = "95017a82-6b2b-415a-a4d7-1eda21edf617"
+    onesignal_app_id: str = ""
     onesignal_api_key: str = ""
     lemonsqueezy_api_key: str = ""
     lemonsqueezy_webhook_secret: str = ""
