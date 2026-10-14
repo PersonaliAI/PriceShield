@@ -249,10 +249,10 @@ export default function RootLayout({
       <head>
         <link
           rel="preconnect"
-          href="https://kgzkienmztbbwyvywxit.supabase.co"
+          href="https://vuiterpzbrjpslpvnoze.supabase.co"
           crossOrigin="anonymous"
         />
-        <link rel="dns-prefetch" href="https://kgzkienmztbbwyvywxit.supabase.co" />
+        <link rel="dns-prefetch" href="https://vuiterpzbrjpslpvnoze.supabase.co" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <script
