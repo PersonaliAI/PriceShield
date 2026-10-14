@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from pydantic import BaseModel
 
 from app.config import get_settings
-from app.middleware.auth import get_current_user_uid
+from app.middleware.auth import get_current_user_uid, get_current_user_claims
 from app.models.user import SubscriptionTier
 from app.services.supabase_service import SupabaseService
 from app.services.subscription_service import SubscriptionService
